@@ -1,115 +1,246 @@
-import random
+import pymc3 as pm
 import numpy as np
 import pandas as pd
-from dateutil import parser
-from sklearn.preprocessing import StandardScaler
 from deap import creator, base, tools, algorithms
 from concurrent.futures import ThreadPoolExecutor
-from skopt import gp_minimize
-from skopt.space import Real
-from skopt.utils import use_named_args
-from skopt.plots import plot_convergence
 from sqlalchemy import create_engine
+from sklearn.preprocessing import StandardScaler
 import tensorflow as tf
 from tf_agents.environments import py_environment
 from tf_agents.specs import array_spec
 from tf_agents.trajectories import time_step as ts
 from tf_agents.networks import q_network
 from tf_agents.agents.dqn import dqn_agent
+from tf_agents.policies import random_tf_policy
+from tf_agents.drivers import dynamic_step_driver
 from tf_agents.utils import common
+from tf_agents.replay_buffers import tf_uniform_replay_buffer
+from tf_agents.environments import tf_py_environment
 
 
-# Define market data processor
+# Define a custom trading environment
+class CustomTradingEnvironment(py_environment.PyEnvironment):
+    def __init__(self, data):
+        super().__init__()
+        self.data = data.astype(np.float32)  # Ensure data is float32
+        self._index = 0
+        self._episode_ended = False
+
+        self._observation_spec = array_spec.BoundedArraySpec(shape=(6,), dtype=np.float32, minimum=-1, maximum=1)
+        self._action_spec = array_spec.BoundedArraySpec(shape=(), dtype=np.int32, minimum=0, maximum=2)
+        self._state = self._get_state()
+
+    def action_spec(self):
+        return self._action_spec
+
+    def observation_spec(self):
+        return self._observation_spec
+
+    def _reset(self):
+        self._index = 0
+        self._episode_ended = False
+        self._state = self._get_state()
+        return ts.restart(self._state)
+
+    def _step(self, action):
+        if self._episode_ended:
+            return self.reset()
+
+        # Action logic: 0 = hold, 1 = buy, 2 = sell
+        self._index += 1
+        self._state = self._get_state()
+
+        # Reward logic (example): reward is the price change
+        reward = self.data.iloc[self._index]['lastPrice'] - self.data.iloc[self._index - 1]['lastPrice']
+
+        if self._index >= len(self.data) - 1:
+            self._episode_ended = True
+
+        if self._episode_ended:
+            return ts.termination(self._state, reward)
+        else:
+            return ts.transition(self._state, reward)
+
+    def _get_state(self):
+        # Extract state information from the data
+        if self._index < len(self.data):
+            return self.data.iloc[self._index].values.astype(np.float32)
+        else:
+            return np.zeros(6, dtype=np.float32)
+
+
+# Step 1: Data fetching and chunk processing
+def fetch_data_in_chunks(database_url, query, chunksize=10000):
+    engine = create_engine(database_url)
+    with engine.connect() as connection:
+        chunk_iterator = pd.read_sql_query(query, connection, chunksize=chunksize)
+        for chunk in chunk_iterator:
+            yield chunk
+
+
+def load_and_process_data_in_chunks(database_path, query, chunksize=10000):
+    database_url = f"sqlite:///{database_path}"
+    processed_chunks = []
+
+    def process_chunk(chunk):
+        processor = MarketDataProcessor(chunk)
+        return processor.preprocess()
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = []
+        for chunk in fetch_data_in_chunks(database_url, query, chunksize):
+            futures.append(executor.submit(process_chunk, chunk))
+
+        for future in futures:
+            processed_chunks.append(future.result())
+
+    # Combine processed chunks into a single DataFrame
+    return pd.concat(processed_chunks, ignore_index=True)
+
+
+# Step 2: Data preprocessing class
 class MarketDataProcessor:
     def __init__(self, data):
-        self.data = data
+        self.data = data.copy()  # Create a copy to avoid SettingWithCopyWarning
 
     def preprocess(self):
-        with ThreadPoolExecutor(max_workers=10) as executor:
-            self.data['time'] = list(executor.map(parser.parse, self.data['time']))
+        # Handle datetime parsing errors by using errors='coerce' to convert invalid parsing to NaT
+        self.data['time'] = pd.to_datetime(self.data['time'], errors='coerce')
+
+        # Check for any rows with NaT values and handle them (e.g., drop or fill)
+        self.data = self.data.dropna(subset=['time'])  # Drop rows with NaT values in the 'time' column
+
+        # Use .loc to avoid SettingWithCopyWarning
         self.data['time_of_day'] = self.data['time'].dt.hour + self.data['time'].dt.minute / 60
         self.data['spread'] = self.data['askPrice_1'] - self.data['bidPrice_1']
-        self.data['order_imbalance'] = (self.data['askSize_1'] - self.data['bidSize_1']) / (
-                self.data['askSize_1'] + self.data['bidSize_1'])
+        self.data['order_imbalance'] = (self.data['askSize_1'] - self.data['bidSize_1']) / (self.data['askSize_1'] + self.data['bidSize_1'])
         self.data['day_of_week'] = self.data['time'].dt.dayofweek
+
+        # Clip all columns to handle extreme values
+        self.data = self.clip_extreme_values(self.data)
+
+        # Remove rows with any NaN values
+        self.data = self.data.dropna()
 
         # Scaling the features
         scaler = StandardScaler()
         scaled_features = scaler.fit_transform(
-            self.data[['lastPrice', 'lastSize', 'spread', 'order_imbalance', 'time_of_day', 'day_of_week']])
-        self.data[
-            ['lastPrice', 'lastSize', 'spread', 'order_imbalance', 'time_of_day', 'day_of_week']] = scaled_features
+            self.data[['lastPrice', 'lastSize', 'spread', 'order_imbalance', 'time_of_day', 'day_of_week']]
+        )
+        self.data[['lastPrice', 'lastSize', 'spread', 'order_imbalance', 'time_of_day', 'day_of_week']] = scaled_features
 
         return self.data[['lastPrice', 'lastSize', 'spread', 'order_imbalance', 'time_of_day', 'day_of_week']]
 
+    def summarize_spread(self):
+        print("Summary statistics for 'spread':")
+        print(self.data['spread'].describe())
 
-# Define trading environment
-class TradingEnvironment(py_environment.PyEnvironment):
-    def __init__(self, data):
-        super(TradingEnvironment, self).__init__()
-        self.data = data
-        self.n_steps = len(data)
-        self.current_step = 0
-        self._action_space = array_spec.BoundedArraySpec(
-            shape=(),
-            dtype=np.int32,
-            minimum=0,
-            maximum=2,
-            name='action'
-        )
-        self._observation_space = array_spec.BoundedArraySpec(
-            shape=(6,),
-            dtype=np.float32,
-            minimum=-float('inf'),
-            maximum=float('inf'),
-            name='observation'
-        )
-
-    def action_spec(self):
-        return self._action_space
-
-    def observation_spec(self):
-        return self._observation_space
-
-    def _reset(self):
-        self.current_step = 0
-        return ts.restart(self.data.iloc[0].values)
-
-    def _step(self, action):
-        if self.current_step >= self.n_steps - 1:
-            return ts.termination(self.data.iloc[self.current_step].values,
-                                  self.calculate_reward(action, self.current_step))
-        self.current_step += 1
-        reward = self.calculate_reward(action, self.current_step)
-        obs = self.data.iloc[self.current_step].values
-        return ts.transition(obs, reward=reward)
-
-    def calculate_reward(self, action, step):
-        price_change = self.data.iloc[step]['lastPrice']
-        if action == 1:
-            return price_change
-        elif action == 2:
-            return -price_change
-        return -0.01
+    def clip_extreme_values(self, data):
+        # Clip extreme values in all relevant columns to a reasonable range
+        data['lastPrice'] = data['lastPrice'].clip(lower=data['lastPrice'].quantile(0.01), upper=data['lastPrice'].quantile(0.99))
+        data['lastSize'] = data['lastSize'].clip(lower=data['lastSize'].quantile(0.01), upper=data['lastSize'].quantile(0.99))
+        data['spread'] = data['spread'].clip(lower=data['spread'].quantile(0.01), upper=data['spread'].quantile(0.99))
+        data['order_imbalance'] = data['order_imbalance'].clip(lower=data['order_imbalance'].quantile(0.01), upper=data['order_imbalance'].quantile(0.99))
+        data['time_of_day'] = data['time_of_day'].clip(lower=data['time_of_day'].quantile(0.01), upper=data['time_of_day'].quantile(0.99))
+        data['day_of_week'] = data['day_of_week'].clip(lower=data['day_of_week'].quantile(0.01), upper=data['day_of_week'].quantile(0.99))
+        return data
 
 
-# Define DQN agent setup
-class DQNAgentSetup:
+# Step 3: Bayesian Optimization class
+class BayesianOptimization:
+    def __init__(self):
+        self.model = None
+        self.trace = None
+
+    def setup_model(self, data):
+        # Ensure the data is in the correct format (float)
+        data = data.astype(float)
+        print("Processed data (first 5 rows):\n", data.head())  # Debugging: Print the first few rows of the processed data
+
+        with pm.Model() as model:
+            # Define priors using float types
+            alpha = pm.Normal('alpha', mu=0.0, sigma=1.0)  # Adjusted sigma to 1.0 for more reasonable prior
+            beta = pm.Normal('beta', mu=0.0, sigma=1.0, shape=data.shape[1] - 1)  # Adjusted sigma to 1.0
+            sigma = pm.HalfNormal('sigma', sigma=1.0, testval=1.0)  # Ensuring sigma is a float and setting testval
+
+            # Define likelihood
+            y_obs = pm.Normal('y_obs', mu=alpha + pm.math.dot(data.iloc[:, :-1], beta), sigma=sigma, observed=data.iloc[:, -1])
+
+            # Sample from the posterior using single-core sampling
+            trace = pm.sample(1000, tune=1000, cores=1, init="adapt_diag", return_inferencedata=False)
+
+        self.model = model
+        self.trace = trace
+
+    def run_inference(self, new_data):
+        # Ensure the new data is in the correct format (float)
+        new_data = new_data.astype(float)
+
+        with self.model:
+            posterior_predictive = pm.sample_posterior_predictive(self.trace, var_names=['y_obs'], samples=1000)
+        return posterior_predictive['y_obs'].mean(axis=0)
+
+
+# Step 4: Genetic Algorithm class
+class GeneticAlgorithm:
+    def __init__(self):
+        self.toolbox = base.Toolbox()
+        self.setup_toolbox()
+
+    def setup_toolbox(self):
+        creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+        creator.create("Individual", list, fitness=creator.FitnessMax)
+        self.toolbox.register("attribute", np.random.random)
+        self.toolbox.register("individual", tools.initRepeat, creator.Individual, self.toolbox.attribute, n=10)
+        self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
+        self.toolbox.register("evaluate", self.evaluate)
+        self.toolbox.register("mate", tools.cxTwoPoint)
+        self.toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.1)
+        self.toolbox.register("select", tools.selTournament, tournsize=3)
+
+    def evaluate(self, individual):
+        # Evaluation logic here
+        return sum(individual),
+
+    def run_evolution(self):
+        population = self.toolbox.population(n=50)
+        hof = tools.HallOfFame(1)
+        stats = tools.Statistics(lambda ind: ind.fitness.values)
+        stats.register("avg", np.mean)
+        stats.register("min", np.min)
+        stats.register("max", np.max)
+        algorithms.eaSimple(population, self.toolbox, cxpb=0.5, mutpb=0.2, ngen=40, stats=stats, halloffame=hof,
+                            verbose=True)
+
+
+# Step 5: Reinforcement Learning class
+class ReinforcementLearning:
     def __init__(self, environment):
         self.environment = environment
-        self.agent = self.initialize_agent()
+        self.train_env = tf_py_environment.TFPyEnvironment(environment)
+        self.eval_env = tf_py_environment.TFPyEnvironment(environment)
+        self.agent = self.setup_agent()
+        self.replay_buffer = self.setup_replay_buffer()
+        self.dataset = self.replay_buffer.as_dataset(
+            num_parallel_calls=3,
+            sample_batch_size=64,
+            num_steps=2
+        ).prefetch(3)
+        self.iterator = iter(self.dataset)
 
-    def initialize_agent(self):
+    def setup_agent(self):
         q_net = q_network.QNetwork(
-            self.environment.observation_spec(),
-            self.environment.action_spec(),
-            fc_layer_params=(100, 50)
+            self.train_env.observation_spec(),
+            self.train_env.action_spec(),
+            fc_layer_params=(100,)
         )
-        optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
-        train_step_counter = tf.Variable(0)
+
+        optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=1e-3)
+        train_step_counter = tf.compat.v2.Variable(0)
+
         agent = dqn_agent.DqnAgent(
-            self.environment.time_step_spec(),
-            self.environment.action_spec(),
+            self.train_env.time_step_spec(),
+            self.train_env.action_spec(),
             q_network=q_net,
             optimizer=optimizer,
             td_errors_loss_fn=common.element_wise_squared_loss,
@@ -118,73 +249,66 @@ class DQNAgentSetup:
         agent.initialize()
         return agent
 
+    def setup_replay_buffer(self):
+        replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
+            data_spec=self.agent.collect_data_spec,
+            batch_size=self.train_env.batch_size,
+            max_length=100000
+        )
+        return replay_buffer
 
-@use_named_args(dimensions=[Real(0.0001, 0.1, name='learning_rate'), Real(10, 100, name='num_neurons')])
-def evaluate_agent(learning_rate, num_neurons):
-    # Assuming processed_data is available in this scope
-    env = TradingEnvironment(processed_data)
-    agent_setup = DQNAgentSetup(env)
-    # Modify the agent's network or parameters based on params
-    return np.random.random()  # Placeholder for actual evaluation
+    def collect_data(self, policy, steps):
+        driver = dynamic_step_driver.DynamicStepDriver(
+            self.train_env,
+            policy,
+            observers=[self.replay_buffer.add_batch],
+            num_steps=steps
+        )
+        final_time_step, _ = driver.run()
+        return final_time_step
 
+    def train_agent(self, num_iterations=10000, collect_steps_per_iteration=1):
+        random_policy = random_tf_policy.RandomTFPolicy(
+            self.train_env.time_step_spec(),
+            self.train_env.action_spec()
+        )
 
-# Assume a simple fitness strategy and individual structure for demonstration
-creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-creator.create("Individual", list, fitness=creator.FitnessMax)
+        # Collect initial data
+        for _ in range(1000):
+            self.collect_data(random_policy, collect_steps_per_iteration)
 
-toolbox = base.Toolbox()
+        # Training loop
+        for _ in range(num_iterations):
+            self.collect_data(self.agent.collect_policy, collect_steps_per_iteration)
+            experience, unused_info = next(self.iterator)
+            train_loss = self.agent.train(experience)
+            step = self.agent.train_step_counter.numpy()
 
-# Attribute generator: defining how to create a random float attribute
-toolbox.register("attr_float", random.uniform, 0.0, 1.0)
-
-# Structure initializers
-toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_float,
-                 n=10)  # n=10 attributes per individual
-toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-
-# Genetic operators
-toolbox.register("mate", tools.cxTwoPoint)
-toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.1)
-toolbox.register("select", tools.selTournament, tournsize=3)
-toolbox.register("evaluate", evaluate_agent)  # Define your evaluation function
-
-# Read data and preprocess
-database_path = '../market_direction_prediction/ES_ticks.db'
-engine = create_engine(f"sqlite:///{database_path}")
-data = pd.read_sql("SELECT * from ES_market_depth", engine)
-processor = MarketDataProcessor(data)
-processed_data = processor.preprocess()
-
-
-# Now you can call run_genetic_algorithm without getting the AttributeError
-def run_genetic_algorithm():
-    population = toolbox.population(n=100)  # Create a population of 100 individuals
-    hof = tools.HallOfFame(1)
-    stats = tools.Statistics(lambda ind: ind.fitness.values)
-    stats.register("avg", np.mean)
-    stats.register("min", np.min)
-    stats.register("max", np.max)
-    result = algorithms.eaSimple(population, toolbox, cxpb=0.5, mutpb=0.2, ngen=10, stats=stats, halloffame=hof,
-                                 verbose=True)
-    best_ind = hof.items[0]
-    print(f'Best individual: {best_ind}, Fitness: {best_ind.fitness.values}')
+            if step % 100 == 0:
+                print(f'Step = {step}: Loss = {train_loss.loss.numpy()}')
 
 
-# Define Bayesian optimization function
+# Step 6: Main function to integrate everything
+def main():
+    database_path = './ES_ticks.db'
+    query = "SELECT * FROM ES_market_depth"
+    chunksize = 10000  # Adjust the chunk size based on your memory constraints
+
+    processed_data = load_and_process_data_in_chunks(database_path, query, chunksize)
+    print("Loaded and processed data shape:", processed_data.shape)  # Debugging: Print the shape of the processed data
+
+    # Now you can use processed_data with your Bayesian, GA, and RL classes
+    bayesian_opt = BayesianOptimization()
+    bayesian_opt.setup_model(processed_data)
+    bayesian_predictions = bayesian_opt.run_inference(processed_data)
+
+    ga_opt = GeneticAlgorithm()
+    ga_opt.run_evolution()
+
+    rl_env = CustomTradingEnvironment(processed_data)
+    rl_agent = ReinforcementLearning(rl_env)
+    rl_agent.train_agent()
 
 
-def run_bayesian_optimization():
-    res = gp_minimize(evaluate_agent,  # the function to minimize
-                      [(0.0001, 0.1), (10, 100)],  # the bounds on each dimension of x
-                      acq_func="EI",  # the acquisition function
-                      n_calls=10,  # the number of evaluations of f
-                      n_random_starts=5,  # the number of random initialization points
-                      random_state=1234)  # the random seed
-    print("Best parameters found: ", res.x)
-    print("Best value found: ", res.fun)
-    plot_convergence(res)
-
-
-# Running optimization methods
-run_bayesian_optimization()
-run_genetic_algorithm()
+if __name__ == "__main__":
+    main()
