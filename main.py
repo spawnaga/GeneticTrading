@@ -17,12 +17,11 @@ from tf_agents.utils import common
 from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.environments import tf_py_environment
 
-
 # Define a custom trading environment
 class CustomTradingEnvironment(py_environment.PyEnvironment):
     def __init__(self, data):
         super().__init__()
-        self.data = data.astype(np.float32)  # Ensure data is float32
+        self.data = data
         self._index = 0
         self._episode_ended = False
 
@@ -64,7 +63,7 @@ class CustomTradingEnvironment(py_environment.PyEnvironment):
     def _get_state(self):
         # Extract state information from the data
         if self._index < len(self.data):
-            return self.data.iloc[self._index].values.astype(np.float32)
+            return self.data.iloc[self._index].values
         else:
             return np.zeros(6, dtype=np.float32)
 
@@ -235,7 +234,7 @@ class ReinforcementLearning:
             fc_layer_params=(100,)
         )
 
-        optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=1e-3)
+        optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=1e-4)  # Reduced learning rate
         train_step_counter = tf.compat.v2.Variable(0)
 
         agent = dqn_agent.DqnAgent(
@@ -297,14 +296,17 @@ def main():
     processed_data = load_and_process_data_in_chunks(database_path, query, chunksize)
     print("Loaded and processed data shape:", processed_data.shape)  # Debugging: Print the shape of the processed data
 
-    # Now you can use processed_data with your Bayesian, GA, and RL classes
+    # Bayesian Optimization
     bayesian_opt = BayesianOptimization()
     bayesian_opt.setup_model(processed_data)
     bayesian_predictions = bayesian_opt.run_inference(processed_data)
+    print("Bayesian predictions (first 5):", bayesian_predictions[:5])
 
+    # Genetic Algorithm Optimization
     ga_opt = GeneticAlgorithm()
     ga_opt.run_evolution()
 
+    # Reinforcement Learning
     rl_env = CustomTradingEnvironment(processed_data)
     rl_agent = ReinforcementLearning(rl_env)
     rl_agent.train_agent()
