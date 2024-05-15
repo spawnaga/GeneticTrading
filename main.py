@@ -1,4 +1,4 @@
-import pymc3 as pm
+import os
 import numpy as np
 import pandas as pd
 from deap import creator, base, tools, algorithms
@@ -16,14 +16,17 @@ from tf_agents.drivers import dynamic_step_driver
 from tf_agents.utils import common
 from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.environments import tf_py_environment
+from skopt import gp_minimize, space
+from tqdm import tqdm
 
 # Define a custom trading environment
 class CustomTradingEnvironment(py_environment.PyEnvironment):
     def __init__(self, data):
         super().__init__()
-        self.data = data
+        self.data = data.astype(np.float32)
         self._index = 0
         self._episode_ended = False
+        self.position = 0  # 0: no position, 1: long, -1: short
 
         self._observation_spec = array_spec.BoundedArraySpec(shape=(6,), dtype=np.float32, minimum=-1, maximum=1)
         self._action_spec = array_spec.BoundedArraySpec(shape=(), dtype=np.int32, minimum=0, maximum=2)
@@ -38,6 +41,7 @@ class CustomTradingEnvironment(py_environment.PyEnvironment):
     def _reset(self):
         self._index = 0
         self._episode_ended = False
+        self.position = 0  # Reset position
         self._state = self._get_state()
         return ts.restart(self._state)
 
@@ -45,12 +49,29 @@ class CustomTradingEnvironment(py_environment.PyEnvironment):
         if self._episode_ended:
             return self.reset()
 
-        # Action logic: 0 = hold, 1 = buy, 2 = sell
         self._index += 1
         self._state = self._get_state()
 
-        # Reward logic (example): reward is the price change
-        reward = self.data.iloc[self._index]['lastPrice'] - self.data.iloc[self._index - 1]['lastPrice']
+        price_change = self.data.iloc[self._index]['lastPrice'] - self.data.iloc[self._index - 1]['lastPrice']
+        reward = 0
+
+        if action == 1:  # Buy
+            if self.position == 0:
+                self.position = 1
+            elif self.position == -1:
+                reward += price_change  # Profit from short
+                self.position = 0
+        elif action == 2:  # Sell
+            if self.position == 0:
+                self.position = -1
+            elif self.position == 1:
+                reward -= price_change  # Profit from long
+                self.position = 0
+        else:  # Hold
+            if self.position == 1:
+                reward += price_change  # Profit from long
+            elif self.position == -1:
+                reward -= price_change  # Profit from short
 
         if self._index >= len(self.data) - 1:
             self._episode_ended = True
@@ -61,12 +82,10 @@ class CustomTradingEnvironment(py_environment.PyEnvironment):
             return ts.transition(self._state, reward)
 
     def _get_state(self):
-        # Extract state information from the data
         if self._index < len(self.data):
-            return self.data.iloc[self._index].values
+            return self.data.iloc[self._index].values.astype(np.float32)
         else:
             return np.zeros(6, dtype=np.float32)
-
 
 # Step 1: Data fetching and chunk processing
 def fetch_data_in_chunks(database_url, query, chunksize=10000):
@@ -76,6 +95,19 @@ def fetch_data_in_chunks(database_url, query, chunksize=10000):
         for chunk in chunk_iterator:
             yield chunk
 
+# Evaluate the model
+def evaluate_model(agent, env, num_episodes=10):
+    returns = []
+    for _ in range(num_episodes):
+        time_step = env.reset()
+        episode_return = 0
+        while not time_step.is_last():
+            action_step = agent.agent.policy.action(time_step)
+            time_step = env.step(action_step.action)
+            episode_return += time_step.reward
+        returns.append(episode_return.numpy())
+    avg_return = np.mean(returns)
+    return avg_return
 
 def load_and_process_data_in_chunks(database_path, query, chunksize=10000):
     database_url = f"sqlite:///{database_path}"
@@ -87,15 +119,15 @@ def load_and_process_data_in_chunks(database_path, query, chunksize=10000):
 
     with ThreadPoolExecutor(max_workers=4) as executor:
         futures = []
-        for chunk in fetch_data_in_chunks(database_url, query, chunksize):
+        for chunk in tqdm(fetch_data_in_chunks(database_url, query, chunksize),
+                          desc="Loading and Processing Data Chunks"):
             futures.append(executor.submit(process_chunk, chunk))
 
-        for future in futures:
+        for future in tqdm(futures, desc="Combining Processed Chunks"):
             processed_chunks.append(future.result())
 
     # Combine processed chunks into a single DataFrame
     return pd.concat(processed_chunks, ignore_index=True)
-
 
 # Step 2: Data preprocessing class
 class MarketDataProcessor:
@@ -112,7 +144,8 @@ class MarketDataProcessor:
         # Use .loc to avoid SettingWithCopyWarning
         self.data['time_of_day'] = self.data['time'].dt.hour + self.data['time'].dt.minute / 60
         self.data['spread'] = self.data['askPrice_1'] - self.data['bidPrice_1']
-        self.data['order_imbalance'] = (self.data['askSize_1'] - self.data['bidSize_1']) / (self.data['askSize_1'] + self.data['bidSize_1'])
+        self.data['order_imbalance'] = (self.data['askSize_1'] - self.data['bidSize_1']) / (
+                    self.data['askSize_1'] + self.data['bidSize_1'])
         self.data['day_of_week'] = self.data['time'].dt.dayofweek
 
         # Clip all columns to handle extreme values
@@ -124,11 +157,11 @@ class MarketDataProcessor:
         # Scaling the features
         scaler = StandardScaler()
         scaled_features = scaler.fit_transform(
-            self.data[['lastPrice', 'lastSize', 'spread', 'order_imbalance', 'time_of_day', 'day_of_week']]
+            self.data[['lastPrice', 'lastSize', 'spread', 'order_imbalance', 'time_of_day', 'day_of_week']].astype(np.float32)
         )
         self.data[['lastPrice', 'lastSize', 'spread', 'order_imbalance', 'time_of_day', 'day_of_week']] = scaled_features
 
-        return self.data[['lastPrice', 'lastSize', 'spread', 'order_imbalance', 'time_of_day', 'day_of_week']]
+        return self.data[['lastPrice', 'lastSize', 'spread', 'order_imbalance', 'time_of_day', 'day_of_week']].astype(np.float32)
 
     def summarize_spread(self):
         print("Summary statistics for 'spread':")
@@ -136,88 +169,37 @@ class MarketDataProcessor:
 
     def clip_extreme_values(self, data):
         # Clip extreme values in all relevant columns to a reasonable range
-        data['lastPrice'] = data['lastPrice'].clip(lower=data['lastPrice'].quantile(0.01), upper=data['lastPrice'].quantile(0.99))
-        data['lastSize'] = data['lastSize'].clip(lower=data['lastSize'].quantile(0.01), upper=data['lastSize'].quantile(0.99))
+        data['lastPrice'] = data['lastPrice'].clip(lower=data['lastPrice'].quantile(0.01),
+                                                   upper=data['lastPrice'].quantile(0.99))
+        data['lastSize'] = data['lastSize'].clip(lower=data['lastSize'].quantile(0.01),
+                                                 upper=data['lastSize'].quantile(0.99))
         data['spread'] = data['spread'].clip(lower=data['spread'].quantile(0.01), upper=data['spread'].quantile(0.99))
-        data['order_imbalance'] = data['order_imbalance'].clip(lower=data['order_imbalance'].quantile(0.01), upper=data['order_imbalance'].quantile(0.99))
-        data['time_of_day'] = data['time_of_day'].clip(lower=data['time_of_day'].quantile(0.01), upper=data['time_of_day'].quantile(0.99))
-        data['day_of_week'] = data['day_of_week'].clip(lower=data['day_of_week'].quantile(0.01), upper=data['day_of_week'].quantile(0.99))
+        data['order_imbalance'] = data['order_imbalance'].clip(lower=data['order_imbalance'].quantile(0.01),
+                                                               upper=data['order_imbalance'].quantile(0.99))
+        data['time_of_day'] = data['time_of_day'].clip(lower=data['time_of_day'].quantile(0.01),
+                                                       upper=data['time_of_day'].quantile(0.99))
+        data['day_of_week'] = data['day_of_week'].clip(lower=data['day_of_week'].quantile(0.01),
+                                                       upper=data['day_of_week'].quantile(0.99))
         return data
 
-
-# Step 3: Bayesian Optimization class
+# Step 3: Bayesian Optimization for Hyperparameter Tuning
 class BayesianOptimization:
-    def __init__(self):
-        self.model = None
-        self.trace = None
+    def __init__(self, search_space, objective_function):
+        self.search_space = search_space
+        self.objective_function = objective_function
 
-    def setup_model(self, data):
-        # Ensure the data is in the correct format (float)
-        data = data.astype(float)
-        print("Processed data (first 5 rows):\n", data.head())  # Debugging: Print the first few rows of the processed data
+    def optimize(self, n_calls=50):
+        res = gp_minimize(self.objective_function, self.search_space, n_calls=n_calls, random_state=42)
+        return res
 
-        with pm.Model() as model:
-            # Define priors using float types
-            alpha = pm.Normal('alpha', mu=0.0, sigma=1.0)  # Adjusted sigma to 1.0 for more reasonable prior
-            beta = pm.Normal('beta', mu=0.0, sigma=1.0, shape=data.shape[1] - 1)  # Adjusted sigma to 1.0
-            sigma = pm.HalfNormal('sigma', sigma=1.0, testval=1.0)  # Ensuring sigma is a float and setting testval
-
-            # Define likelihood
-            y_obs = pm.Normal('y_obs', mu=alpha + pm.math.dot(data.iloc[:, :-1], beta), sigma=sigma, observed=data.iloc[:, -1])
-
-            # Sample from the posterior using single-core sampling
-            trace = pm.sample(1000, tune=1000, cores=1, init="adapt_diag", return_inferencedata=False)
-
-        self.model = model
-        self.trace = trace
-
-    def run_inference(self, new_data):
-        # Ensure the new data is in the correct format (float)
-        new_data = new_data.astype(float)
-
-        with self.model:
-            posterior_predictive = pm.sample_posterior_predictive(self.trace, var_names=['y_obs'], samples=1000)
-        return posterior_predictive['y_obs'].mean(axis=0)
-
-
-# Step 4: Genetic Algorithm class
-class GeneticAlgorithm:
-    def __init__(self):
-        self.toolbox = base.Toolbox()
-        self.setup_toolbox()
-
-    def setup_toolbox(self):
-        creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-        creator.create("Individual", list, fitness=creator.FitnessMax)
-        self.toolbox.register("attribute", np.random.random)
-        self.toolbox.register("individual", tools.initRepeat, creator.Individual, self.toolbox.attribute, n=10)
-        self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
-        self.toolbox.register("evaluate", self.evaluate)
-        self.toolbox.register("mate", tools.cxTwoPoint)
-        self.toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.1)
-        self.toolbox.register("select", tools.selTournament, tournsize=3)
-
-    def evaluate(self, individual):
-        # Evaluation logic here
-        return sum(individual),
-
-    def run_evolution(self):
-        population = self.toolbox.population(n=50)
-        hof = tools.HallOfFame(1)
-        stats = tools.Statistics(lambda ind: ind.fitness.values)
-        stats.register("avg", np.mean)
-        stats.register("min", np.min)
-        stats.register("max", np.max)
-        algorithms.eaSimple(population, self.toolbox, cxpb=0.5, mutpb=0.2, ngen=40, stats=stats, halloffame=hof,
-                            verbose=True)
-
-
-# Step 5: Reinforcement Learning class
+# Reinforcement Learning class
 class ReinforcementLearning:
-    def __init__(self, environment):
+    def __init__(self, environment, learning_rate, discount_factor):
         self.environment = environment
         self.train_env = tf_py_environment.TFPyEnvironment(environment)
         self.eval_env = tf_py_environment.TFPyEnvironment(environment)
+        self.learning_rate = learning_rate
+        self.discount_factor = discount_factor
         self.agent = self.setup_agent()
         self.replay_buffer = self.setup_replay_buffer()
         self.dataset = self.replay_buffer.as_dataset(
@@ -234,7 +216,7 @@ class ReinforcementLearning:
             fc_layer_params=(100,)
         )
 
-        optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=1e-4)  # Reduced learning rate
+        optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=self.learning_rate)
         train_step_counter = tf.compat.v2.Variable(0)
 
         agent = dqn_agent.DqnAgent(
@@ -243,7 +225,8 @@ class ReinforcementLearning:
             q_network=q_net,
             optimizer=optimizer,
             td_errors_loss_fn=common.element_wise_squared_loss,
-            train_step_counter=train_step_counter
+            train_step_counter=train_step_counter,
+            gamma=self.discount_factor
         )
         agent.initialize()
         return agent
@@ -273,11 +256,11 @@ class ReinforcementLearning:
         )
 
         # Collect initial data
-        for _ in range(1000):
+        for _ in tqdm(range(1000), desc="Collecting Initial Data"):
             self.collect_data(random_policy, collect_steps_per_iteration)
 
         # Training loop
-        for _ in range(num_iterations):
+        for _ in tqdm(range(num_iterations), desc="Training Agent"):
             self.collect_data(self.agent.collect_policy, collect_steps_per_iteration)
             experience, unused_info = next(self.iterator)
             train_loss = self.agent.train(experience)
@@ -286,9 +269,64 @@ class ReinforcementLearning:
             if step % 100 == 0:
                 print(f'Step = {step}: Loss = {train_loss.loss.numpy()}')
 
+    def save_agent(self, checkpoint_dir):
+        checkpoint = tf.train.Checkpoint(agent=self.agent)
+        checkpoint.save(file_prefix=os.path.join(checkpoint_dir, "checkpoint"))
 
-# Step 6: Main function to integrate everything
+    def load_agent(self, checkpoint_dir):
+        checkpoint = tf.train.Checkpoint(agent=self.agent)
+        latest_checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
+        if latest_checkpoint:
+            checkpoint.restore(latest_checkpoint)
+            print("Agent restored from checkpoint:", latest_checkpoint)
+        else:
+            print("No checkpoint found. Initializing agent from scratch.")
+
+# Step 5: Genetic Algorithm for Further Optimization
+class GeneticAlgorithm:
+    def __init__(self):
+        self.toolbox = base.Toolbox()
+        self.setup_toolbox()
+
+    def setup_toolbox(self):
+        creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+        creator.create("Individual", list, fitness=creator.FitnessMax)
+        self.toolbox.register("attribute", np.random.random)
+        self.toolbox.register("individual", tools.initRepeat, creator.Individual, self.toolbox.attribute, n=10)
+        self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
+        self.toolbox.register("evaluate", self.evaluate)
+        self.toolbox.register("mate", tools.cxTwoPoint)
+        self.toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.1)
+        self.toolbox.register("select", tools.selTournament, tournsize=3)
+
+    def evaluate(self, individual):
+        # Placeholder for actual evaluation logic
+        return sum(individual),
+
+    def run_evolution(self):
+        population = self.toolbox.population(n=50)
+        hof = tools.HallOfFame(1)
+        stats = tools.Statistics(lambda ind: ind.fitness.values)
+        stats.register("avg", np.mean)
+        stats.register("min", np.min)
+        stats.register("max", np.max)
+        algorithms.eaSimple(population, self.toolbox, cxpb=0.5, mutpb=0.2, ngen=40, stats=stats, halloffame=hof,
+                            verbose=True)
+        return hof[0]
+
+# Step 6: Objective Function for Bayesian Optimization
+def objective(params):
+    learning_rate, discount_factor = params
+    # Initialize RL environment within the function scope
+    processed_data = load_and_process_data_in_chunks(database_path, query, chunksize)
+    rl_env = CustomTradingEnvironment(processed_data)
+    rl_agent = ReinforcementLearning(rl_env, learning_rate, discount_factor)
+    rl_agent.train_agent(num_iterations=1000, collect_steps_per_iteration=1)
+    return -rl_agent.agent.train_step_counter.numpy()  # Negative because we want to maximize the steps
+
+# Step 7: Main function to integrate everything
 def main():
+    global database_path, query, chunksize
     database_path = './ES_ticks.db'
     query = "SELECT * FROM ES_market_depth"
     chunksize = 10000  # Adjust the chunk size based on your memory constraints
@@ -296,21 +334,33 @@ def main():
     processed_data = load_and_process_data_in_chunks(database_path, query, chunksize)
     print("Loaded and processed data shape:", processed_data.shape)  # Debugging: Print the shape of the processed data
 
+    # Define the search space for Bayesian Optimization
+    search_space = [space.Real(1e-5, 1e-1, prior='log-uniform', name='learning_rate'),
+                    space.Real(0.9, 0.999, name='discount_factor')]
+
     # Bayesian Optimization
-    bayesian_opt = BayesianOptimization()
-    bayesian_opt.setup_model(processed_data)
-    bayesian_predictions = bayesian_opt.run_inference(processed_data)
-    print("Bayesian predictions (first 5):", bayesian_predictions[:5])
+    bayes_opt = BayesianOptimization(search_space, objective)
+    res = bayes_opt.optimize(n_calls=10)
+    best_params = res.x
+    print(f"Best parameters from Bayesian Optimization: {best_params}")
+
+    # Train RL agent with optimized parameters
+    learning_rate, discount_factor = best_params
+    rl_env = CustomTradingEnvironment(processed_data)
+    rl_agent = ReinforcementLearning(rl_env, learning_rate, discount_factor)
+    rl_agent.train_agent(num_iterations=1000, collect_steps_per_iteration=1)
 
     # Genetic Algorithm Optimization
     ga_opt = GeneticAlgorithm()
-    ga_opt.run_evolution()
+    best_individual = ga_opt.run_evolution()
+    print(f"Best individual from Genetic Algorithm: {best_individual}")
 
-    # Reinforcement Learning
-    rl_env = CustomTradingEnvironment(processed_data)
-    rl_agent = ReinforcementLearning(rl_env)
-    rl_agent.train_agent()
+    tf_env = tf_py_environment.TFPyEnvironment(rl_env)
 
+    rl_agent = ReinforcementLearning(rl_env, learning_rate, discount_factor)
+
+    avg_return = evaluate_model(rl_agent.agent, tf_env, num_episodes=1)
+    print(f"Average return over 10 episodes: {avg_return}")
 
 if __name__ == "__main__":
     main()
