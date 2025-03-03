@@ -92,7 +92,7 @@ def evaluate_agent(env, agent, steps=10000):
 def main():
     # Load data (limit to 1000 rows for testing)
     data_folder = './data_txt'
-    train_data, test_data, scaler = create_environment_data(data_folder, max_rows=1000)
+    train_data, test_data, scaler = create_environment_data(data_folder, max_rows=None)
 
     # Create training and test environment
     train_env = TradingEnvironment(train_data, initial_balance=100000.0)
@@ -120,7 +120,7 @@ def main():
                              update_epochs=2,   # 🔥 Reduce epochs for faster training
                              rollout_steps=500,  # 🔥 Reduce rollout steps
                              device=device)
-    ppo_model = ppo_trainer.train(total_timesteps=5000)  # 🔥 Reduce timesteps
+    ppo_model = ppo_trainer.train(total_timesteps=1000)  # 🔥 Reduce timesteps
 
     # Evaluate PPO on test set
     test_env.reset()
