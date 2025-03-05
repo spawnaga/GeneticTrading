@@ -1,30 +1,27 @@
-# README
+# Hybrid Trading Strategy: Genetic Algorithms and PPO
 
 ## Overview
 
-This repository demonstrates a **hybrid approach** that applies both **Genetic Algorithms (GA)** and **Policy Gradient** methods (specifically **PPO**) to **evolve trading strategies** on minute-level data spanning multiple assets (e.g., APPL, TSLA, QQQ, SPY, futures, oil). We aim to maximize **CAGR (Compound Annual Growth Rate)** and **Sharpe ratio** while minimizing **drawdowns**.
+This repository demonstrates a **hybrid approach** combining **Genetic Algorithms (GA)** and **Policy Gradient** methods (specifically **PPO**) to evolve trading strategies using GPU-accelerated data processing. It operates on minute-level data spanning multiple assets (e.g., AAPL, TSLA, QQQ, SPY, futures, oil), aiming to maximize **CAGR (Compound Annual Growth Rate)** and **Sharpe ratio** while minimizing **drawdowns**.
 
-### Core Concepts
+## Core Concepts
 
-1. **Reinforcement Learning (RL) for Trading**  
-   In RL-based trading, an agent interacts with a market environment by **observing** market features (open, high, low, close, volume, technical indicators) and **acting** (long, short, hold). The **reward** typically represents profit or loss (PnL). Over time, the agent learns an optimal policy to maximize cumulative returns while controlling risk.
+### Reinforcement Learning (RL) for Trading
+An agent interacts with the market by observing market data and acting (long, short, hold). Rewards represent profit or loss. The agent learns an optimal policy to maximize returns while managing risk.
 
-2. **Genetic Algorithms (GA)**  
-   A GA evolves a **population** of candidate solutions (here, neural network policies). Each policy is evaluated on historical data to get a **fitness** (total reward). Then, top performers are **selected** as parents to produce offspring via **crossover** and **mutation**. Over generations, the population converges to high-return policies.
+### Genetic Algorithms (GA)
+GA evolves a population of candidate solutions (neural network policies). Policies are evaluated on historical data to compute fitness. Top performers are selected to produce offspring via crossover and mutation, evolving towards optimal trading policies.
 
-3. **Policy Gradient (PPO)**  
-   Proximal Policy Optimization (PPO) is a gradient-based RL method that updates the policy’s parameters \(\theta\) by maximizing a clipped objective that prevents overly large policy updates. The PPO objective for each time step \(t\) can be written as:
+### Policy Gradient (PPO)
+Proximal Policy Optimization (PPO) updates policy parameters by maximizing a clipped objective to ensure stable training:
 
-   ```
-   L^{CLIP}(θ) = Eₜ[min(rₜ(θ) Aₜ, clip(rₜ(θ), 1 - ε, 1 + ε) Aₜ)]
-   ```
+```
+L^{CLIP}(θ) = Eₜ[min(rₜ(θ) Aₜ, clip(rₜ(θ), 1 - ε, 1 + ε) Aₜ)]
+```
 
-   where \(r_t(θ) = \frac{π_θ(a_t|s_t)}{π_{θ_old}(a_t|s_t)}\) is the probability ratio between the new and old policies, and \(A_t\) is an advantage estimator (e.g., GAE-lambda).
-
-3. **Performance Metrics**  
-   - **CAGR** (Compound Annual Growth Rate): annualized growth rate of equity.
-   - **Sharpe Ratio** measures risk-adjusted returns.
-   - **Max Drawdown (MDD)** quantifies the worst peak-to-trough decline.
+where:
+- \( r_t(θ) = \frac{π_θ(a_t|s_t)}{π_{θ_{old}}(a_t|s_t)} \): Probability ratio between new and old policies
+- \( A_t \): Advantage estimator
 
 ## Directory Structure
 
@@ -33,7 +30,8 @@ This repository demonstrates a **hybrid approach** that applies both **Genetic A
 ├── data_txt/
 │   ├── 2000_01_SPY.txt
 │   ├── 2000_01_TSLA.txt
-│   └── ...  (1-min OHLCV data in CSV format)
+│   └── ... (1-min OHLCV data in CSV format)
+├── cached_data/ (GPU-generated cached Parquet files)
 ├── data_preprocessing.py
 ├── trading_environment.py
 ├── ga_policy_evolution.py
@@ -45,49 +43,60 @@ This repository demonstrates a **hybrid approach** that applies both **Genetic A
 
 ## Installation
 
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/yourname/hybrid-trading-rl.git
-   cd hybrid-trading-rl
-   ```
+### Step 1: Clone the Repository
 
-2. **Create a Virtual Environment (Recommended)**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # or venv\Scripts\activate on Windows
-   ```
+```bash
+git clone https://github.com/yourname/hybrid-trading-rl.git
+cd hybrid-trading-rl
+```
 
-3. **Install Dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Step 2: Set up a Conda Environment
 
-4. **Data Setup**
-   - Place your 1-minute `.txt` files (OHLCV) in the `data_txt/` directory.
-   - Columns format: `date_time,open,high,low,close,volume`.
-   - Data should span from 2000 to 2024.
+Use conda to create and activate the environment:
 
-## Usage
+```bash
+conda create -n GeneticTrading python=3.10
+conda activate GeneticTrading
+```
 
-1. **Data Preprocessing**  
-   The data is automatically loaded and transformed when you run `main.py`. Specifically, `create_environment_data('./data_txt')` in **`data_preprocessing.py`**:
-   - Concatenates all `.txt` files in `data_txt/`.
-   - Sorts by `date_time`.
-   - Computes simple return, moving averages, etc.
-   - Scales features using `StandardScaler`.
-   - Splits into an 80/20 train/test partition.
+### Step 3: Install Dependencies
 
-2. **Run GA + PPO Training**  
-   Execute:
-   ```bash
-   python main.py
-   ```
-   This runs GA evolution, PPO training, evaluates agents on test data, computes performance metrics, and visualizes equity curves.
+```bash
+pip install -r requirements.txt
+```
 
-3. **Multi-GPU Setup**  
-   Single GPU by default. Extendable to multi-GPU with DataParallel or DistributedDataParallel.
+### Step 4: RAPIDS GPU Acceleration Setup
 
-## Interpreting PPO Performance
+Ensure NVIDIA CUDA Toolkit (12.2+) is installed, then install RAPIDS libraries:
+
+```bash
+conda install -c rapidsai -c nvidia -c conda-forge rapids=23.12 cudatoolkit=12.2
+```
+
+### Step 5: Data Preparation
+
+- Place your minute-level `.txt` OHLCV files in `data_txt/`.
+- Data format: `date_time,open,high,low,close,volume`
+
+## Running the Application
+
+To preprocess data, evolve strategies, and train with PPO:
+
+```bash
+python main.py
+```
+
+### GPU Acceleration
+
+The application uses GPU acceleration (cuDF) for efficient data preprocessing and feature engineering.
+
+## Performance Metrics
+
+- **CAGR**: Annualized growth rate.
+- **Sharpe Ratio**: Risk-adjusted returns.
+- **Max Drawdown**: Worst peak-to-trough decline.
+
+## Interpreting PPO Results
 
 | Mean Reward per Step | Interpretation                        |
 |----------------------|---------------------------------------|
@@ -96,54 +105,26 @@ This repository demonstrates a **hybrid approach** that applies both **Genetic A
 | 0.0001 - 0.001       | ✅ Good, stable profitability          |
 | > 0.001              | 🚀 Excellent performance               |
 
-Good PPO training results might look like:
+Example PPO training output:
 ```
 Update 0, mean reward = 0.002
 ...
 Update 20, mean reward = 0.004
 ```
 
-3. **Multi-GPU Setup**  
-   Single GPU by default. Extendable to multi-GPU with DataParallel or DistributedDataParallel from PyTorch. Or parallelize GA evaluations across GPUs. Advanced configuration required.
-
-## Key Math Details
-
-### GA Fitness Function
-Fitness = cumulative reward:
-```
-fitness(θ) = Σₜ rₜ(θ)
-```
-
-### PPO Objective
-```
-L^{CLIP}(θ) = Eₜ[min(rₜ(θ) Aₜ, clip(rₜ(θ), 1-ε, 1+ε) Aₜ)]
-```
-
-### CAGR, Sharpe, Max Drawdown
-- **CAGR**: `(Final Equity / Initial Equity)^(1/T) - 1`
-- **Sharpe**: `(Mean Return - Risk-Free Rate) / Std Dev of Returns`
-- **Max Drawdown**: `max(peak - current_balance) / Peak`
-
-## Rendering Math Equations on GitHub
-GitHub Markdown doesn't render LaTeX directly. Recommended solutions:
-- Use GitHub Pages with Jekyll and MathJax for rendered equations.
-- Convert equations to images.
-- Clearly represent equations in markdown code blocks.
-
 ## Potential Extensions
-- **Transaction Costs**
-- **Advanced Position Sizing**
-- **Stop Loss/Take Profit**
-- **Neuroevolution (e.g., NEAT, CMA-ES)**
-- **Multi-Agent/Multi-Asset Trading**
+
+- Transaction cost modeling
+- Advanced position sizing
+- Stop-loss and take-profit implementation
+- Neuroevolution methods (e.g., NEAT, CMA-ES)
+- Multi-agent or multi-asset strategies
 
 ## Contributing
-Feel free to open issues or submit pull requests for improvements:
-- Enhanced data ingestion methods.
-- Parallel training setups.
-- Improved logging (e.g., TensorBoard, Weights & Biases).
+
+Contributions and improvements are welcome! Please open issues or submit pull requests.
 
 ## License
-Distributed under the **MIT License**. Free for use, modification, and distribution with proper attribution.
 
----
+This project is licensed under the MIT License.
+
