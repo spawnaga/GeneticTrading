@@ -1,3 +1,4 @@
+import cudf
 import torch
 import torch.nn as nn
 import numpy as np
@@ -48,12 +49,12 @@ class PolicyNetwork(nn.Module):
         Load flat param_vector into model parameters.
         Ensures `param_vector` is always a NumPy array.
         """
-        param_vector = np.array(param_vector, dtype=np.float32)
+        param_vector = np.array(param_vector, dtype=np.float32)  # ✅ Ensure it's a NumPy array
         idx = 0
         for p in self.parameters():
             size = p.numel()
-            raw = param_vector[idx: idx + size]
-            p.data = torch.from_numpy(raw.reshape(p.shape)).float().to(self.device)
+            raw = param_vector[idx: idx + size]  # ✅ Extract NumPy array slice
+            p.data = torch.from_numpy(raw.reshape(p.shape)).float().to(self.device)  # ✅ Convert correctly
             idx += size
 
     def save_model(self, file_path):
@@ -81,15 +82,29 @@ def evaluate_fitness(param_vector, env, device="cpu"):
     policy_net = PolicyNetwork(env.observation_dim, 64, env.action_space, device=device)
     policy_net.set_params(param_vector)
 
-    total_reward = 0
+    total_reward = 0.0
     obs = env.reset()
     done = False
+    steps = 0
     while not done:
         state_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(device)
         action = policy_net.act(state_tensor)
         obs, reward, done, _ = env.step(action)
-        total_reward += reward
 
+        # Ensure reward is a scalar
+        if isinstance(reward, cudf.Series):
+            reward = reward.iloc[0].item() if not reward.isnull().any() else 0.0
+        elif isinstance(reward, np.ndarray):
+            reward = reward.item()
+        elif isinstance(reward, (int, float, np.float32, np.float64)):
+            reward = float(reward)
+        else:
+            reward = float(reward[0])  # fallback
+        total_reward += reward
+        steps += 1
+
+    total_reward = float(total_reward)  # Ensure scalar conversion here explicitly
+    # print(f"Evaluation completed on device {device}, total_reward: {total_reward:.2f}, steps: {steps}")
     return total_reward
 
 
@@ -111,16 +126,17 @@ def run_ga_evolution(env, population_size=30, generations=20, elite_frac=0.2,
     output_dim = env.action_space
     hidden_dim = 64
 
+    # Use all available CPU threads if num_workers is not specified
     if num_workers is None:
         num_workers = min(cpu_count(), 32)  # Adjust based on hardware
 
-    gpu_count = torch.cuda.device_count() if device.type == "cuda" else 0
+    gpu_count = torch.cuda.device_count() if str(device).startswith("cuda") else 0
 
     base_policy = PolicyNetwork(input_dim, hidden_dim, output_dim, device=device)
     base_policy.load_model(model_save_path)
 
     param_size = len(base_policy.get_params())
-    population = [np.array(base_policy.get_params(), dtype=np.float32) for _ in range(population_size)]
+    population = [np.array(PolicyNetwork(input_dim, hidden_dim, output_dim, device=device).get_params(), dtype=np.float32) for _ in range(population_size)]
 
     best_fitness = -float('inf')
     best_params = None
@@ -145,19 +161,27 @@ def run_ga_evolution(env, population_size=30, generations=20, elite_frac=0.2,
 
         print(f"Gen {gen} | Best fit: {max_fit:.2f}, Avg fit: {avg_fit:.2f}, Overall best: {best_fitness:.2f}")
 
+        # Selection: Keep the best elite_frac% individuals
         elite_count = int(elite_frac * population_size)
         sorted_indices = np.argsort(fitnesses)[-elite_count:]
-        elites = np.array([population[i] for i in sorted_indices])
+        elites = [population[i] for i in sorted_indices]
 
-        new_population = elites.tolist()
+        # ✅ Convert elites to a NumPy array to ensure proper selection
+        elites = np.array(elites)  # Shape: (elite_count, param_size)
+
+        # Create new population
+        new_population = elites.tolist()  # ✅ Convert back to list
 
         while len(new_population) < population_size:
+            # ✅ Fix the selection of parents
             p1_idx, p2_idx = np.random.choice(len(elites), 2, replace=False)
             p1, p2 = elites[p1_idx], elites[p2_idx]
 
+            # Single-point crossover
             cx_point = np.random.randint(0, param_size)
             child_params = np.concatenate([p1[:cx_point], p2[cx_point:]])
 
+            # Mutation
             mutate_mask = np.random.rand(param_size) < mutation_rate
             child_params[mutate_mask] += np.random.randn(np.sum(mutate_mask)) * mutation_scale
 
@@ -165,4 +189,7 @@ def run_ga_evolution(env, population_size=30, generations=20, elite_frac=0.2,
 
         population = new_population
 
-    return base_policy, best_fitness
+    # ✅ Convert best params back into a PolicyNetwork
+    best_agent = PolicyNetwork(input_dim, hidden_dim, output_dim, device=device)
+    best_agent.set_params(best_params)
+    return best_agent, best_fitness

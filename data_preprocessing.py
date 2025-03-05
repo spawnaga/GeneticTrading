@@ -70,8 +70,11 @@ def feature_engineering_gpu(df):
     - Simple returns
     - Moving average (10-minute window)
     """
-    df['return'] = df['close'].pct_change().fillna(0)
-    df['ma_10'] = df['close'].rolling(window=10).mean().bfill()
+    df['return'] = df['close'].pct_change().fillna(0).astype('float64')
+
+    # Moving average, ensure correct type and safe filling
+    df['ma_10'] = df['close'].astype('float64').rolling(window=10, min_periods=1).mean()
+    df['ma_10'] = df['ma_10'].bfill()
     return df
 
 
@@ -88,7 +91,7 @@ def scale_and_split_gpu(df):
     df_cpu = df.to_pandas()
 
     scaler = StandardScaler()
-    df_cpu[numeric_cols] = scaler.fit_transform(df_cpu[numeric_cols])
+    df_cpu[numeric_cols] = scaler.fit_transform(df_cpu[numeric_cols].astype('float64'))
 
     train_size = int(0.8 * len(df_cpu))
     train_data = df_cpu.iloc[:train_size].copy()

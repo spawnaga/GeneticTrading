@@ -215,7 +215,10 @@ class PPOTrainer:
             surr2 = torch.clamp(ratio, 1.0 - self.clip_epsilon, 1.0 + self.clip_epsilon) * advantage_tensor
 
             policy_loss = -torch.min(surr1, surr2).mean()
-            value_loss = nn.MSELoss()(value_est.squeeze(-1), return_tensor.unsqueeze(-1))  # ✅ Fix shape issue
+
+            # Explicit reshaping for correct MSE loss computation ✅
+            value_loss = nn.MSELoss()(value_est.view(-1, 1), return_tensor.view(-1, 1))
+
             loss = policy_loss + 0.5 * value_loss - 0.01 * entropy
 
             self.optimizer.zero_grad()

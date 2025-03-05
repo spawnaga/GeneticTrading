@@ -119,7 +119,10 @@ class TradingEnvironment:
         Returns:
             np.array: Observation array.
         """
-        return self.df.iloc[step][self.feature_cols].values.astype(np.float32)
+        obs = self.df.iloc[step][self.feature_cols].values.astype(np.float32)
+        if hasattr(obs, 'get'):
+            obs = obs.get()  # Convert from GPU to CPU explicitly if needed
+        return obs
 
     def _get_close_price(self, step):
         """
@@ -131,7 +134,10 @@ class TradingEnvironment:
         Returns:
             float: Close price.
         """
-        return self.df.iloc[step]['close']
+        price = self.df.iloc[step]["close"]
+        if hasattr(price, 'iloc'):
+            price = price.iloc[0]
+        return float(price)
 
     def current_state(self):
         """
