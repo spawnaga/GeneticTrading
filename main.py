@@ -53,8 +53,8 @@ def evaluate_agent(env, agent, steps):
 def main():
     dist.init_process_group(backend='nccl', init_method='env://')
     local_rank = int(os.environ["LOCAL_RANK"])
-    torch.cuda.set_device(local_rank)
-    device = torch.device(f"cuda:{local_rank}")
+    torch.cuda.set_device(dist.get_rank())
+    device = torch.device(f"cuda:{dist.get_rank()}")
 
     data_folder = './data_txt'
     cache_folder = './cached_data'
@@ -68,7 +68,7 @@ def main():
         if not (os.path.exists(train_data_path) and os.path.exists(test_data_path)):
             train_data, test_data, scaler = create_environment_data(
                 data_folder=data_folder,
-                max_rows=None,
+                max_rows=10000,
                 use_gpu=True,
                 cache_folder=cache_folder
             )

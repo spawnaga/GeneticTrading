@@ -104,7 +104,7 @@ def evaluate_fitness(param_vector, env, device="cpu"):
         steps += 1
 
     total_reward = float(total_reward)  # Ensure scalar conversion here explicitly
-    # print(f"Evaluation completed on device {device}, total_reward: {total_reward:.2f}, steps: {steps}")
+    print(f"Evaluation completed on device {device}, total_reward: {total_reward:.2f}, steps: {steps}")
     return total_reward
 
 
