@@ -2,12 +2,14 @@ import torch
 import torch.nn as nn
 import numpy as np
 from torch.multiprocessing import Pool, cpu_count, set_start_method
+import os
 
 # Ensure the correct multiprocessing method for PyTorch
 try:
     set_start_method("spawn", force=True)
 except RuntimeError:
     pass  # Ignore if already set
+
 
 class PolicyNetwork(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, device="cpu"):
@@ -46,13 +48,30 @@ class PolicyNetwork(nn.Module):
         Load flat param_vector into model parameters.
         Ensures `param_vector` is always a NumPy array.
         """
-        param_vector = np.array(param_vector, dtype=np.float32)  # ✅ Ensure it's a NumPy array
+        param_vector = np.array(param_vector, dtype=np.float32)
         idx = 0
         for p in self.parameters():
             size = p.numel()
-            raw = param_vector[idx: idx + size]  # ✅ Extract NumPy array slice
-            p.data = torch.from_numpy(raw.reshape(p.shape)).float().to(self.device)  # ✅ Convert correctly
+            raw = param_vector[idx: idx + size]
+            p.data = torch.from_numpy(raw.reshape(p.shape)).float().to(self.device)
             idx += size
+
+    def save_model(self, file_path):
+        """
+        Save the model parameters to a file.
+        """
+        torch.save(self.state_dict(), file_path)
+
+    def load_model(self, file_path):
+        """
+        Load the model parameters from a file if it exists.
+        """
+        if os.path.exists(file_path):
+            self.load_state_dict(torch.load(file_path, map_location=self.device))
+            print(f"Model loaded from {file_path}")
+        else:
+            print(f"No model found at {file_path}. Starting fresh.")
+
 
 def evaluate_fitness(param_vector, env, device="cpu"):
     """
@@ -73,63 +92,72 @@ def evaluate_fitness(param_vector, env, device="cpu"):
 
     return total_reward
 
-def run_ga_evolution(env, population_size=30, generations=20, elite_frac=0.2, mutation_rate=0.1, mutation_scale=0.02, num_workers=None, device="cpu"):
+
+# NEW: Parallel evaluation function using GPUs
+def parallel_gpu_eval(args):
+    param_vector, env, gpu_id = args
+    device = f"cuda:{gpu_id}"
+    return evaluate_fitness(param_vector, env, device=device)
+
+
+def run_ga_evolution(env, population_size=30, generations=20, elite_frac=0.2,
+                     mutation_rate=0.1, mutation_scale=0.02, num_workers=None,
+                     device="cpu", model_save_path="best_policy.pth"):
     """
     Parallelized Genetic Algorithm to evolve policy network weights.
-    Uses `torch.multiprocessing` to enable multi-GPU execution.
+    Now supports GPU-based parallel fitness evaluation and saving/loading of the best model.
     """
     input_dim = env.observation_dim
     output_dim = env.action_space
     hidden_dim = 64
 
-    # Use all available CPU threads if num_workers is not specified
     if num_workers is None:
-        num_workers = min(cpu_count(), 32)  # Adjust based on your hardware
+        num_workers = min(cpu_count(), 32)  # Adjust based on hardware
 
-    # Initialize population as parameter vectors
+    gpu_count = torch.cuda.device_count() if device.startswith("cuda") else 0
+
     base_policy = PolicyNetwork(input_dim, hidden_dim, output_dim, device=device)
+    base_policy.load_model(model_save_path)
+
     param_size = len(base_policy.get_params())
-    population = [np.array(PolicyNetwork(input_dim, hidden_dim, output_dim, device=device).get_params(), dtype=np.float32) for _ in range(population_size)]
+    population = [np.array(base_policy.get_params(), dtype=np.float32) for _ in range(population_size)]
 
     best_fitness = -float('inf')
     best_params = None
 
     for gen in range(generations):
-        # ✅ Parallel fitness evaluation with multiprocessing
-        with Pool(processes=num_workers) as pool:
-            fitnesses = pool.starmap(evaluate_fitness, [(params, env, device) for params in population])
+        if gpu_count > 0:
+            with Pool(processes=gpu_count) as pool:
+                args_list = [(params, env, idx % gpu_count) for idx, params in enumerate(population)]
+                fitnesses = pool.map(parallel_gpu_eval, args_list)
+        else:
+            with Pool(processes=num_workers) as pool:
+                fitnesses = pool.starmap(evaluate_fitness, [(params, env, device) for params in population])
 
-        # Track best individual
         max_fit = np.max(fitnesses)
         avg_fit = np.mean(fitnesses)
         if max_fit > best_fitness:
             best_fitness = max_fit
             best_idx = np.argmax(fitnesses)
             best_params = population[best_idx].copy()
+            base_policy.set_params(best_params)
+            base_policy.save_model(model_save_path)
 
         print(f"Gen {gen} | Best fit: {max_fit:.2f}, Avg fit: {avg_fit:.2f}, Overall best: {best_fitness:.2f}")
 
-        # Selection: Keep the best elite_frac% individuals
         elite_count = int(elite_frac * population_size)
         sorted_indices = np.argsort(fitnesses)[-elite_count:]
-        elites = [population[i] for i in sorted_indices]
+        elites = np.array([population[i] for i in sorted_indices])
 
-        # ✅ Convert elites to a NumPy array to ensure proper selection
-        elites = np.array(elites)  # Shape: (elite_count, param_size)
-
-        # Create new population
-        new_population = elites.tolist()  # ✅ Convert back to list
+        new_population = elites.tolist()
 
         while len(new_population) < population_size:
-            # ✅ Fix the selection of parents
             p1_idx, p2_idx = np.random.choice(len(elites), 2, replace=False)
             p1, p2 = elites[p1_idx], elites[p2_idx]
 
-            # Single-point crossover
             cx_point = np.random.randint(0, param_size)
             child_params = np.concatenate([p1[:cx_point], p2[cx_point:]])
 
-            # Mutation
             mutate_mask = np.random.rand(param_size) < mutation_rate
             child_params[mutate_mask] += np.random.randn(np.sum(mutate_mask)) * mutation_scale
 
@@ -137,7 +165,4 @@ def run_ga_evolution(env, population_size=30, generations=20, elite_frac=0.2, mu
 
         population = new_population
 
-    # ✅ Convert best params back into a PolicyNetwork
-    best_agent = PolicyNetwork(input_dim, hidden_dim, output_dim, device=device)
-    best_agent.set_params(best_params)
-    return best_agent, best_fitness
+    return base_policy, best_fitness

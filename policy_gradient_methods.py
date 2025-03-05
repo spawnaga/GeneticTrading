@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
+import os
 
 class ActorCriticNet(nn.Module):
     """
@@ -40,6 +41,16 @@ class ActorCriticNet(nn.Module):
         value = self.value_head(base_out)
         return policy_logits, value
 
+    def save_model(self, file_path):
+        torch.save(self.state_dict(), file_path)
+
+    def load_model(self, file_path):
+        if os.path.exists(file_path):
+            self.load_state_dict(torch.load(file_path, map_location=self.device))
+            print(f"ActorCriticNet model loaded from {file_path}")
+        else:
+            print(f"No ActorCriticNet model found at {file_path}. Starting fresh.")
+
 
 class PPOTrainer:
     """
@@ -52,7 +63,7 @@ class PPOTrainer:
     """
 
     def __init__(self, env, input_dim, action_dim, hidden_dim=64, lr=3e-4, gamma=0.99, clip_epsilon=0.2,
-                 update_epochs=4, rollout_steps=2048, device="cpu"):
+                 update_epochs=4, rollout_steps=2048, device="cpu", model_save_path="ppo_model.pth"):
         """
         Initializes PPOTrainer with the given hyperparameters.
         - `env`: Trading environment
@@ -72,9 +83,14 @@ class PPOTrainer:
         self.update_epochs = update_epochs
         self.rollout_steps = rollout_steps
         self.device = device  # Store device (CPU/GPU)
+        self.model_save_path = model_save_path
 
         # Initialize actor-critic network
         self.model = ActorCriticNet(input_dim, hidden_dim, action_dim, device=device)
+        try:
+            self.model.load_model(self.model_save_path)
+        except FileNotFoundError:
+            print(f"No ActorCriticNet model found at {self.model_save_path}. Starting fresh.")
 
         # Define optimizer
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
@@ -218,6 +234,7 @@ class PPOTrainer:
         n_updates = int(total_timesteps // self.rollout_steps)
         for update in range(n_updates):
             mean_reward = self.train_step()
-            print(f"Update {update}, mean reward = {mean_reward:.2f}")
+            print(f"Update {update}, mean reward = {mean_reward:.5f}")
+            self.model.save_model(self.model_save_path)
 
         return self.model
