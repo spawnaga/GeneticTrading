@@ -2,25 +2,28 @@
 
 ## Overview
 
-This repository demonstrates a **hybrid approach** combining **Genetic Algorithms (GA)** and **Policy Gradient** methods (specifically **PPO**) to evolve trading strategies using GPU-accelerated data processing. It operates on minute-level data spanning multiple assets (e.g., AAPL, TSLA, QQQ, SPY, futures, oil), aiming to maximize **CAGR (Compound Annual Growth Rate)** and **Sharpe ratio** while minimizing **drawdowns**.
+This repository demonstrates a **hybrid trading strategy** combining **Genetic Algorithms (GA)** and **Proximal Policy Optimization (PPO)**, leveraging GPU acceleration for data preprocessing and training. It utilizes minute-level OHLCV market data from multiple assets (e.g., AAPL, TSLA, QQQ, SPY, futures, oil) to optimize trading strategies that maximize the **Compound Annual Growth Rate (CAGR)** and **Sharpe ratio** while minimizing **drawdowns**.
 
 ## Core Concepts
 
 ### Reinforcement Learning (RL) for Trading
-An agent interacts with the market by observing market data and acting (long, short, hold). Rewards represent profit or loss. The agent learns an optimal policy to maximize returns while managing risk.
+
+An RL agent interacts with market data, taking actions such as going **long**, **short**, or **holding**. The agent is rewarded based on profit or loss, enabling it to learn an optimal trading policy.
 
 ### Genetic Algorithms (GA)
-GA evolves a population of candidate solutions (neural network policies). Policies are evaluated on historical data to compute fitness. Top performers are selected to produce offspring via crossover and mutation, evolving towards optimal trading policies.
 
-### Policy Gradient (PPO)
-Proximal Policy Optimization (PPO) updates policy parameters by maximizing a clipped objective to ensure stable training:
+GA evolves a population of neural network policies through selection, crossover, and mutation, evaluating fitness based on historical trading performance. The top policies evolve toward more profitable and stable trading strategies.
+
+### Policy Gradient Methods (PPO)
+
+Proximal Policy Optimization (PPO) updates policy parameters by maximizing a clipped objective for stable and efficient training:
 
 ```
 L^{CLIP}(θ) = Eₜ[min(rₜ(θ) Aₜ, clip(rₜ(θ), 1 - ε, 1 + ε) Aₜ)]
 ```
 
 where:
-- \( r_t(θ) = \frac{π_θ(a_t|s_t)}{π_{θ_{old}}(a_t|s_t)} \): Probability ratio between new and old policies
+- \( r_t(θ) = \frac{π_θ(a_t|s_t)}{π_{θ_{old}}(a_t|s_t)} \): Probability ratio
 - \( A_t \): Advantage estimator
 
 ## Directory Structure
@@ -30,7 +33,7 @@ where:
 ├── data_txt/
 │   ├── 2000_01_SPY.txt
 │   ├── 2000_01_TSLA.txt
-│   └── ... (1-min OHLCV data in CSV format)
+│   └── ... (1-min OHLCV data)
 ├── cached_data/ (GPU-generated cached Parquet files)
 ├── data_preprocessing.py
 ├── trading_environment.py
@@ -50,24 +53,22 @@ git clone https://github.com/yourname/hybrid-trading-rl.git
 cd hybrid-trading-rl
 ```
 
-### Step 2: Set up a Conda Environment
-
-Use conda to create and activate the environment:
+### Step 2: Set up Conda Environment
 
 ```bash
 conda create -n GeneticTrading python=3.10
 conda activate GeneticTrading
 ```
 
-### Step 3: Install Dependencies
+### Step 3: Install Python Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 4: RAPIDS GPU Acceleration Setup
+### Step 4: Install RAPIDS GPU Acceleration
 
-Ensure NVIDIA CUDA Toolkit (12.2+) is installed, then install RAPIDS libraries:
+Ensure CUDA Toolkit (12.2+) is installed, then run:
 
 ```bash
 conda install -c rapidsai -c nvidia -c conda-forge rapids=23.12 cudatoolkit=12.2
@@ -75,26 +76,34 @@ conda install -c rapidsai -c nvidia -c conda-forge rapids=23.12 cudatoolkit=12.2
 
 ### Step 5: Data Preparation
 
-- Place your minute-level `.txt` OHLCV files in `data_txt/`.
-- Data format: `date_time,open,high,low,close,volume`
+Place minute-level OHLCV `.txt` files in the `data_txt/` folder. The required data format is:
+
+```
+date_time,open,high,low,close,volume
+```
 
 ## Running the Application
 
-To preprocess data, evolve strategies, and train with PPO:
+Execute the main training and evaluation process with GPU acceleration:
 
 ```bash
-python main.py
+torchrun --nproc_per_node=4 main.py
 ```
+
+### Required Arguments and Environment Variables
+
+The app leverages distributed training with PyTorch. Ensure the following environment variables are set:
+- `LOCAL_RANK`: Automatically handled by `torchrun`.
 
 ### GPU Acceleration
 
-The application uses GPU acceleration (cuDF) for efficient data preprocessing and feature engineering.
+The application uses **cuDF (RAPIDS)** for fast, GPU-accelerated data loading and preprocessing.
 
 ## Performance Metrics
 
-- **CAGR**: Annualized growth rate.
-- **Sharpe Ratio**: Risk-adjusted returns.
-- **Max Drawdown**: Worst peak-to-trough decline.
+- **CAGR**: Compound Annual Growth Rate
+- **Sharpe Ratio**: Risk-adjusted performance
+- **Max Drawdown (MaxDD)**: Maximum observed loss from peak to trough
 
 ## Interpreting PPO Results
 
@@ -105,7 +114,7 @@ The application uses GPU acceleration (cuDF) for efficient data preprocessing an
 | 0.0001 - 0.001       | ✅ Good, stable profitability          |
 | > 0.001              | 🚀 Excellent performance               |
 
-Example PPO training output:
+Example PPO output:
 ```
 Update 0, mean reward = 0.002
 ...
@@ -116,13 +125,13 @@ Update 20, mean reward = 0.004
 
 - Transaction cost modeling
 - Advanced position sizing
-- Stop-loss and take-profit implementation
-- Neuroevolution methods (e.g., NEAT, CMA-ES)
+- Implementation of stop-loss and take-profit
+- Additional neuroevolution methods (e.g., NEAT, CMA-ES)
 - Multi-agent or multi-asset strategies
 
 ## Contributing
 
-Contributions and improvements are welcome! Please open issues or submit pull requests.
+Contributions are welcome! Please open issues or submit pull requests.
 
 ## License
 

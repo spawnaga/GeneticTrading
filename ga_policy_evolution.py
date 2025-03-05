@@ -114,7 +114,7 @@ def run_ga_evolution(env, population_size=30, generations=20, elite_frac=0.2,
     if num_workers is None:
         num_workers = min(cpu_count(), 32)  # Adjust based on hardware
 
-    gpu_count = torch.cuda.device_count() if device.startswith("cuda") else 0
+    gpu_count = torch.cuda.device_count() if device.type == "cuda" else 0
 
     base_policy = PolicyNetwork(input_dim, hidden_dim, output_dim, device=device)
     base_policy.load_model(model_save_path)
