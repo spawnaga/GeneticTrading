@@ -80,6 +80,7 @@ def main():
     # Initialize distributed process group with a 1-hour timeout to prevent watchdog issues
     dist.init_process_group(backend='nccl', init_method='env://', timeout=timeout)
     local_rank = int(os.environ["LOCAL_RANK"])
+    world_size = dist.get_world_size()
     torch.cuda.set_device(local_rank)
     device = torch.device(f"cuda:{local_rank}")
 
@@ -120,21 +121,27 @@ def main():
     ga_model_path = "ga_policy_model.pth"
     ga_agent = PolicyNetwork(train_env.observation_dim, 64, train_env.action_space, device=device)
 
-    if local_rank == 0:
-        start_time = time.time()
-        if not os.path.exists(ga_model_path):
-            ga_agent, best_fit = run_ga_evolution(
-                train_env,
-                population_size=40,
-                generations=12,
-                device=device,
-                model_save_path=ga_model_path
-            )
+    # Distributed GA training
+    start_time = time.time()
+    if not os.path.exists(ga_model_path):
+        ga_agent, best_fit = run_ga_evolution(
+            train_env,
+            population_size=40,
+            generations=12,
+            device=device,
+            model_save_path=ga_model_path,
+            distributed=True,  # Enable distributed evaluation
+            local_rank=local_rank,
+            world_size=world_size
+        )
+        if local_rank == 0:
             print(f"GA best fitness: {best_fit:.2f}")
-        else:
-            ga_agent.load_model(ga_model_path)
+    else:
+        ga_agent.load_model(ga_model_path)
+        if local_rank == 0:
             print("Loaded existing GA model.")
-        ga_training_time = time.time() - start_time
+    ga_training_time = time.time() - start_time
+    if local_rank == 0:
         print(f"GA training took {ga_training_time:.2f} seconds")
 
     # Synchronize after GA training
