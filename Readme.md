@@ -1,39 +1,72 @@
-# README
+# Hybrid Trading Strategies Using Genetic Algorithms and PPO
+
+**Author**: Alex Oraibi  
+**License**: MIT License  
+
+---
 
 ## Overview
 
-This repository demonstrates a **hybrid approach** that applies both **Genetic Algorithms (GA)** and **Policy Gradient** methods (specifically **PPO**) to **evolve trading strategies** on minute-level data spanning multiple assets (e.g., APPL, TSLA, QQQ, SPY, futures, oil). We aim to maximize **CAGR (Compound Annual Growth Rate)** and **Sharpe ratio** while minimizing **drawdowns**.
+This repository showcases a **hybrid trading strategy** combining **Genetic Algorithms (GA)** and **Proximal Policy Optimization (PPO)** to develop profitable trading strategies. The model is trained using minute-level OHLCV (Open, High, Low, Close, Volume) data across multiple financial instruments, including stocks (e.g., AAPL, TSLA, QQQ, SPY), futures, and commodities (e.g., oil).
 
-### Core Concepts
+### Goals:
+- Maximize **Compound Annual Growth Rate (CAGR)**
+- Maximize **Sharpe Ratio**
+- Minimize **Maximum Drawdown (MDD)**
 
-1. **Reinforcement Learning (RL) for Trading**  
-   In RL-based trading, an agent interacts with a market environment by **observing** market features (open, high, low, close, volume, technical indicators) and **acting** (long, short, hold). The **reward** typically represents profit or loss (PnL). Over time, the agent learns an optimal policy to maximize cumulative returns while controlling risk.
+---
 
-2. **Genetic Algorithms (GA)**  
-   A GA evolves a **population** of candidate solutions (here, neural network policies). Each policy is evaluated on historical data to get a **fitness** (total reward). Then, top performers are **selected** as parents to produce offspring via **crossover** and **mutation**. Over generations, the population converges to high-return policies.
+## Key Concepts
 
-3. **Policy Gradient (PPO)**  
-   Proximal Policy Optimization (PPO) is a gradient-based RL method that updates the policy’s parameters \(\theta\) by maximizing a clipped objective that prevents overly large policy updates. The PPO objective for each time step \(t\) can be written as:
+### 1. Reinforcement Learning (RL) in Trading
+The RL agent learns by interacting with a market environment, observing market features such as price trends and technical indicators (e.g., moving averages, RSI). Actions taken by the agent are:
+- **Hold**
+- **Long (Buy)**
+- **Short (Sell)**
 
-   ```
-   L^{CLIP}(θ) = Eₜ[min(rₜ(θ) Aₜ, clip(rₜ(θ), 1 - ε, 1 + ε) Aₜ)]
-   ```
+The agent’s goal is to optimize a policy that maximizes cumulative rewards, which typically represent profits, while managing risk.
 
-   where \(r_t(θ) = \frac{π_θ(a_t|s_t)}{π_{θ_old}(a_t|s_t)}\) is the probability ratio between the new and old policies, and \(A_t\) is an advantage estimator (e.g., GAE-lambda).
+### 2. Genetic Algorithms (GA)
+GA evolves a population of candidate neural network policies through iterative cycles involving:
+- **Evaluation:** Assessing performance (fitness) based on cumulative reward.
+- **Selection:** Best-performing policies reproduce.
+- **Crossover and Mutation:** Generate new policy variants.
 
-3. **Performance Metrics**  
-   - **CAGR** (Compound Annual Growth Rate): annualized growth rate of equity.
-   - **Sharpe Ratio** measures risk-adjusted returns.
-   - **Max Drawdown (MDD)** quantifies the worst peak-to-trough decline.
+### GA Fitness Function
+\[ \text{Fitness}(\theta) = \sum_{t} r_t(\theta) \]
+
+### GA Process
+- Evaluate fitness on historical data.
+- Select top performers.
+- Apply genetic operations to evolve the population.
+
+### Proximal Policy Optimization (PPO)
+PPO refines the evolved policies using a policy gradient approach optimized via a clipped objective:
+
+\[ L^{\text{CLIP}}(\theta) = \mathbb{E}_t \left[ \min \left( r_t(\theta) A_t, \text{clip}(r_t(\theta), 1 - \epsilon, 1 + \epsilon) A_t \right) \right] \]
+
+where:
+- \( r_t(\theta) = \frac{\pi_{\theta}(a_t | s_t)}{\pi_{\theta_{\text{old}}}(a_t | s_t)} \) (probability ratio)
+- \( A_t \) is advantage estimation (using GAE)
+- \( \epsilon \) controls clipping (typically 0.2)
+
+## Performance Metrics
+- **Compound Annual Growth Rate (CAGR):**
+\[ \text{CAGR} = \left(\frac{\text{Final Equity}}{\text{Initial Equity}}\right)^{\frac{1}{T}} - 1 \]
+
+- **Sharpe Ratio:**
+\[ \text{Sharpe Ratio} = \frac{\text{Mean Return} - \text{Risk-Free Rate}}{\text{Std. Dev. of Returns}} \]
+
+- **Max Drawdown (MDD):**
+\[ \text{MDD} = \max \left( \frac{\text{Peak Equity} - \text{Current Equity}}{\text{Peak Equity}} \right) \]
 
 ## Directory Structure
-
 ```
 .
 ├── data_txt/
 │   ├── 2000_01_SPY.txt
 │   ├── 2000_01_TSLA.txt
-│   └── ...  (1-min OHLCV data in CSV format)
+│   └── ...
 ├── data_preprocessing.py
 ├── trading_environment.py
 ├── ga_policy_evolution.py
@@ -43,107 +76,116 @@ This repository demonstrates a **hybrid approach** that applies both **Genetic A
 └── README.md
 ```
 
+---
+
 ## Installation
 
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/yourname/hybrid-trading-rl.git
-   cd hybrid-trading-rl
-   ```
+### 1. Clone the Repository
+```bash
+git clone https://github.com/AlexOraibi/hybrid-trading-strategy.git
+cd hybrid-trading-rl
+```
 
-2. **Create a Virtual Environment (Recommended)**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # or venv\Scripts\activate on Windows
-   ```
+### 2. Create a Virtual Environment
+```bash
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate (Windows)
+```
 
-3. **Install Dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 2. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
 
-4. **Data Setup**
-   - Place your 1-minute `.txt` files (OHLCV) in the `data_txt/` directory.
-   - Columns format: `date_time,open,high,low,close,volume`.
-   - Data should span from 2000 to 2024.
+### 3. Prepare Data
+Place minute-level OHLCV `.txt` or `.csv` files into the `data_txt/` directory.
+
+Format required:
+```
+date_time,open,high,low,close,volume
+```
+
+---
 
 ## Usage
 
-1. **Data Preprocessing**  
-   The data is automatically loaded and transformed when you run `main.py`. Specifically, `create_environment_data('./data_txt')` in **`data_preprocessing.py`**:
-   - Concatenates all `.txt` files in `data_txt/`.
-   - Sorts by `date_time`.
-   - Computes simple return, moving averages, etc.
-   - Scales features using `StandardScaler`.
-   - Splits into an 80/20 train/test partition.
+### Run the training process:
+```bash
+python main.py
+```
 
-2. **Run GA + PPO Training**  
-   Execute:
-   ```bash
-   python main.py
-   ```
-   This runs GA evolution, PPO training, evaluates agents on test data, computes performance metrics, and visualizes equity curves.
+### Multi-GPU Support
+To leverage multiple GPUs:
+```bash
+torchrun --nproc_per_node=4 main.py
+```
 
-3. **Multi-GPU Setup**  
-   Single GPU by default. Extendable to multi-GPU with DataParallel or DistributedDataParallel.
+---
 
-## Interpreting PPO Performance
+## PPO Training Interpretation
 
-| Mean Reward per Step | Interpretation                        |
-|----------------------|---------------------------------------|
-| < 0                  | 🚩 Poor (losing strategy)              |
-| 0 - 0.0001           | ⚠️ Weak profitability (near breakeven) |
-| 0.0001 - 0.001       | ✅ Good, stable profitability          |
-| > 0.001              | 🚀 Excellent performance               |
+| Mean Reward per Step | Performance                        |
+|----------------------|------------------------------------|
+| < 0                  | 🚩 Poor                             |
+| 0 - 0.0001           | ⚠️ Marginal                         |
+| 0.0001 - 0.001       | ✅ Stable Profitability             |
+| > 0.001              | 🚀 Excellent                        |
 
-Good PPO training results might look like:
+Example training output:
 ```
 Update 0, mean reward = 0.002
 ...
 Update 20, mean reward = 0.004
 ```
 
-3. **Multi-GPU Setup**  
-   Single GPU by default. Extendable to multi-GPU with DataParallel or DistributedDataParallel from PyTorch. Or parallelize GA evaluations across GPUs. Advanced configuration required.
+---
 
-## Key Math Details
-
-### GA Fitness Function
-Fitness = cumulative reward:
-```
-fitness(θ) = Σₜ rₜ(θ)
-```
-
-### PPO Objective
-```
-L^{CLIP}(θ) = Eₜ[min(rₜ(θ) Aₜ, clip(rₜ(θ), 1-ε, 1+ε) Aₜ)]
-```
-
-### CAGR, Sharpe, Max Drawdown
-- **CAGR**: `(Final Equity / Initial Equity)^(1/T) - 1`
-- **Sharpe**: `(Mean Return - Risk-Free Rate) / Std Dev of Returns`
-- **Max Drawdown**: `max(peak - current_balance) / Peak`
-
-## Rendering Math Equations on GitHub
-GitHub Markdown doesn't render LaTeX directly. Recommended solutions:
-- Use GitHub Pages with Jekyll and MathJax for rendered equations.
-- Convert equations to images.
-- Clearly represent equations in markdown code blocks.
-
-## Potential Extensions
-- **Transaction Costs**
-- **Advanced Position Sizing**
-- **Stop Loss/Take Profit**
-- **Neuroevolution (e.g., NEAT, CMA-ES)**
-- **Multi-Agent/Multi-Asset Trading**
-
-## Contributing
-Feel free to open issues or submit pull requests for improvements:
-- Enhanced data ingestion methods.
-- Parallel training setups.
-- Improved logging (e.g., TensorBoard, Weights & Biases).
-
-## License
-Distributed under the **MIT License**. Free for use, modification, and distribution with proper attribution.
+## Directory Details
+- **data_preprocessing.py:** Loads, preprocesses, and splits data.
+- **trading_environment.py:** Defines the RL environment.
+- **ga_policy_evolution.py:** Handles genetic algorithm processes.
+- **policy_gradient_methods.py:** Implements PPO training algorithm.
+- **main.py:** Entry point for training and evaluation.
 
 ---
+
+## Extensions & Future Development
+- Incorporate **transaction costs** for realistic backtesting.
+- Implement **dynamic position sizing** and risk management.
+- Integrate automated **stop-loss** and **take-profit** mechanisms.
+- Explore alternative evolutionary methods like **NEAT** or **CMA-ES**.
+- Expand to **multi-agent**, **multi-asset** strategies.
+
+---
+
+## Rendering Mathematical Equations
+- Use GitHub Pages with **MathJax** for real-time rendering.
+  - Add to your `_config.yml`:
+```yaml
+markdown: kramdown
+kramdown:
+  math_engine: mathjax
+```
+
+Alternatively, equations can be displayed as plain text in markdown code blocks or converted into images for static embedding.
+
+---
+
+## Contributing
+Contributions are welcome! Please follow these guidelines:
+- Open an issue to discuss new features or bug fixes.
+- Submit pull requests clearly describing improvements.
+- Enhance data ingestion, parallel training, or add advanced logging (TensorBoard, Weights & Biases).
+
+---
+
+## License
+This project is distributed under the **MIT License**—free to use, modify, and redistribute with proper attribution.
+
+---
+
+### Author
+**Alex Oraibi**  
+[GitHub Profile](https://github.com/AlexOraibi)
+
+© 2025 Alex Oraibi - MIT License

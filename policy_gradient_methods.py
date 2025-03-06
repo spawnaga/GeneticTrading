@@ -3,241 +3,303 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import os
+import datetime
+
 
 class ActorCriticNet(nn.Module):
     """
-    Shared network for actor + critic (PPO style).
-    This network takes the state as input and outputs:
-    - `policy_logits`: The logits for the action probabilities (used for selecting actions).
-    - `value`: The state value estimate (used for advantage estimation and critic loss).
+    A shared neural network for the actor and critic in PPO.
+    - Input: State (observation).
+    - Outputs:
+      - `policy_logits`: Logits for action probabilities (actor).
+      - `value`: State value estimate (critic).
     """
 
     def __init__(self, input_dim, hidden_dim, action_dim, device="cpu"):
-        super(ActorCriticNet, self).__init__()
-        self.device = device  # Store the device (CPU/GPU)
+        """
+        Initialize the ActorCriticNet.
 
-        # Shared base network
+        Args:
+            input_dim (int): Dimension of the input observation.
+            hidden_dim (int): Number of units in hidden layers.
+            action_dim (int): Number of possible actions.
+            device (str or torch.device): Device to run the model on ('cpu' or 'cuda').
+        """
+        super(ActorCriticNet, self).__init__()
+        self.device = torch.device(device) if isinstance(device, str) else device
+
+        # Shared base network with two hidden layers
         self.base = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU()
-        ).to(self.device)  # Ensure model is on the correct device
+        ).to(self.device)
 
-        # Policy head (outputs logits for action selection)
+        # Policy head for action selection
         self.policy_head = nn.Linear(hidden_dim, action_dim).to(self.device)
-        # Value head (outputs a single value estimate)
+        # Value head for state value estimation
         self.value_head = nn.Linear(hidden_dim, 1).to(self.device)
 
     def forward(self, x):
         """
-        Forward pass for both policy and value networks.
-        - Ensures input `x` is on the correct device.
-        - Returns `policy_logits` and `value` as outputs.
+        Forward pass through the network.
+
+        Args:
+            x (torch.Tensor): Input state tensor of shape (batch_size, input_dim).
+
+        Returns:
+            tuple: (policy_logits, value) where:
+                - policy_logits (torch.Tensor): Logits for action probabilities.
+                - value (torch.Tensor): Estimated state value.
         """
-        x = x.to(self.device)  # Move input tensor to correct device
+        x = x.to(self.device)
         base_out = self.base(x)
         policy_logits = self.policy_head(base_out)
         value = self.value_head(base_out)
         return policy_logits, value
 
     def save_model(self, file_path):
+        """
+        Save the model's state dictionary to a file.
+
+        Args:
+            file_path (str): Path where the model will be saved.
+        """
         torch.save(self.state_dict(), file_path)
+        # print(f"Model saved to {file_path} at {datetime.datetime.now()}")
 
     def load_model(self, file_path):
+        """
+        Load the model's state dictionary from a file if it exists.
+
+        Args:
+            file_path (str): Path to the saved model file.
+        """
         if os.path.exists(file_path):
             self.load_state_dict(torch.load(file_path, map_location=self.device))
-            print(f"ActorCriticNet model loaded from {file_path}")
+            print(f"Model loaded from {file_path}")
         else:
-            print(f"No ActorCriticNet model found at {file_path}. Starting fresh.")
+            print(f"No model found at {file_path}. Initializing with random weights.")
 
 
 class PPOTrainer:
     """
-    Proximal Policy Optimization (PPO) Trainer
-    - This class handles training an actor-critic network using PPO updates.
-    - Implements:
-      - Rollout collection
-      - Generalized Advantage Estimation (GAE)
-      - PPO policy and value loss updates
+    Proximal Policy Optimization (PPO) Trainer.
+    - Manages training of an actor-critic network using PPO.
+    - Features:
+      - Efficient trajectory collection.
+      - Generalized Advantage Estimation (GAE).
+      - Mini-batch PPO updates with gradient clipping.
     """
 
-    def __init__(self, env, input_dim, action_dim, hidden_dim=64, lr=3e-4, gamma=0.99, clip_epsilon=0.2,
-                 update_epochs=4, rollout_steps=2048, device="cpu", model_save_path="ppo_model.pth"):
+    def __init__(self, env, input_dim, action_dim, hidden_dim=64, lr=3e-4, gamma=0.99, gae_lambda=0.95,
+                 clip_epsilon=0.2, update_epochs=4, rollout_steps=2048, batch_size=64, device="cpu",
+                 model_save_path="ppo_model.pth"):
         """
-        Initializes PPOTrainer with the given hyperparameters.
-        - `env`: Trading environment
-        - `input_dim`: Observation space dimension
-        - `action_dim`: Number of actions
-        - `hidden_dim`: Hidden layer size
-        - `lr`: Learning rate for Adam optimizer
-        - `gamma`: Discount factor
-        - `clip_epsilon`: PPO clipping parameter
-        - `update_epochs`: Number of PPO update epochs per rollout
-        - `rollout_steps`: Number of environment steps per batch
-        - `device`: Device (CPU/GPU)
+        Initialize the PPOTrainer with hyperparameters.
+
+        Args:
+            env: The environment (e.g., a trading environment).
+            input_dim (int): Dimension of the observation space.
+            action_dim (int): Number of discrete actions.
+            hidden_dim (int): Size of hidden layers in the network.
+            lr (float): Learning rate for the Adam optimizer.
+            gamma (float): Discount factor for future rewards.
+            gae_lambda (float): GAE smoothing parameter.
+            clip_epsilon (float): Clipping parameter for PPO policy update.
+            update_epochs (int): Number of epochs per PPO update.
+            rollout_steps (int): Number of steps to collect per rollout.
+            batch_size (int): Size of mini-batches for PPO updates.
+            device (str or torch.device): Device for computation ('cpu' or 'cuda').
+            model_save_path (str): Path to save the trained model.
         """
         self.env = env
         self.gamma = gamma
+        self.gae_lambda = gae_lambda
         self.clip_epsilon = clip_epsilon
         self.update_epochs = update_epochs
         self.rollout_steps = rollout_steps
-        self.device = device  # Store device (CPU/GPU)
+        self.batch_size = batch_size
+        self.device = torch.device(device) if isinstance(device, str) else device
         self.model_save_path = model_save_path
 
-        # Initialize actor-critic network
-        self.model = ActorCriticNet(input_dim, hidden_dim, action_dim, device=device)
-        try:
-            self.model.load_model(self.model_save_path)
-        except FileNotFoundError:
-            print(f"No ActorCriticNet model found at {self.model_save_path}. Starting fresh.")
+        # Initialize the actor-critic network
+        self.model = ActorCriticNet(input_dim, hidden_dim, action_dim, device=self.device)
+        self.model.load_model(self.model_save_path)  # Load existing model if available
 
-        # Define optimizer
+        # Optimizer for training
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
 
     def collect_trajectories(self):
         """
-        Runs the policy in the environment for `rollout_steps`.
-        Collects:
-        - Observations
-        - Actions
-        - Log probabilities of actions
-        - Rewards
-        - Value estimates
-        - Done flags
-        """
-        obs_list = []
-        action_list = []
-        logprob_list = []
-        reward_list = []
-        value_list = []
-        done_list = []
+        Collect trajectories by interacting with the environment.
 
-        obs = self.env.reset()
-        obs = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(self.device)  # Move obs to model's device
+        Returns:
+            tuple: (obs, actions, rewards, old_logprobs, values, dones) as NumPy arrays.
+        """
+        obs = []
+        actions = []
+        rewards = []
+        old_logprobs = []
+        values = []
+        dones = []
+
+        state = self.env.reset()
+        state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
 
         for _ in range(self.rollout_steps):
-            policy_logits, value = self.model(obs)  # obs is already on device
+            # Get policy and value from the model
+            with torch.no_grad():
+                policy_logits, value = self.model(state_tensor)
+                action_dist = torch.distributions.Categorical(logits=policy_logits)
+                action = action_dist.sample()
+                logprob = action_dist.log_prob(action)
 
-            # Sample an action from policy
-            action_dist = torch.distributions.Categorical(logits=policy_logits)
-            action = action_dist.sample()
-            logprob = action_dist.log_prob(action)
+            # Store trajectory data
+            obs.append(state_tensor.cpu().numpy()[0])  # Convert to NumPy after moving to CPU
+            actions.append(action.item())
+            old_logprobs.append(logprob.item())
+            values.append(value.item())
 
-            obs_list.append(obs.cpu().numpy())  # Convert back to NumPy to store
-            action_list.append(action.item())
-            logprob_list.append(logprob.item())
-            value_list.append(value.item())
+            # Step the environment
+            next_state, reward, done, _ = self.env.step(action.item())
+            rewards.append(np.clip(reward, -1, 1))  # Clip rewards for stability
+            dones.append(done)
 
-            # Step environment
-            obs, reward, done, _ = self.env.step(action.item())
-            obs = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(self.device)  # Ensure new state is on device
-
-            # Normalize rewards to prevent numerical instability
-            reward = np.clip(reward, -1, 1)  # Keep rewards between -1 and 1
-            reward_list.append(reward)
-            done_list.append(done)
-
+            # Prepare next state
+            state_tensor = torch.tensor(next_state, dtype=torch.float32).unsqueeze(0).to(self.device)
             if done:
-                obs = self.env.reset()
-                obs = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(
-                    self.device)  # Ensure reset state is on device
+                state_tensor = torch.tensor(self.env.reset(), dtype=torch.float32).unsqueeze(0).to(self.device)
 
-        # Convert to NumPy arrays
-        obs_list = np.array(obs_list, dtype=np.float32)
-        action_list = np.array(action_list, dtype=np.int32)
-        reward_list = np.array(reward_list, dtype=np.float32)
-        logprob_list = np.array(logprob_list, dtype=np.float32)
-        value_list = np.array(value_list, dtype=np.float32)
-        done_list = np.array(done_list, dtype=np.bool_)
+        # Convert lists to NumPy arrays for efficiency
+        return (np.array(obs, dtype=np.float32),
+                np.array(actions, dtype=np.int32),
+                np.array(rewards, dtype=np.float32),
+                np.array(old_logprobs, dtype=np.float32),
+                np.array(values, dtype=np.float32),
+                np.array(dones, dtype=np.bool_))
 
-        return obs_list, action_list, reward_list, logprob_list, value_list, done_list
-
-    def compute_advantages(self, rewards, values, dones, next_value, gamma=0.99, lam=0.95):
+    def compute_gae(self, rewards, values, dones, next_value):
         """
-        Computes Generalized Advantage Estimation (GAE).1`
-        - Uses `gamma` (discount factor) and `lam` (GAE factor) for smooth updates.
-        - Normalizes advantages for stability.
+        Compute Generalized Advantage Estimation (GAE) and returns.
+
+        Args:
+            rewards (np.ndarray): Array of rewards.
+            values (np.ndarray): Array of value estimates (including next_value at the end).
+            dones (np.ndarray): Array of done flags.
+            next_value (float): Value estimate of the final state.
+
+        Returns:
+            tuple: (advantages, returns) as NumPy arrays.
         """
         advantages = np.zeros_like(rewards, dtype=np.float32)
         gae = 0.0
+
+        # Compute GAE backwards
         for t in reversed(range(len(rewards))):
-            delta = rewards[t] + gamma * (0 if dones[t] else values[t + 1] if t < len(rewards) - 1 else next_value) - \
-                    values[t]
-            gae = delta + gamma * lam * (0 if dones[t] else gae)
+            if t == len(rewards) - 1:
+                delta = rewards[t] + self.gamma * (0 if dones[t] else next_value) - values[t]
+            else:
+                delta = rewards[t] + self.gamma * (0 if dones[t] else values[t + 1]) - values[t]
+            gae = delta + self.gamma * self.gae_lambda * (0 if dones[t] else gae)
             advantages[t] = gae
 
-        # Normalize advantages to improve training stability
+        # Normalize advantages for training stability
         advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
-
-        returns = advantages + values[:-1]
+        returns = advantages + values[:-1]  # Exclude the last value (next_value)
         return advantages, returns
 
     def train_step(self):
         """
-        Performs one PPO training step:
-        - Collects a batch of rollouts
-        - Computes advantages
-        - Updates policy and value networks using PPO loss
-        """
-        obs_list, action_list, reward_list, old_logprob_list, value_list, done_list = self.collect_trajectories()
+        Perform one PPO training step:
+        - Collect trajectories.
+        - Compute advantages and returns.
+        - Update the network using mini-batch PPO updates.
 
-        # Compute advantages
+        Returns:
+            float: Mean reward of the rollout for logging.
+        """
+        # Collect rollout data
+        obs, actions, rewards, old_logprobs, values, dones = self.collect_trajectories()
+
+        # Get the value of the final state
         last_state = self.env.current_state()
         last_state_tensor = torch.tensor(last_state, dtype=torch.float32).unsqueeze(0).to(self.device)
         with torch.no_grad():
             _, next_value = self.model(last_state_tensor)
+        values = np.append(values, next_value.item())  # Append next_value for GAE
 
-        # Compute advantages
-        # pad value_list with next_value for convenience
-        value_list_pad = np.concatenate([value_list, [next_value.item()]])
-        advantages, returns = self.compute_advantages(reward_list, value_list_pad, done_list, next_value.item())
+        # Compute advantages and returns
+        advantages, returns = self.compute_gae(rewards, values, dones, next_value.item())
 
-        # Normalize advantages
-        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
-
-        # Convert to tensors
-        obs_tensor = torch.tensor(obs_list, dtype=torch.float32).to(self.device)
-        action_tensor = torch.tensor(action_list, dtype=torch.long).to(self.device)
-        old_logprobs_tensor = torch.tensor(old_logprob_list, dtype=torch.float32).to(self.device)
+        # Convert data to tensors
+        obs_tensor = torch.tensor(obs, dtype=torch.float32).to(self.device)
+        action_tensor = torch.tensor(actions, dtype=torch.long).to(self.device)
+        old_logprobs_tensor = torch.tensor(old_logprobs, dtype=torch.float32).to(self.device)
         advantage_tensor = torch.tensor(advantages, dtype=torch.float32).to(self.device)
         return_tensor = torch.tensor(returns, dtype=torch.float32).to(self.device)
 
-        # PPO update
+        # Mini-batch PPO updates
+        dataset_size = len(obs)
+        indices = torch.arange(dataset_size)
+
         for _ in range(self.update_epochs):
-            policy_logits, value_est = self.model(obs_tensor)
-            dist = torch.distributions.Categorical(logits=policy_logits)
-            new_logprobs = dist.log_prob(action_tensor)
-            entropy = dist.entropy().mean()
+            # Shuffle indices for each epoch
+            perm = torch.randperm(dataset_size)
+            for start in range(0, dataset_size, self.batch_size):
+                batch_indices = perm[start:start + self.batch_size]
+                if len(batch_indices) == 0:
+                    continue
 
-            ratio = torch.exp(new_logprobs - old_logprobs_tensor)
-            surr1 = ratio * advantage_tensor
-            surr2 = torch.clamp(ratio, 1.0 - self.clip_epsilon, 1.0 + self.clip_epsilon) * advantage_tensor
+                # Extract mini-batch
+                obs_batch = obs_tensor[batch_indices]
+                action_batch = action_tensor[batch_indices]
+                old_logprobs_batch = old_logprobs_tensor[batch_indices]
+                advantage_batch = advantage_tensor[batch_indices]
+                return_batch = return_tensor[batch_indices]
 
-            policy_loss = -torch.min(surr1, surr2).mean()
+                # Forward pass
+                policy_logits, value_est = self.model(obs_batch)
+                dist = torch.distributions.Categorical(logits=policy_logits)
+                new_logprobs = dist.log_prob(action_batch)
+                entropy = dist.entropy().mean()
 
-            # Explicit reshaping for correct MSE loss computation ✅
-            value_loss = nn.MSELoss()(value_est.view(-1, 1), return_tensor.view(-1, 1))
+                # PPO policy loss
+                ratio = torch.exp(new_logprobs - old_logprobs_batch)
+                surr1 = ratio * advantage_batch
+                surr2 = torch.clamp(ratio, 1.0 - self.clip_epsilon, 1.0 + self.clip_epsilon) * advantage_batch
+                policy_loss = -torch.min(surr1, surr2).mean()
 
-            loss = policy_loss + 0.5 * value_loss - 0.01 * entropy
+                # Value loss
+                value_loss = nn.MSELoss()(value_est.squeeze(), return_batch)
 
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
+                # Total loss with entropy bonus
+                loss = policy_loss + 0.5 * value_loss - 0.01 * entropy
 
-        # Return some stats
-        mean_reward = np.mean(reward_list)
-        return mean_reward
+                # Optimization step
+                self.optimizer.zero_grad()
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=0.5)  # Gradient clipping
+                self.optimizer.step()
+
+        return np.mean(rewards)
 
     def train(self, total_timesteps):
         """
-        Train PPO for total_timesteps.
-        We gather rollout_steps each iteration, so number of updates = total_timesteps/rollout_steps
+        Train the PPO agent for a specified number of timesteps.
+
+        Args:
+            total_timesteps (int): Total number of environment steps to train for.
+
+        Returns:
+            ActorCriticNet: The trained model.
         """
-        n_updates = int(total_timesteps // self.rollout_steps)
+        n_updates = total_timesteps // self.rollout_steps
         for update in range(n_updates):
             mean_reward = self.train_step()
-            print(f"Update {update}, mean reward = {mean_reward:.5f}")
+            print(f"Update {update + 1}/{n_updates}, Mean Reward: {mean_reward:.5f}")
             self.model.save_model(self.model_save_path)
-
+        print(f"Model saved to {self.model_save_path} at {datetime.datetime.now()}")
+        print("Training completed.")
         return self.model

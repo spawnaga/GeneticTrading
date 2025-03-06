@@ -3,7 +3,7 @@ import numpy as np
 
 class TradingEnvironment:
     """
-    Trading Environment stepping through time-series data for reinforcement learning.
+    Trading Environment for reinforcement learning, simulating trading of NQ futures.
 
     Observations:
         - Scaled features vector (e.g., open, high, low, close, volume, return, ma_10).
@@ -19,132 +19,128 @@ class TradingEnvironment:
 
         Args:
             df (pd.DataFrame): DataFrame containing scaled columns plus 'date_time'.
-            initial_balance (float): Starting capital.
+            initial_balance (float): Starting capital in dollars.
             max_position (float): Maximum allowable position (contracts/shares).
         """
-        self.df = df.reset_index(drop=True)
-        self.max_step = len(self.df) - 1  # last index
+        self.df = df.reset_index(drop=True)  # Ensure consistent indexing
+        self.max_step = len(self.df) - 1  # Last valid index
         self.current_step = 0
         self.initial_balance = initial_balance
         self.current_balance = initial_balance
-        self.position = 0  # +1=long, -1=short, 0=flat
-        self.shares_held = 0
+        self.position = 0  # 0=hold, 1=long, -1=short
+        self.shares_held = 0  # Placeholder for future position sizing
         self.done = False
 
-        # Define observation columns excluding the timestamp
+        # Define observation space (exclude timestamp)
         self.feature_cols = [col for col in df.columns if col != 'date_time']
         self.observation_dim = len(self.feature_cols)
-        self.action_space = 3  # hold, long, short
+        self.action_space = 3  # Discrete actions: hold, long, short
 
-        # Track initial price for PnL calculations
+        # Initial price for PnL tracking
         self.last_price = self._get_close_price(self.current_step)
 
-        # Balance history for performance tracking
+        # Track balance over time
         self.balance_history = [self.current_balance]
 
     def reset(self):
         """
-        Resets environment to initial state.
+        Resets the environment to its initial state.
 
         Returns:
-            np.array: Initial observation.
+            np.array: Initial observation vector.
         """
         self.current_step = 0
         self.current_balance = self.initial_balance
         self.position = 0
-        self.done = False
         self.shares_held = 0
+        self.done = False
         self.last_price = self._get_close_price(self.current_step)
         self.balance_history = [self.current_balance]
-
         return self._get_observation(self.current_step)
 
     def step(self, action):
         """
-        Executes a single time step within the environment.
+        Executes one time step in the environment.
 
         Args:
             action (int): Action to take (0=hold, 1=long, 2=short).
 
         Returns:
-            tuple: observation (np.array), reward (float), done (bool), info (dict)
+            tuple: (observation (np.array), reward (float), done (bool), info (dict)).
         """
         if self.done:
-            # Return current state if episode has ended
             return self._get_observation(self.current_step), 0.0, True, {}
 
         current_price = self._get_close_price(self.current_step)
         reward = 0.0
 
-        # Calculate PnL from existing position
-        if self.position == 1:  # Long
+        # Calculate PnL based on current position
+        if self.position == 1:  # Long position
             reward = current_price - self.last_price
-        elif self.position == -1:  # Short
+        elif self.position == -1:  # Short position
             reward = self.last_price - current_price
 
-        # Update balance
+        # Update balance with PnL
         self.current_balance += reward
 
-        # Execute new action
+        # Apply the new action
         if action == 1:
-            self.position = 1
+            self.position = 1  # Go long
         elif action == 2:
-            self.position = -1
+            self.position = -1  # Go short
         else:
-            self.position = 0
+            self.position = 0  # Hold/flat
 
         self.last_price = current_price
 
-        # Advance to next step
+        # Move to next step
         self.current_step += 1
         if self.current_step >= self.max_step:
             self.done = True
-            obs = np.zeros(self.observation_dim, dtype=np.float32)  # safe final obs
+            obs = np.zeros(self.observation_dim, dtype=np.float32)  # Safe final state
         else:
             obs = self._get_observation(self.current_step)
 
         self.balance_history.append(self.current_balance)
 
-        # A small reward shaping can be done to avoid too large drawdown or encourage stable growth
-        # But for now, let's keep it at pure PnL
         return obs, reward, self.done, {}
 
     def _get_observation(self, step):
         """
-        Retrieves observation features at a specific step.
+        Retrieves the observation at a given step.
 
         Args:
-            step (int): Index in the data.
+            step (int): Current index in the DataFrame.
 
         Returns:
-            np.array: Observation array.
+            np.array: Feature vector for the current step.
         """
         obs = self.df.iloc[step][self.feature_cols].values.astype(np.float32)
-        if hasattr(obs, 'get'):
-            obs = obs.get()  # Convert from GPU to CPU explicitly if needed
+        if hasattr(obs, 'get'):  # Handle potential GPU tensors
+            obs = obs.get()
         return obs
 
     def _get_close_price(self, step):
         """
-        Retrieves the close price at a given step.
+        Retrieves the closing price at a given step.
 
         Args:
-            step (int): Index in the data.
+            step (int): Current index in the DataFrame.
 
         Returns:
-            float: Close price.
+            float: Closing price.
         """
         price = self.df.iloc[step]["close"]
-        if hasattr(price, 'iloc'):
+        if hasattr(price, 'iloc'):  # Handle potential Series objects
             price = price.iloc[0]
         return float(price)
 
     def current_state(self):
         """
-        Returns current state observation.
+        Returns the current observation.
 
         Returns:
-            np.array: Current observation.
+            np.array: Current feature vector, or zeros if done.
         """
         if self.done:
             return np.zeros(self.observation_dim, dtype=np.float32)
