@@ -304,23 +304,14 @@ The script uses PyTorch’s distributed functionality:
 ### Performance Metrics
 
 - **CAGR**:
-  $$
-  \text{CAGR} = \left(\frac{\text{Balance}_{final}}{\text{Balance}_{initial}}\right)^{\frac{1}{\text{Years}}} - 1
-  $$
-
+  \[ CAGR = \left(\frac{Balance_{final}}{Balance_{initial}}\right)^{\frac{1}{Years}} - 1 \]
 
 - **Sharpe Ratio**:
-  $$
-  \text{Sharpe} = \frac{E[R]}{\sigma[R]}
-  $$
-
+  \[ Sharpe = \frac{E[R]}{\sigma[R]} \]
   where \( E[R] \) is the annualized average return, \( \sigma \) is the standard deviation of returns.
 
-  - **Maximum Drawdown**:
-    $$
-  \text{MaxDD} = \max\left(\frac{\text{Peak} - \text{Trough}}{\text{Peak}}\right)
-  $$
-
+- **Maximum Drawdown**:
+  \[ MaxDD = \max\left(\frac{Peak - Trough}{Peak}\right) \]
 
 These metrics comprehensively evaluate financial performance, rewarding consistency, return, and risk management.
 
@@ -408,9 +399,7 @@ Feature engineering transforms raw data into actionable features:
 - **Relative Strength Index (RSI)**:
   - Calculates average gains and losses over a period (usually 14).
   - Computes RSI to indicate overbought or oversold conditions:
-    $$
-    RSI = 100 - \frac{100}{1 + RS}, \quad RS = \frac{AvgGain}{AvgLoss}
-    $$
+    \[ RSI = 100 - \frac{100}{1 + RS}, \quad RS = \frac{AvgGain}{AvgLoss} \]
 - **Volatility**:
   - Calculates the rolling standard deviation of returns, indicating market volatility.
 
@@ -444,27 +433,18 @@ The use of cuDF significantly speeds up data preprocessing:
 ### Feature Computations
 
 - **Return Calculation**:
-  $$
-  \text{Return} = \frac{Price_{t} - Price_{t-1}}{Price_{t-1}}
-  $$
+  \[ Return = \frac{Price_{t} - Price_{t-1}}{Price_{t-1}} \]
 
 - **Moving Average (MA)**:
-  $$
-  MA_n = \frac{\sum_{i=t-n}^{t} Close_i}{n} \]
-  $$
+  \[ MA_n = \frac{\sum_{i=t-n}^{t} Close_i}{n} \]
 
 - **RSI Calculation**:
   - Gain = Average of positive price differences.
   - Loss = Average of negative price differences.
-  $$
-  RSI = 100 - \frac{100}{1 + \frac{Gain}{Loss}}
-  $$
+  - \[ RSI = 100 - \frac{100}{1 + \frac{Gain}{Loss}} \]
 
 - **Volatility**:
- $$
- \text{Volatility} = \text{std}(\text{returns})
- $$
-
+  \[ Volatility = \text{std}(returns) \]
 
 These computations are crucial for capturing market behavior efficiently.
 
