@@ -116,7 +116,8 @@ def evaluate_fitness(param_vector, env, device="cpu"):
     Returns:
         float: Total reward accumulated.
     """
-    policy_net = PolicyNetwork(env.observation_dim, 64, env.action_space, device=device)
+    # Use env.action_space.n to get the integer number of actions
+    policy_net = PolicyNetwork(env.observation_dim, 64, env.action_space.n, device=device)
     policy_net.set_params(param_vector)
 
     total_reward = 0.0
@@ -139,11 +140,9 @@ def evaluate_fitness(param_vector, env, device="cpu"):
             reward = float(reward[0])  # Fallback
         total_reward += reward
         steps += 1
-
-        # Debugging print statement to track progress
+        # print(f"observation_dim: {env.observation_dim}, action_space.n: {env.action_space.n}")
         # print(f"Evaluating on {device}, step {steps}, current reward: {reward:.5f}, total reward: {total_reward:.4f}")
 
-    # Final evaluation summary
     print(f"Evaluation completed on {device} - Total Reward: {total_reward:.3f}, Steps: {steps}")
     return total_reward
 
@@ -187,7 +186,7 @@ def run_ga_evolution(env, population_size=30, generations=20, elite_frac=0.2,
         tuple: (best_agent, best_fitness)
     """
     input_dim = env.observation_dim
-    output_dim = env.action_space
+    output_dim = env.action_space.n
     hidden_dim = 64
 
     # Set number of workers if not specified
@@ -283,4 +282,4 @@ def run_ga_evolution(env, population_size=30, generations=20, elite_frac=0.2,
         best_agent = PolicyNetwork(input_dim, hidden_dim, output_dim, device=device)
         best_agent.set_params(best_params)
         return best_agent, best_fitness
-    return None, best_fitness  # Non-rank 0 returns None for the agent
+    return None, best_fitness # Non-rank 0 returns None for the agent

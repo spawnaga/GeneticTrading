@@ -11,6 +11,7 @@ from trading_environment import TradingEnvironment
 from ga_policy_evolution import run_ga_evolution, PolicyNetwork
 from policy_gradient_methods import PPOTrainer
 
+
 def compute_performance_metrics(balance_history):
     """
     Compute performance metrics: CAGR, Sharpe Ratio, and Maximum Drawdown.
@@ -24,7 +25,7 @@ def compute_performance_metrics(balance_history):
     steps_per_year = 252 * 390  # Trading minutes in a year
     total_return = (balance_history[-1] - balance_history[0]) / balance_history[0]
     years = len(balance_history) / steps_per_year
-    cagr = (1 + total_return)**(1 / years) - 1 if years > 0 else 0
+    cagr = (1 + total_return) ** (1 / years) - 1 if years > 0 else 0
     returns = np.diff(balance_history) / balance_history[:-1]
     ann_mean = np.mean(returns) * steps_per_year
     ann_std = np.std(returns) * np.sqrt(steps_per_year)
@@ -32,6 +33,7 @@ def compute_performance_metrics(balance_history):
     running_max = np.maximum.accumulate(balance_history)
     mdd = np.max((running_max - balance_history) / running_max)
     return cagr, sharpe, mdd
+
 
 def evaluate_agent(env, agent, steps):
     """
@@ -70,6 +72,7 @@ def evaluate_agent(env, agent, steps):
             break
 
     return balance_history
+
 
 def main():
     """
@@ -119,34 +122,47 @@ def main():
 
     # GA training setup
     ga_model_path = "ga_policy_model.pth"
-    ga_agent = PolicyNetwork(train_env.observation_dim, 64, train_env.action_space, device=device)
+    ga_agent = PolicyNetwork(train_env.observation_dim, 64, train_env.action_space.n, device=device)
 
     # Distributed GA training
     start_time = time.time()
     if not os.path.exists(ga_model_path):
-        ga_agent, best_fit = run_ga_evolution(
-            train_env,
-            population_size=40,
-            generations=12,
-            device=device,
-            model_save_path=ga_model_path,
-            distributed=True,  # Enable distributed evaluation
-            local_rank=local_rank,
-            world_size=world_size
-        )
         if local_rank == 0:
+            # Only rank 0 updates ga_agent and saves the model
+            ga_agent, best_fit = run_ga_evolution(
+                train_env,
+                population_size=40,
+                generations=12,
+                device=device,
+                model_save_path=ga_model_path,
+                distributed=True,
+                local_rank=local_rank,
+                world_size=world_size
+            )
             print(f"GA best fitness: {best_fit:.2f}")
-    else:
-        ga_agent.load_model(ga_model_path)
-        if local_rank == 0:
-            print("Loaded existing GA model.")
+        else:
+            # Non-zero ranks participate in distributed computation but don’t update ga_agent
+            run_ga_evolution(
+                train_env,
+                population_size=40,
+                generations=12,
+                device=device,
+                model_save_path=ga_model_path,
+                distributed=True,
+                local_rank=local_rank,
+                world_size=world_size
+            )
+
+    # Synchronize all ranks after GA evolution
+    dist.barrier()
+
+    # Reinitialize ga_agent on all ranks and load the saved model
+    ga_agent = PolicyNetwork(train_env.observation_dim, 64, train_env.action_space.n, device=device)
+    ga_agent.load_model(ga_model_path)
+
     ga_training_time = time.time() - start_time
     if local_rank == 0:
         print(f"GA training took {ga_training_time:.2f} seconds")
-
-    # Synchronize after GA training
-    dist.barrier()
-    ga_agent.load_model(ga_model_path)
 
     # Evaluate GA agent (rank 0 only)
     if local_rank == 0:
@@ -156,24 +172,28 @@ def main():
 
     # PPO training setup
     ppo_model_path = "ppo_actor_critic_model.pth"
+    # Initialize PPOTrainer
     ppo_trainer = PPOTrainer(
-        train_env,
-        input_dim=train_env.observation_dim,
-        action_dim=train_env.action_space,
-        hidden_dim=64,
-        lr=3e-4,
-        gamma=0.99,
-        clip_epsilon=0.2,
-        update_epochs=10,
-        rollout_steps=500,
-        device=device,
-        model_save_path=ppo_model_path
+        env=train_env,
+        input_dim=train_env.observation_space.shape[0],  # Observation dimension
+        action_dim=train_env.action_space.n,  # Number of actions
+        hidden_dim=64,  # Network size
+        lr=3e-4,  # Learning rate
+        gamma=0.99,  # Discount factor
+        gae_lambda=0.95,  # GAE smoothing
+        clip_epsilon=0.2,  # PPO clipping
+        update_epochs=4,  # Epochs per update
+        rollout_steps=2048,  # Steps per rollout
+        batch_size=64,  # Mini-batch size
+        device=device,  # GPU device
+        model_save_path=ppo_model_path,  # Save path
+        local_rank=local_rank  # Distributed rank
     )
 
     if local_rank == 0:
         start_time = time.time()
         if not os.path.exists(ppo_model_path):
-            ppo_trainer.train(total_timesteps=10000000)
+            ppo_trainer.train(total_timesteps=1000000)
             ppo_trainer.model.save_model(ppo_model_path)
         else:
             ppo_trainer.model.load_model(ppo_model_path)
@@ -204,6 +224,7 @@ def main():
 
     # Clean up distributed process group
     dist.destroy_process_group()
+
 
 if __name__ == "__main__":
     main()
