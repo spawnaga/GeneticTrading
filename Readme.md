@@ -301,9 +301,11 @@ The script uses PyTorch’s distributed functionality:
 
 ## 🚩 Mathematical Background
 
+
 ### Performance Metrics
 
 **CAGR (Compound Annual Growth Rate)**
+
 
 
 $$
