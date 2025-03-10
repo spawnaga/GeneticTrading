@@ -299,38 +299,41 @@ The script uses PyTorch’s distributed functionality:
 
 ---
 
-### 🚩 Mathematical Background
+## 🚩 Mathematical Background
 
-**Performance Metrics**
+
+### Performance Metrics
 
 **CAGR (Compound Annual Growth Rate)**
 
-<p align="center">
-  <img src="https://latex.codecogs.com/svg.image?\color{gray}\displaystyle\text{CAGR}&space;=&space;\left(\frac{\text{Balance}_{final}}{\text{Balance}_{initial}}\right)^{\frac{1}{Years}}&space;-&space;1" />
-</p>
 
-- **Balance<sub>final</sub>**: Final portfolio balance after the trading period.
-- **Balance<sub>initial</sub>**: Initial investment at the start.
+
+$$
+\text{CAGR} = \left(\frac{\text{Balance}_{final}}{\text{Balance}_{initial}}\right)^{\frac{1}{\text{Years}}} - 1
+$$
+
+- **\(\text{Balance}_{final}\)**: Final portfolio balance after the trading period.
+- **\(\text{Balance}_{initial}\)**: Initial investment at the start.
 - **Years**: Duration of the investment period in years.
 
 ---
 
 **Sharpe Ratio**
 
-<p align="center">
-  <img src="https://latex.codecogs.com/svg.image?\color{gray}\displaystyle\text{Sharpe}&space;=&space;\frac{E[R]}{\sigma[R]}" />
-</p>
+$$
+\text{Sharpe} = \frac{E[R]}{\sigma[R]}
+$$
 
-- **E[R]**: Annualized average return of the portfolio.
-- **σ[R]**: Standard deviation of returns, measuring volatility (risk).
+- **\(E[R]\)**: Annualized average return of the portfolio.
+- **\(\sigma[R]\)**: Standard deviation of returns, measuring volatility (risk).
 
 ---
 
 **Maximum Drawdown**
 
-<p align="center">
-  <img src="https://latex.codecogs.com/svg.image?\color{gray}\displaystyle\text{MaxDD}&space;=&space;\max\left(\frac{\text{Peak}-\text{Trough}}{\text{Peak}}\right)" />
-</p>
+$$
+\text{MaxDD} = \max\left(\frac{\text{Peak} - \text{Trough}}{\text{Peak}}\right)
+$$
 
 - **Peak**: Highest portfolio value observed.
 - **Trough**: Lowest value observed following the peak, before a new peak occurs.
