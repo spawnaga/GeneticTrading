@@ -300,20 +300,16 @@ The script uses PyTorch’s distributed functionality:
 ---
 
 ## 🚩 Mathematical Background
-
-
 ### Performance Metrics
 
 **CAGR (Compound Annual Growth Rate)**
 
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?\displaystyle\text{CAGR}&space;=&space;\left(\frac{\text{Balance}_{final}}{\text{Balance}_{initial}}\right)^{\frac{1}{Years}}&space;-&space;1" />
+</p>
 
-
-$$
-\text{CAGR} = \left(\frac{\text{Balance}_{final}}{\text{Balance}_{initial}}\right)^{\frac{1}{\text{Years}}} - 1
-$$
-
-- **\(\text{Balance}_{final}\)**: Final portfolio balance after the trading period.
-- **\(\text{Balance}_{initial}\)**: Initial investment at the start.
+- **Balance<sub>final</sub>**: Final portfolio balance after the trading period.
+- **Balance<sub>initial</sub>**: Initial investment at the start.
 - **Years**: Duration of the investment period in years.
 
 ---
@@ -337,6 +333,7 @@ $$
 
 - **Peak**: Highest portfolio value observed.
 - **Trough**: Lowest value observed following the peak, before a new peak occurs.
+
 
 
 These metrics comprehensively evaluate financial performance, rewarding consistency, return, and risk management.
