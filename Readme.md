@@ -303,11 +303,11 @@ The script uses PyTorch’s distributed functionality:
 
 ### Performance Metrics
 
-- **CAGR** (Compound Annual Growth Rate):
+**CAGR (Compound Annual Growth Rate)**
 
-  $$
-  \text{CAGR} = \left(\frac{\text{Balance}_{final}}{\text{Balance}_{initial}}\right)^{\frac{1}{\text{Years}}} - 1
-  $$
+$$
+\text{CAGR} = \left(\frac{\text{Balance}_{final}}{\text{Balance}_{initial}}\right)^{\frac{1}{\text{Years}}} - 1
+$$
 
 
 
