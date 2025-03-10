@@ -678,84 +678,110 @@ Proximal Policy Optimization (PPO) is an advanced reinforcement learning algorit
 
 GAE computes advantages by combining immediate and discounted future rewards, improving gradient stability:
 
-\[ A_t = \delta_t + (\gamma \lambda)A_{t+1} \]
+$$
+A_t = \delta_t + (\gamma \lambda) A_{t+1}
+$$
 
 where:
 
-- \( \delta_t \) is the temporal difference error.
-- \( \gamma \) is the discount factor.
-- \( \lambda \) is the smoothing factor.
+- \( A_t \) is the advantage at timestep \( t \).
+- \( \delta_t \) is the temporal difference error, representing the difference between expected and actual rewards.
+- \( \gamma \) is the discount factor, determining the importance of future rewards.
+- \( \lambda \) is the smoothing factor, controlling the bias-variance trade-off in advantage estimates.
 
-Advantages are normalized to enhance training stability.
+Advantages are normalized afterward to enhance training stability.
+
+---
 
 ### Step 4: PPO Policy Update
 
-The PPO algorithm updates the policy by:
+The PPO algorithm updates the policy parameters by optimizing a carefully constructed loss function to maintain policy stability:
 
-- Calculating the ratio of new and old probabilities of actions.
-- Clipping these ratios to limit overly large updates:
+**Clipped Surrogate Objective**:
 
-\[ L^{CLIP}(\theta) = \hat{\mathbb{E}}[ \min(r_t(\theta) A_t, \text{clip}(r_t(\theta), 1 - \epsilon, 1 + \epsilon) A_t] \]
-
-- Optimizing a combined loss:
-
-\[ Loss = L^{CLIP}(\theta) + c_1 \cdot L^{VALUE}(\theta) - c_2 \cdot H(\pi) \]
+$$
+L^{CLIP}(\theta) = \hat{\mathbb{E}}\left[\min\left(r_t(\theta) A_t,\;\text{clip}(r_t(\theta),\,1 - \epsilon,\,1 + \epsilon)\,A_t\right)\right]
+$$
 
 where:
-- \(L^{VALUE}\) minimizes the difference between predicted and actual returns.
-- \(H(\pi)\) encourages exploration by maximizing entropy (policy uncertainty).
+
+- \( r_t(\theta) \) is the ratio of action probabilities under the new and old policies:  
+  $$
+  r_t(\theta) = \frac{\pi_{\theta}(a_t|s_t)}{\pi_{\theta_{\text{old}}}(a_t|s_t)}
+  $$
+- \( A_t \) is the estimated advantage at time \( t \).
+- \( \epsilon \) controls the maximum allowed policy update step to prevent large deviations.
+
+**Complete PPO Loss Function**:
+
+$$
+L(\theta) = L^{CLIP}(\theta) + c_1 \cdot L^{VALUE}(\theta) - c_2 \cdot H(\pi)
+$$
+
+where:
+
+- \( L^{VALUE}(\theta) \) is the value loss, minimizing the discrepancy between predicted and actual returns:
+  $$
+  L^{VALUE}(\theta) = \mathbb{E}\left[(V_{\theta}(s_t) - R_t)^2\right]
+  $$
+- \( H(\pi) \) is the entropy bonus, encouraging exploration by penalizing overconfidence in action selection:
+  $$
+  H(\pi) = -\mathbb{E}\left[\pi(a|s)\log\pi(a|s)\right]
+  $$
+- \( c_1, c_2 \) are coefficients controlling the influence of value and entropy terms, respectively.
+
+This combined loss stabilizes policy updates and ensures sufficient exploration throughout training.
 
 ---
 
 ## 📊 Computational Efficiency and Stability
 
-- PPO is designed specifically to avoid catastrophic policy updates, providing stable convergence:
-  - Gradient clipping prevents numerical instability.
-  - Mini-batch updates further stabilize learning and leverage GPU parallelism.
+PPO is specifically designed to provide stable training by avoiding catastrophic policy updates:
+
+- **Gradient Clipping**: Limits gradient magnitude to prevent numerical instability.
+- **Mini-batch Updates**: Further stabilizes learning and enables effective GPU utilization.
 
 ---
 
 ## 🖥️ Distributed Training
 
-- PPO training is designed to work effectively with distributed systems:
-  - Rank 0 handles saving and critical updates.
-  - Other ranks contribute to gradient computation and parallel data collection.
+PPO training leverages distributed systems efficiently:
+
+- **Rank 0** handles critical tasks such as model saving and overall coordination.
+- **Other ranks** perform parallel gradient computations and data collection, greatly speeding up the training process.
 
 ---
 
-## 🚩 Mathematical Details
+## 🚩 Mathematical Details of PPO Loss Function
 
-### PPO Loss Function
+The detailed PPO loss function comprises three main components, each serving a crucial role in the training process:
 
-**Clipped Surrogate Objective:**
+**1. Clipped Surrogate Objective**:
+- Prevents large policy updates by limiting the probability ratio change between the old and new policy:
+
 $$
-L^{CLIP}(\theta) = \mathbb{E}\left[ \min\left( r(\theta) A, \text{clip}\left(r(\theta),\, 1 - \epsilon,\, 1 + \epsilon\right) A \\right]
-$$
-
-**Where:**  
-- \( r(\theta) = \frac{\pi_{\theta}(a|s)}{\pi_{\theta_{\text{old}}}(a|s)} \): Probability ratio of the new and old policies.  
-- \( A \): Advantage estimate (from GAE).
-
-**Value Loss:**
-$$
-L^{\text{VALUE}}(\theta) = \mathbb{E}\left[ (V_{\theta}(s) - R)^2 \right]
+L^{CLIP}(\theta) = \mathbb{E}\left[\min\left(r(\theta) A,\;\text{clip}(r(\theta),\,1 - \epsilon,\,1 + \epsilon) A\right)\right]
 $$
 
-**Entropy Bonus (Encouraging Exploration):**
+- \( r(\theta) = \frac{\pi_{\theta}(a|s)}{\pi_{\theta_{\text{old}}}(a|s)} \) indicates how much the policy changes with new parameters.
+- \( A \) is the advantage, guiding the policy toward more beneficial actions.
+
+**2. Value Loss**:
+- Ensures the critic accurately predicts returns, thereby providing stable guidance for policy improvement:
+
 $$
-H(\pi) = -\mathbb{E}[\pi(a|s)\log\pi(a|s)]
+L^{VALUE}(\theta) = \mathbb{E}\left[(V_{\theta}(s) - R)^2\right]
 $$
 
-### Final PPO Loss:
-The combined loss function used in PPO training is given by:
-$$
-L(\theta) = L^{CLIP}(\theta) + c_1 \cdot L^{VALUE}(\theta) - c_2 \cdot H(\pi)
-$$
+- \( V_{\theta}(s) \) is the predicted value of a state \( s \).
+- \( R \) is the observed actual return.
 
-**Where:**  
-- \( c_1, c_2 \): Coefficients balancing value loss and entropy regularization, respectively.
+**3. Entropy Bonus**:
+- Encourages exploration by penalizing overly confident action selection, thus maintaining sufficient variability in policy decisions:
 
-This combination of losses stabilizes policy updates while promoting sufficient exploration during training.
+$$
+H(\pi) = -\mathbb{E}\left[\pi(a|s)\log\pi(a|s)\right]
+$$
 
 ---
 
@@ -763,23 +789,27 @@ This combination of losses stabilizes policy updates while promoting sufficient 
 
 ### Potential Enhancements:
 
-1. **Adaptive PPO Hyperparameters**: Dynamically adjust hyperparameters like clipping epsilon, entropy coefficient, and learning rates.
-2. **Enhanced Actor-Critic Networks**: Integrate recurrent layers (LSTM) or transformers for better temporal context in trading.
-3. **Checkpointing and Early Stopping**: Implement periodic checkpoints and early stopping based on performance metrics to avoid unnecessary computation.
+1. **Adaptive PPO Hyperparameters**:  
+   - Implement dynamic adjustment of hyperparameters (like clipping range \( \epsilon \), entropy coefficient \( c_2 \), and learning rates) based on training progress.
+
+2. **Enhanced Actor-Critic Networks**:  
+   - Incorporate recurrent (LSTM) or transformer-based networks to effectively handle sequential market data.
+
+3. **Checkpointing and Early Stopping**:  
+   - Introduce regular checkpoints and early stopping mechanisms triggered by monitored performance metrics to save resources and improve training efficiency.
 
 ---
 
 ## 🔧 Troubleshooting Tips
 
 - **Slow or Unstable Training**:
-  - Adjust hyperparameters (reduce learning rate, increase batch size, adjust clip epsilon).
+  - Consider reducing the learning rate or adjusting batch sizes and PPO clip ranges to achieve more stable convergence.
 
-- **GPU Utilization**:
-  - Monitor GPU usage via `nvidia-smi`.
-  - Adjust batch size or rollout steps to fully utilize GPU resources.
+- **GPU Utilization Issues**:
+  - Regularly monitor GPU usage (`nvidia-smi`) and adjust mini-batch sizes or rollout lengths to maximize GPU utilization.
 
-- **Diverging Loss**:
-  - Reduce learning rate or increase gradient clipping constraints.
+- **Diverging Loss Values**:
+  - Apply stricter gradient clipping or reduce learning rates if loss values become unstable or diverge during training.
 
 ---
 
