@@ -517,21 +517,40 @@ This approach is especially useful when traditional gradient-based methods fail,
 - Synchronize evaluations using PyTorch’s distributed backend, aggregating fitness results across GPUs.
 
 ---
-
 ## 📊 Mathematical Foundation
 
 ### Genetic Algorithm Mathematics
 
-- **Fitness Function**:
-  \[ Fitness(\theta) = \sum_{t=0}^{T} Reward(s_t, a_t) \]
+- **Fitness Function**: Calculates the total accumulated reward of a policy throughout the trading episode:
 
-- **Crossover Operation**:
-  - Single-point crossover combines parent solutions at a random crossover point:
-  \[ \theta_{child} = [\theta_{parent1}(0:k), \theta_{parent2}(k:end)] \]
+$$
+\text{Fitness}(\theta) = \sum_{t=0}^{T} \text{Reward}(s_t, a_t)
+$$
 
-- **Mutation**:
-  - Introduces random noise to parameter vectors:
-  \[ \theta_{new} = \theta + \epsilon \quad \text{where} \quad \epsilon \sim \mathcal{N}(0, \sigma^2) \]
+where:
+- \( \theta \) represents the neural network parameters.
+- \( \text{Reward}(s_t, a_t) \) is the reward obtained at state \( s_t \) after taking action \( a_t \).
+
+- **Crossover Operation**: Single-point crossover combines parameters from two parent solutions at a random crossover point to create offspring solutions:
+
+$$
+\theta_{\text{child}} = [\theta_{\text{parent}_1}(0:k), \; \theta_{\text{parent}_2}(k:\text{end})]
+$$
+
+where:
+- \( \theta_{\text{child}} \) is the parameter set of the offspring network.
+- \( \theta_{\text{parent}_1} \) and \( \theta_{\text{parent}_2} \) represent the parameters of the two elite parent solutions.
+- \( k \) is the randomly chosen crossover point.
+
+- **Mutation**: Introduces random Gaussian noise to the offspring's parameters to promote genetic diversity and prevent premature convergence:
+
+$$
+\theta_{\text{new}} = \theta + \epsilon,\quad \text{where}\quad \epsilon \sim \mathcal{N}(0,\,\sigma^2)
+$$
+
+where:
+- \( \epsilon \) is the Gaussian noise added to the parameters.
+- \( \sigma^2 \) controls the variance (extent) of the mutation.
 
 ---
 
