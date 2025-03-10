@@ -301,15 +301,12 @@ The script uses PyTorch’s distributed functionality:
 
 ## 🚩 Mathematical Background
 
-
 ### Performance Metrics
-
-
 
 **CAGR (Compound Annual Growth Rate)**
 
 $$
-$\text{CAGR} = \left(\frac{\text{Balance}_{final}}{\text{Balance}_{initial}}\right)^{\frac{1}{\text{Years}}} - 1$
+\text{CAGR} = \left(\frac{\text{Balance}_{final}}{\text{Balance}_{initial}}\right)^{\frac{1}{Years}} - 1
 $$
 
 - **\(\text{Balance}_{final}\)**: Final portfolio balance after the trading period.
@@ -338,9 +335,7 @@ $$
 - **Peak**: Highest portfolio value observed.
 - **Trough**: Lowest value observed following the peak, before a new peak occurs.
 
-
 These metrics comprehensively evaluate financial performance, rewarding consistency, return, and risk management.
-
 ---
 
 ## ⚙️ Optimization and Improvement Areas
