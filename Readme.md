@@ -416,113 +416,47 @@ To enhance efficiency:
 Feature engineering transforms raw market data into actionable features essential for trading model performance:
 
 - **Returns Calculation**: Computes the percentage returns (`pct_change`) based on closing prices:
-  $$
-  \text{Return}_t = \frac{\text{Price}_t - \text{Price}_{t-1}}{\text{Price}_{t-1}}
-  $$
-  - **\(\text{Price}_t\)** is the closing price at time \(t\).
 
-- **Moving Average (MA)**: Calculates the simple moving average over a specified window (e.g., 10 periods) to smooth out price fluctuations and identify trends:
-  $$
-  MA_n = \frac{\sum_{i=t-n+1}^{t} \text{Close}_i}{n}
-  $$
-  - **\(\text{Close}_i\)** represents the closing price at time \(i\).
-  - **\(n\)** is the chosen window size (number of periods).
-
-- **Relative Strength Index (RSI)**: Measures the magnitude of recent price changes to determine overbought or oversold conditions in the market. It is calculated as:
-  $$
-  RSI = 100 - \frac{100}{1 + RS}, \quad \text{where} \quad RS = \frac{\text{AvgGain}}{\text{AvgLoss}}
-  $$
-  - **\(\text{AvgGain}\)** is the average gain (positive price differences) over the selected period (commonly 14 periods).
-  - **\(\text{AvgLoss}\)** is the average loss (negative price differences) over the same period.
-
-- **Volatility**: Calculates the rolling standard deviation of returns to quantify market volatility:
-  $$
-  \text{Volatility} = \text{std}(\text{returns})
-  $$
-
----
-
-### Step 4: Scaling and Splitting Data
-
-The script applies feature scaling using the `StandardScaler` method:
-
-- Features are standardized to have a mean of zero and a variance of one, enhancing neural network training stability and improving convergence efficiency.
-
-Data splitting for training and evaluation:
-
-- **80% Training Data**: Utilized for the learning phase.
-- **20% Testing Data**: Reserved to assess the model’s performance and validate its ability to generalize on unseen data.
-
----
-
-## 📊 GPU Acceleration and Computational Efficiency
-
-Leveraging NVIDIA’s cuDF significantly accelerates preprocessing tasks:
-
-- Parallel loading of market data files using GPU-accelerated DataFrame operations.
-- Accelerated computations such as scaling and sorting executed directly on GPUs.
-- Minimizing computational bottlenecks typically encountered with large datasets.
-
----
-
-## 🛠️ Mathematical Details of Feature Computations
-
-### Return Calculation
-The simple return is the percentage price change between two consecutive closing prices:
 $$
 \text{Return}_t = \frac{\text{Price}_t - \text{Price}_{t-1}}{\text{Price}_{t-1}}
 $$
 
-### Moving Average (MA)
-A moving average provides an average closing price over a specified number of periods, smoothing short-term volatility and highlighting long-term trends:
+where:
+
+- \( \text{Price}_t \) is the closing price at time \( t \).
+
+- **Moving Average (MA)**: Calculates the simple moving average over a specified window (e.g., 10 periods) to smooth out price fluctuations and identify trends:
+
 $$
 MA_n = \frac{\sum_{i=t-n+1}^{t} \text{Close}_i}{n}
 $$
 
-### Relative Strength Index (RSI)
-The RSI evaluates momentum by comparing the magnitude of recent gains and losses over a specified period, typically 14 periods:
+where:
+
+- \( \text{Close}_i \) represents the closing price at time \( i \).
+- \( n \) is the chosen window size (number of periods).
+
+- **Relative Strength Index (RSI)**: Measures the magnitude of recent price changes to determine overbought or oversold conditions in the market. It is calculated as:
+
 $$
-RSI = 100 - \frac{100}{1 + \frac{\text{AvgGain}}{\text{AvgLoss}}}
+RSI = 100 - \frac{100}{1 + RS}
 $$
 
-### Volatility
-Volatility measures market variability by computing the standard deviation of returns:
+where:
+
+- \( RS = \frac{\text{AvgGain}}{\text{AvgLoss}} \).
+- \( \text{AvgGain} \) is the average of positive price changes over the selected period (commonly 14 periods).
+- \( \text{AvgLoss} \) is the average of negative price changes over the same period.
+
+- **Volatility**: Calculates the rolling standard deviation of returns to quantify market volatility:
+
 $$
 \text{Volatility} = \text{std}(\text{returns})
 $$
 
-These mathematical computations are critical to accurately capturing market dynamics, informing the model's predictions effectively.
+- \( \text{returns} \) are the calculated percentage returns as defined above.
 
 ---
-
-## 🔧 Improvement Areas
-
-### Potential Enhancements:
-
-1. **Additional Feature Engineering**: Integrate advanced indicators such as MACD, Bollinger Bands, or sentiment scores to capture diverse market dynamics and improve prediction accuracy.
-
-2. **Advanced Caching Strategies**: Use scalable caching solutions like distributed databases or file systems (e.g., Redis, Hadoop) for efficient data storage and retrieval.
-
-3. **Robustness and Error Handling**: Implement thorough error checks, handling file corruption or data inconsistencies gracefully.
-
-4. **Automated Data Quality Checks**: Include systematic data validation, anomaly detection, and cleansing procedures before processing to maintain data integrity.
-
-5. **Dynamic Scaling Techniques**: Experiment with adaptive or market-condition-based scaling techniques, such as volatility normalization, to enhance model adaptability across varying market conditions.
-
----
-
-## 🚧 Troubleshooting
-
-- **GPU Memory Errors**:
-  - Monitor GPU usage via `nvidia-smi`.
-  - Reduce data batch sizes or adjust feature computation windows to fit within GPU memory limits.
-
-- **File Hash Mismatch**:
-  - Ensure accurate system clock synchronization to prevent file timestamp mismatches affecting caching mechanisms.
-
-- **Data Loading Errors**:
-  - Regularly validate
-  - 
 ## 📖 Summary
 
 The `data_preprocessing.py` script robustly prepares raw market data using GPU acceleration, advanced caching mechanisms, and thoughtful feature engineering. It serves as a critical component of the RL pipeline, ensuring high-quality inputs for model training and ultimately influencing trading performance outcomes significantly.
