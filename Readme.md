@@ -305,7 +305,7 @@ The script uses PyTorch’s distributed functionality:
 
 - **CAGR**:
   $$
-  \text{CAGR}  = \left(\frac{Balance_{final}}{Balance_{initial}}\right)^{\frac{1}{Years}} - 1 \
+  \text{CAGR} = \left(\frac{\text{Balance}_{final}}{\text{Balance}_{initial}}\right)^{\frac{1}{\text{Years}}} - 1
   $$
 
 - **Sharpe Ratio**:
