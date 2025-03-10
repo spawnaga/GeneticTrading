@@ -309,24 +309,32 @@ $$
 \text{CAGR} = \left(\frac{\text{Balance}_{final}}{\text{Balance}_{initial}}\right)^{\frac{1}{\text{Years}}} - 1
 $$
 
+- **\(\text{Balance}_{final}\)**: Final portfolio balance after the trading period.
+- **\(\text{Balance}_{initial}\)**: Initial investment at the start.
+- **Years**: Duration of the investment period in years.
 
+---
 
-- **Sharpe Ratio**:
-  $$
-  \[ Sharpe = \frac{E[R]}{\sigma[R]} \]
-  $$
-  where
-  $$
-  \( E[R] \) 
-  $$ is the annualized average return, 
-  $$
-  \( \sigma \) 
-  $$ is the standard deviation of returns.
+**Sharpe Ratio**
 
-- **Maximum Drawdown**:
-  $$
-  \[ MaxDD = \max\left(\frac{Peak - Trough}{Peak}\right) \]
-  $$
+$$
+\text{Sharpe} = \frac{E[R]}{\sigma[R]}
+$$
+
+- **\(E[R]\)**: Annualized average return of the portfolio.
+- **\(\sigma[R]\)**: Standard deviation of returns, measuring volatility (risk).
+
+---
+
+**Maximum Drawdown**
+
+$$
+\text{MaxDD} = \max\left(\frac{\text{Peak} - \text{Trough}}{\text{Peak}}\right)
+$$
+
+- **Peak**: Highest portfolio value observed.
+- **Trough**: Lowest value observed following the peak, before a new peak occurs.
+
 
 These metrics comprehensively evaluate financial performance, rewarding consistency, return, and risk management.
 
