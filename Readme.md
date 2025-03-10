@@ -304,14 +304,26 @@ The script uses PyTorch’s distributed functionality:
 ### Performance Metrics
 
 - **CAGR**:
-  \[ CAGR = \left(\frac{Balance_{final}}{Balance_{initial}}\right)^{\frac{1}{Years}} - 1 \]
+  $$
+  \text{CAGR}  = \left(\frac{Balance_{final}}{Balance_{initial}}\right)^{\frac{1}{Years}} - 1 \
+  $$
 
 - **Sharpe Ratio**:
+  $$
   \[ Sharpe = \frac{E[R]}{\sigma[R]} \]
-  where \( E[R] \) is the annualized average return, \( \sigma \) is the standard deviation of returns.
+  $$
+  where
+  $$
+  \( E[R] \) 
+  $$ is the annualized average return, 
+  $$
+  \( \sigma \) 
+  $$ is the standard deviation of returns.
 
 - **Maximum Drawdown**:
+  $$
   \[ MaxDD = \max\left(\frac{Peak - Trough}{Peak}\right) \]
+  $$
 
 These metrics comprehensively evaluate financial performance, rewarding consistency, return, and risk management.
 
