@@ -1,70 +1,47 @@
-## 📌 Project Overview
-
-The project includes:
-- **Data preprocessing (`data_preprocessing.py`)**:
-  - Loads, processes, scales, and splits data for training and testing.
-  - Supports caching to optimize repeated data loading.
-- **GA-based Policy Evolution** (`ga_policy_evolution.py`):
-  - Implements a genetic algorithm to evolve a neural network policy.
-  - Supports distributed multi-GPU setups.
-- **PPO Training (`policy_gradient_methods.py`)**:
-  - Implements PPO algorithm with actor-critic networks.
-  - Designed for stable and efficient reinforcement learning.
-- **Orchestrator (`main.py`)**:
-  - Combines data preparation, GA, and PPO training.
-  - Evaluates model performance using standard metrics (CAGR, Sharpe Ratio, Max Drawdown).
-
----
-
 ## 🚀 Installation Instructions
 
 ### 1. System Requirements
 
-- **OS**: Ubuntu 20.04+ recommended or Windows 10/11 with WSL2
+- **OS**: Ubuntu 20.04+ (recommended) or Windows 10/11 with WSL2
 - **Python**: 3.10 or newer
-- **GPU**: NVIDIA GPU (CUDA compatible, ideally RTX 3090 or similar)
-- **CUDA**: CUDA Toolkit 11.7+
-- **cudf**: GPU-accelerated dataframes for rapid data handling
+- **GPU**: NVIDIA GPU (CUDA-compatible, ideally RTX 3090 or similar)
+- **CUDA**: CUDA Toolkit 12.0+
+- **cuDF**: GPU-accelerated DataFrames (part of RAPIDS)
 
 ### 1.1 Install CUDA Toolkit
 
-Follow NVIDIA’s instructions to install the CUDA Toolkit from:
+Follow NVIDIA's instructions:
 
 - [NVIDIA CUDA Installation Guide](https://developer.nvidia.com/cuda-downloads)
 
-Check your installation:
+Verify your installation:
 ```bash
 nvcc --version
 ```
 
----
-
 ### 📦 Python Environment Setup
 
-Create and activate a new Conda environment:
+Create and activate a new Conda environment with RAPIDS:
 ```bash
-conda create -n trading_env python=3.10
+conda create -n trading_env -c rapidsai -c conda-forge -c nvidia cudf=25.02 python=3.12 'cuda-version>=12.0,<=12.8'
 conda activate trading_env
 ```
 
 Install PyTorch with CUDA support:
 ```bash
-pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu117
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 ```
 
-Install additional dependencies:
+Install additional Python dependencies:
 ```bash
-pip install cudf-cu11 dask-cudf -c rapidsai -c nvidia -c conda-forge
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-pip install numpy pandas scikit-learn matplotlib
-pip install mpi4py
+pip install numpy pandas scikit-learn matplotlib mpi4py gym
 ```
 
 ---
 
-### 📁 Project Structure
+## 📁 Project Structure
 
-Ensure your project is structured like this:
+Ensure your project is structured as follows:
 
 ```
 GeneticTrading/
@@ -83,82 +60,66 @@ GeneticTrading/
 
 ## 🚀 Running the Project
 
-### Step 1: Prepare and Cache Data
+### Step 1: Data Preparation
 
 **Data Folder Structure:**
-Place your raw market data files (`.txt` or `.csv`) into `./data_txt`.
 
-**Run data preprocessing:**
-The script will preprocess data with GPU acceleration and cache results:
+Place your raw market data files (`.txt` or `.csv`) into the `./data_txt` folder.
+
+Run data preprocessing (GPU-accelerated):
+
 ```bash
 python data_preprocessing.py
 ```
 
-This creates GPU-optimized cached files in `cached_data`.
+This will create cached GPU-optimized Parquet files in the `cached_data` folder.
 
 ---
 
-### Step 2: Distributed Training Setup
+### Step 2: Distributed Multi-GPU Training
 
-The training script supports distributed GPU training with NCCL backend.
-
-Run using multiple GPUs:
+Run distributed training using PyTorch's distributed launch utility:
 
 ```bash
 python -m torch.distributed.launch --nproc_per_node=4 main.py
 ```
 
-Replace `4` with your available GPU count.
+Replace `4` with the number of GPUs available on your system.
 
 ---
 
-### Step 3: Training the Models
+### Step 3: Model Training and Evaluation
 
-The main script orchestrates both GA and PPO training:
+Running `main.py` orchestrates:
 
-- **Genetic Algorithm Training**:
-  - Evolves policy networks across multiple generations.
-- **PPO Training**:
-  - Runs after GA training completion.
-  - Further optimizes using reinforcement learning.
+- **Genetic Algorithm (GA) Training**: Optimizes policies using evolutionary methods.
+- **PPO Training**: Further refines policies using reinforcement learning.
+- **Performance Evaluation**: Computes standard trading metrics (CAGR, Sharpe Ratio, Max Drawdown).
 
-Execution example:
+Execute:
 
 ```bash
 python main.py
 ```
 
----
-
-### Step 3: Evaluating Performance
-
-The script automatically evaluates both GA and PPO policies using the test dataset. Metrics computed include:
-
-- **CAGR (Compound Annual Growth Rate)**
-- **Sharpe Ratio**
-- **Max Drawdown**
-
-A matplotlib plot of equity curves comparing both strategies will be shown upon completion.
+The script will automatically evaluate trained models, print key metrics, and display equity curves comparing GA and PPO strategies.
 
 ---
 
 ## 📊 Performance Metrics
 
-- **CAGR** (Compound Annual Growth Rate): Measures annual investment growth.
-- **Sharpe Ratio**: Indicates risk-adjusted returns (higher is better).
-- **Max Drawdown (MDD)**: Indicates the largest percentage drop from a peak (lower is better).
-
-These metrics are printed after the evaluation phase.
+- **CAGR (Compound Annual Growth Rate)**: Annualized growth rate of your strategy.
+- **Sharpe Ratio**: Risk-adjusted return measure (higher values indicate better risk-adjusted performance).
+- **Max Drawdown (MDD)**: Largest drop from peak equity (lower values indicate better risk control).
 
 ---
 
-## 📝 Important Notes and Troubleshooting
+## 📝 Troubleshooting and Notes
 
-- Ensure your GPU drivers and CUDA installation match PyTorch’s CUDA version.
-- Ensure NCCL backend (`backend='nccl'`) initializes correctly for multi-GPU training.
-- Adjust environment variables like `LOCAL_RANK` if issues arise.
+- Ensure your GPU drivers and CUDA versions match RAPIDS and PyTorch versions.
+- Verify NCCL (`backend='nccl'`) initialization for multi-GPU training.
 
-Common commands to debug GPU usage:
+Debug GPU usage:
 ```bash
 nvidia-smi
 ```
@@ -170,44 +131,27 @@ watch -n1 "ps aux | grep python"
 
 ---
 
-## 📌 Additional Notes
-
-- Adjust hyperparameters in `main.py` or relevant scripts (`ga_policy_evolution.py` or `policy_gradient_methods.py`) based on your needs.
-- Ensure `TradingEnvironment` class is correctly implemented as required by your application.
-
----
-
-## ⚙️ Hyperparameters (Adjust as Needed)
-
-Common adjustable hyperparameters:
-- **Population size** and **generations** (GA).
-- PPO parameters: `gamma`, `lambda`, learning rate (`lr`), batch size, rollout steps.
-
-Adjust these parameters in the respective scripts (`main.py` and `ga_policy_evolution.py`).
-
----
-
 ## 💾 Saving and Loading Models
 
-Trained models are automatically saved:
+Models are automatically saved and reused:
 - GA policy: `ga_policy_model.pth`
 - PPO model: `ppo_actor_critic_model.pth`
 
-These models will automatically reload on subsequent runs if the files exist, allowing incremental training.
+These models will reload on subsequent runs, facilitating incremental improvements.
 
 ---
 
-## 🛠 Troubleshooting Common Issues
+## 🛠 Troubleshooting Tips
 
-- **CUDA Memory Errors:** Reduce batch sizes or data window lengths.
-- **Distributed Communication Errors:** Check firewall settings, NCCL versions, and PyTorch distributed initialization.
-- **Data Cache Issues:** Delete cached files in the cache folder and rerun data preparation.
+- **CUDA Memory Errors**: Reduce batch sizes.
+- **Distributed Training Issues**: Check NCCL backend and CUDA compatibility.
+- **Caching Issues**: Delete the `cached_data` folder contents and rerun preprocessing.
 
 ---
 
 ## 🎯 Conclusion
 
-This comprehensive setup allows efficient training and evaluation of neural-network-based trading agents using cutting-edge genetic and reinforcement learning methods. Ensure all dependencies and environmental prerequisites are correctly installed and properly configured to utilize maximum GPU acceleration capabilities.
+This setup facilitates efficient and scalable training of trading strategies, leveraging genetic algorithms, reinforcement learning, and advanced GPU acceleration via RAPIDS/cuDF. Ensure all dependencies are installed and configured correctly to maximize performance.
 
 # Comprehensive Explanation of `main.py`
 
