@@ -306,7 +306,7 @@ The script uses PyTorch’s distributed functionality:
 
 **CAGR (Compound Annual Growth Rate)**
 
-
+---
 
 $$
 \text{CAGR} = \left(\frac{\text{Balance}_{final}}{\text{Balance}_{initial}}\right)^{\frac{1}{\text{Years}}} - 1
