@@ -1,7 +1,9 @@
 import glob
+import joblib
 import os
 import hashlib
-import cudf  # GPU-accelerated DataFrame
+import cudf
+import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from concurrent.futures import ThreadPoolExecutor
@@ -10,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 def hash_files(file_list):
     """
     Generate a unique hash based on filenames and modification timestamps.
-    Used to identify unique combinations of files for caching.
+    Used for identifying unique combinations of files.
     """
     hasher = hashlib.sha256()
     for file in sorted(file_list):
@@ -22,7 +24,7 @@ def hash_files(file_list):
 
 def load_single_file_gpu(file):
     """
-    Load a single CSV file into a GPU DataFrame using cudf.
+    Load a single CSV file into a GPU DataFrame.
     """
     df = cudf.read_csv(
         file,
@@ -35,28 +37,29 @@ def load_single_file_gpu(file):
 
 def load_data_from_text_files_gpu(data_folder, cache_dir='./cached_data'):
     """
-    Load all `.txt` and `.csv` files from `data_folder` using GPU acceleration.
-    Checks for cached data using file hashes to avoid redundant processing.
+    Load all `.txt` files from `data_folder` using GPU acceleration.
+    Checks if a cached preprocessed version exists based on file hashes.
     """
     os.makedirs(cache_dir, exist_ok=True)
 
-    # Look for both .txt and .csv files
-    all_files = glob.glob(os.path.join(data_folder, '*.txt')) + glob.glob(os.path.join(data_folder, '*.csv'))
-    if not all_files:
-        raise ValueError(f"No .txt or .csv files found in {data_folder}")
-
+    all_files = glob.glob(os.path.join(data_folder, '*.txt'))
     files_hash = hash_files(all_files)
     cached_file = os.path.join(cache_dir, f'combined_data_{files_hash}.parquet')
 
+    # Check if cached file exists
     if os.path.exists(cached_file):
         print(f"Cached file found: {cached_file}. Loading directly.")
         combined_df = cudf.read_parquet(cached_file)
     else:
         print(f"No cached file found. Loading {len(all_files)} files using GPU acceleration...")
+
         with ThreadPoolExecutor(max_workers=8) as executor:
             dfs = list(executor.map(load_single_file_gpu, all_files))
+
         combined_df = cudf.concat(dfs, ignore_index=True)
         combined_df = combined_df.sort_values('date_time').reset_index(drop=True)
+
+        # Save to cache
         combined_df.to_parquet(cached_file)
         print(f"Saved combined GPU DataFrame to {cached_file}")
 
@@ -65,58 +68,57 @@ def load_data_from_text_files_gpu(data_folder, cache_dir='./cached_data'):
 
 def feature_engineering_gpu(df):
     """
-    Perform GPU-based feature engineering:
-    - Simple returns
-    - Moving average (10-minute window)
-    - RSI (Relative Strength Index)
-    - Volatility (rolling standard deviation of returns)
+    GPU-based feature engineering robust for all securities.
+    Creates segments based on weekday and 15-minute intervals.
     """
-    # Ensure 'close' is float64 for precise calculations
-    df['close'] = df['close'].astype('float64')
+    df['return'] = df['close'].pct_change().fillna(0).astype('float64')
+    df['ma_10'] = df['close'].rolling(window=10, min_periods=1).mean().bfill()
 
-    # Simple returns
-    df['return'] = df['close'].pct_change().fillna(0)
-
-    # Moving average (10-minute window)
-    df['ma_10'] = df['close'].rolling(window=10, min_periods=1).mean()
-    df['ma_10'] = df['ma_10'].bfill()  # Backfill to handle initial NaNs
-
-    # RSI (14-period)
     delta = df['close'].diff()
     gain = delta.where(delta > 0, 0).rolling(window=14).mean()
     loss = (-delta).where(delta < 0, 0).rolling(window=14).mean()
     rs = gain / loss
-    df['rsi'] = 100 - (100 / (1 + rs))
-    df['rsi'] = df['rsi'].bfill()
+    df['rsi'] = (100 - (100 / (1 + rs))).bfill()
 
-    # Volatility (10-period rolling standard deviation of returns)
     df['volatility'] = df['return'].rolling(window=10).std().bfill()
+
+    segment_dict = {}
+    segment_counter = 0
+
+    segments = []
+
+    for dt in df['date_time'].to_pandas():
+        weekday = dt.weekday()
+        minutes_since_midnight = dt.hour * 60 + dt.minute
+        minutes_quantized = (minutes_since_midnight // 15) * 15
+        key = (weekday, minutes_quantized)
+
+        if key not in segment_dict:
+            segment_dict[key] = segment_counter
+            segment_counter += 1
+
+        segments.append(segment_dict[key])
+
+    df['day_time_segment'] = cudf.Series(segments, dtype=np.int32)
 
     return df
 
 
 def scale_and_split_gpu(df):
     """
-    Scale numeric columns using StandardScaler (on CPU) and split into train/test sets.
+    Scale numeric columns using StandardScaler (CPU required), then split into train and test sets.
     """
-    numeric_cols = ['open', 'high', 'low', 'close', 'volume', 'return', 'ma_10', 'rsi', 'volatility']
+    numeric_cols = ['open', 'high', 'low', 'close', 'volume', 'return', 'ma_10']
 
-    # Check for missing columns
-    missing_cols = [col for col in numeric_cols if col not in df.columns]
-    if missing_cols:
-        raise ValueError(f"Missing columns in DataFrame: {missing_cols}")
-
-    # Drop rows with NaNs in numeric columns
+    # Drop NaNs from GPU DataFrame
     df = df.dropna(subset=numeric_cols).reset_index(drop=True)
 
-    # Convert to CPU pandas DataFrame for scaling
+    # Convert GPU DataFrame to CPU pandas DataFrame for scaling
     df_cpu = df.to_pandas()
 
-    # Scale numeric columns
     scaler = StandardScaler()
-    df_cpu[numeric_cols] = scaler.fit_transform(df_cpu[numeric_cols].astype('float64'))
+    df_cpu[numeric_cols] = scaler.fit_transform(df_cpu[numeric_cols])
 
-    # Split into train and test sets (80-20 split)
     train_size = int(0.8 * len(df_cpu))
     train_data = df_cpu.iloc[:train_size].copy()
     test_data = df_cpu.iloc[train_size:].copy()
@@ -124,59 +126,71 @@ def scale_and_split_gpu(df):
     return train_data, test_data, scaler
 
 
-def create_environment_data(data_folder, max_rows=None, use_gpu=True, cache_folder='./cached_data'):
-    """
-    High-performance pipeline for loading, preprocessing, scaling, and splitting data.
-    - `max_rows`: Optional limit for faster testing. Set to None for no limit.
-    - `use_gpu`: Boolean flag to utilize GPU acceleration.
-    """
-    if use_gpu:
-        df = load_data_from_text_files_gpu(data_folder, cache_folder)
-        df = feature_engineering_gpu(df)
-    else:
-        df = load_data_from_text_files(data_folder)
-        df = feature_engineering(df)
-
-    if max_rows is not None:
-        df = df.iloc[:max_rows]
-
-    train_data, test_data, scaler = scale_and_split_gpu(df)
-
-    return train_data, test_data, scaler
-
-
-# CPU-based functions for non-GPU usage
-
 def load_data_from_text_files(data_folder):
     """
     Load all .txt files using pandas (CPU-based).
     """
     all_files = glob.glob(os.path.join(data_folder, '*.txt'))
-    if not all_files:
-        raise ValueError(f"No .txt files found in {data_folder}")
-    dfs = [pd.read_csv(file, names=['date_time', 'open', 'high', 'low', 'close', 'volume'],
-                       parse_dates=['date_time'], header=None) for file in all_files]
-    combined_df = pd.concat(dfs, ignore_index=True).sort_values(by='date_time').reset_index(drop=True)
+    dfs = []
+    for file in all_files:
+        df = pd.read_csv(
+            file,
+            names=['date_time', 'open', 'high', 'low', 'close', 'volume'],
+            parse_dates=['date_time'],
+            header=None
+        )
+        dfs.append(df)
+
+    combined_df = pd.concat(dfs, ignore_index=True)
+    combined_df = combined_df.sort_values(by='date_time').reset_index(drop=True)
     return combined_df
 
 
 def feature_engineering(df):
     """
-    CPU-based feature engineering.
+    CPU-based feature engineering with robust handling of trading segments.
+    Segments are calculated based purely on weekday and 15-minute intervals,
+    allowing robustness across securities (stocks, forex, cryptos, futures, etc.).
+    This approach handles holidays by naturally skipping segments when no data is present.
     """
+
+    # Sort by date_time to ensure chronological order
+    df = df.sort_values('date_time').reset_index(drop=True)
+
+    # Calculate returns
     df['return'] = df['close'].pct_change().fillna(0)
-    df['ma_10'] = df['close'].rolling(window=10).mean().bfill()
 
-    # RSI (14-period)
-    delta = df['close'].diff()
-    gain = delta.where(delta > 0, 0).rolling(window=14).mean()
-    loss = (-delta).where(delta < 0, 0).rolling(window=14).mean()
-    rs = gain / loss
-    df['rsi'] = 100 - (100 / (1 + rs))
-    df['rsi'] = df['rsi'].bfill()
+    # Calculate 10-period moving average
+    df['ma_10'] = df['close'].rolling(window=10, min_periods=1).mean().bfill()
 
-    # Volatility
-    df['volatility'] = df['return'].rolling(window=10).std().bfill()
+    # Define segments by combining weekday and 15-minute intervals into a unique identifier
+    # Create a dictionary mapping each (weekday, time) combination to a unique segment
+    segment_dict = {}
+    segment_counter = 0
+
+    segments = []
+
+    for dt in df['date_time']:
+        weekday = dt.weekday()
+        minutes_since_midnight = dt.hour * 60 + dt.minute
+
+        # Quantize minutes to nearest 15-minute segment
+        minutes_quantized = (minutes_since_midnight // 15) * 15
+
+        key = (weekday, minutes_quantized)
+
+        # Assign a unique segment ID if not already assigned
+        if key not in segment_dict:
+            segment_dict[key] = segment_counter
+            segment_counter += 1
+
+        # Append segment ID
+        segments.append(segment_dict[key])
+
+    # Add segments to DataFrame
+    df['day_time_segment'] = segments
+
+    # This approach naturally skips segments for holidays (no data present)
 
     return df
 
@@ -185,12 +199,79 @@ def scale_and_split(df):
     """
     CPU-based scaling and splitting.
     """
-    numeric_cols = ['open', 'high', 'low', 'close', 'volume', 'return', 'ma_10', 'rsi', 'volatility']
+    numeric_cols = ['open', 'high', 'low', 'close', 'volume', 'return', 'ma_10']
     df = df.dropna(subset=numeric_cols).reset_index(drop=True)
+
     scaler = StandardScaler()
+    # Save scaler
+    joblib.dump(scaler, 'scaler.save')
+
     df[numeric_cols] = scaler.fit_transform(df[numeric_cols])
 
     train_size = int(0.8 * len(df))
     train_data = df.iloc[:train_size].copy()
     test_data = df.iloc[train_size:].copy()
     return train_data, test_data, scaler
+
+
+def create_environment_data(data_folder, max_rows=None, use_gpu=True, cache_folder='./cached_data'):
+    """
+    High-performance loading, preprocessing, scaling, and splitting pipeline.
+    - `max_rows`: Optional limit for faster testing. Set to None for no limit.
+    - `use_gpu`: Boolean flag to utilize GPU acceleration.
+    """
+    if use_gpu:
+        df = load_data_from_text_files_gpu(data_folder, cache_dir=cache_folder)
+        df = feature_engineering_gpu(df)
+        train_data, test_data, scaler = scale_and_split_gpu(df)
+    else:
+        df = load_data_from_text_files(data_folder)
+        df = feature_engineering(df)
+        train_data, test_data, scaler = scale_and_split(df)
+
+    if max_rows is not None:
+        train_data = train_data.iloc[:max_rows].copy()
+        test_data = test_data.iloc[:max_rows].copy()
+
+    return train_data, test_data, scaler
+
+
+def process_live_row(new_row, scaler, segment_dict):
+    """
+    Processes a new incoming 1-minute OHLCV row using the existing scaler and segment dictionary.
+
+    Parameters:
+    - new_row (dict or DataFrame): New data row with keys ['date_time', 'open', 'high', 'low', 'close', 'volume'].
+    - scaler (StandardScaler): Previously fitted scaler object.
+    - segment_dict (dict): Previously created dictionary of day-time segments.
+
+    Returns:
+    - DataFrame: Processed and standardized row ready for prediction or further analysis.
+    """
+
+    if isinstance(new_row, dict):
+        new_row = pd.DataFrame([new_row])
+
+    # Ensure date_time is a datetime type
+    new_row['date_time'] = pd.to_datetime(new_row['date_time'])
+
+    # Feature engineering
+    new_row['return'] = 0  # Cannot compute pct_change for single row
+    new_row['ma_10'] = new_row['close']  # Approximate as current close
+
+    # Compute day_time_segment
+    weekday = new_row['date_time'].iloc[0].weekday()
+    minutes_since_midnight = new_row['date_time'].iloc[0].hour * 60 + new_row['date_time'].iloc[0].minute
+    minutes_quantized = (minutes_since_midnight // 15) * 15
+    key = (weekday, minutes_quantized)
+
+    # Assign existing segment or new one
+    if key not in segment_dict:
+        segment_dict[key] = max(segment_dict.values()) + 1
+
+    new_row['day_time_segment'] = segment_dict[key]
+
+    numeric_cols = ['open', 'high', 'low', 'close', 'volume', 'return', 'ma_10']
+    new_row[numeric_cols] = scaler.transform(new_row[numeric_cols])
+
+    return new_row

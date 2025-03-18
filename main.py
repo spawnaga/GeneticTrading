@@ -122,7 +122,6 @@ def main():
 
     # GA training setup
     ga_model_path = "ga_policy_model.pth"
-    ga_agent = PolicyNetwork(train_env.observation_dim, 64, train_env.action_space.n, device=device)
 
     # Distributed GA training
     start_time = time.time()
@@ -132,7 +131,7 @@ def main():
             ga_agent, best_fit = run_ga_evolution(
                 train_env,
                 population_size=40,
-                generations=12,
+                generations=20,
                 device=device,
                 model_save_path=ga_model_path,
                 distributed=True,
@@ -145,7 +144,7 @@ def main():
             run_ga_evolution(
                 train_env,
                 population_size=40,
-                generations=12,
+                generations=20,
                 device=device,
                 model_save_path=ga_model_path,
                 distributed=True,
