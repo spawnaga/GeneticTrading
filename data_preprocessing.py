@@ -217,8 +217,16 @@ def scale_and_split(df):
 def create_environment_data(data_folder, max_rows=None, use_gpu=True, cache_folder='./cached_data'):
     """
     High-performance loading, preprocessing, scaling, and splitting pipeline.
-    - `max_rows`: Optional limit for faster testing. Set to None for no limit.
-    - `use_gpu`: Boolean flag to utilize GPU acceleration.
+
+    Args:
+        data_folder (str): Directory containing raw .txt data files.
+        max_rows (int, optional): Number of rows to keep from the end of the dataset.
+                                  If None, use all data. If positive, take the last max_rows.
+        use_gpu (bool): Flag to enable GPU acceleration for data loading and processing.
+        cache_folder (str): Directory to store cached preprocessed data.
+
+    Returns:
+        tuple: (train_data, test_data, scaler) as pandas DataFrames and a fitted scaler.
     """
     if use_gpu:
         df = load_data_from_text_files_gpu(data_folder, cache_dir=cache_folder)
@@ -229,9 +237,13 @@ def create_environment_data(data_folder, max_rows=None, use_gpu=True, cache_fold
         df = feature_engineering(df)
         train_data, test_data, scaler = scale_and_split(df)
 
+    # Apply row limiting if max_rows is specified (take last max_rows rows)
     if max_rows is not None:
-        train_data = train_data.iloc[:max_rows].copy()
-        test_data = test_data.iloc[:max_rows].copy()
+        if max_rows > 0:
+            train_data = train_data.iloc[-max_rows:].copy()  # Last max_rows of train
+            test_data = test_data.iloc[-max_rows:].copy()  # Last max_rows of test
+        else:
+            raise ValueError(f"max_rows must be positive or None, got {max_rows}")
 
     return train_data, test_data, scaler
 

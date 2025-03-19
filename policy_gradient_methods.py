@@ -1,3 +1,5 @@
+import time
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -5,7 +7,7 @@ from torch.distributions import Categorical
 import numpy as np
 import os
 import datetime
-
+from torch.nn.parallel import DistributedDataParallel as DDP
 
 class ActorCriticNet(nn.Module):
     """
@@ -168,6 +170,9 @@ class PPOTrainer:
         values = []
         dones = []
 
+        # Seed environment with rank to ensure unique rollouts
+        if hasattr(self.env, 'seed'):
+            self.env.seed(self.local_rank + int(time.time()))  # Unique seed per rank
         state = self.env.reset()
         state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
 
@@ -243,27 +248,22 @@ class PPOTrainer:
         Returns:
             float: Mean reward of the rollout for logging.
         """
-        # Collect rollout data
         obs, actions, rewards, old_logprobs, values, dones = self.collect_trajectories()
 
-        # Get the value of the final state
         last_state = self.env.reset() if dones[-1] else self.env.current_state()
         last_state_tensor = torch.tensor(last_state, dtype=torch.float32).unsqueeze(0).to(self.device)
         with torch.no_grad():
             _, next_value = self.model(last_state_tensor)
         values = np.append(values, next_value.item())
 
-        # Compute advantages and returns
         advantages, returns = self.compute_gae(rewards, values, dones, next_value.item())
 
-        # Convert data to tensors
         obs_tensor = torch.tensor(obs, dtype=torch.float32).to(self.device)
         action_tensor = torch.tensor(actions, dtype=torch.long).to(self.device)
         old_logprobs_tensor = torch.tensor(old_logprobs, dtype=torch.float32).to(self.device)
         advantage_tensor = torch.tensor(advantages, dtype=torch.float32).to(self.device)
         return_tensor = torch.tensor(returns, dtype=torch.float32).to(self.device)
 
-        # Mini-batch PPO updates
         dataset_size = len(obs)
         indices = torch.arange(dataset_size)
 
@@ -274,40 +274,34 @@ class PPOTrainer:
                 if len(batch_indices) == 0:
                     continue
 
-                # Extract mini-batch
                 obs_batch = obs_tensor[batch_indices]
                 action_batch = action_tensor[batch_indices]
                 old_logprobs_batch = old_logprobs_tensor[batch_indices]
                 advantage_batch = advantage_tensor[batch_indices]
                 return_batch = return_tensor[batch_indices]
 
-                # Forward pass
                 policy_logits, value_est = self.model(obs_batch)
                 dist = Categorical(logits=policy_logits)
                 new_logprobs = dist.log_prob(action_batch)
                 entropy = dist.entropy().mean()
 
-                # PPO policy loss
                 ratio = torch.exp(new_logprobs - old_logprobs_batch)
                 surr1 = ratio * advantage_batch
                 surr2 = torch.clamp(ratio, 1.0 - self.clip_epsilon, 1.0 + self.clip_epsilon) * advantage_batch
                 policy_loss = -torch.min(surr1, surr2).mean()
 
-                # Value loss
                 value_loss = nn.MSELoss()(value_est.squeeze(), return_batch)
 
-                # Total loss with entropy bonus
                 loss = policy_loss + 0.5 * value_loss - 0.01 * entropy
 
-                # Optimization step
                 self.optimizer.zero_grad()
                 loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=0.5)  # Gradient clipping
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=0.5)
                 self.optimizer.step()
 
-        # Save model only on rank 0
         if self.local_rank == 0:
-            self.model.save_model(self.model_save_path)
+            model_to_save = self.model.module if isinstance(self.model, DDP) else self.model
+            model_to_save.save_model(self.model_save_path)
 
         return np.mean(rewards)
 
@@ -317,10 +311,10 @@ class PPOTrainer:
 
         Args:
             total_timesteps (int): Total number of environment steps to train for.
-            callback (callable, optional): Function to call after each update (e.g., for logging or early stopping).
+            callback (callable, optional): Function to call after each update (e.g., for logging).
 
         Returns:
-            ActorCriticNet: The trained model.
+            ActorCriticNet: The trained model (unwrapped if DDP is used).
         """
         n_updates = total_timesteps // self.rollout_steps
         for update in range(n_updates):
@@ -328,11 +322,11 @@ class PPOTrainer:
             if self.local_rank == 0:
                 print(f"Update {update + 1}/{n_updates}, Mean Reward: {mean_reward:.5f}")
             if callback is not None:
-                callback(update, mean_reward, self.model)  # Report progress to main.py
+                callback(update, mean_reward, self.model)
         if self.local_rank == 0:
             print(f"Model saved to {self.model_save_path} at {datetime.datetime.now()}")
             print("Training completed.")
-        return self.model
+        return self.model.module if isinstance(self.model, DDP) else self.model
 
     def current_state(self):
         """
