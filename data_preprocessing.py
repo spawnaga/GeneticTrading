@@ -28,7 +28,7 @@ def load_single_file_gpu(file):
     """
     df = cudf.read_csv(
         file,
-        names=['date_time', 'open', 'high', 'low', 'close', 'volume'],
+        names=['date_time', 'Open', 'High', 'Low', 'Close', 'Volume'],
         parse_dates=['date_time'],
         header=None
     )
@@ -71,10 +71,10 @@ def feature_engineering_gpu(df):
     GPU-based feature engineering robust for all securities.
     Creates segments based on weekday and 15-minute intervals.
     """
-    df['return'] = df['close'].pct_change().fillna(0).astype('float64')
-    df['ma_10'] = df['close'].rolling(window=10, min_periods=1).mean().bfill()
+    df['return'] = df['Close'].pct_change().fillna(0).astype('float64')
+    df['ma_10'] = df['Close'].rolling(window=10, min_periods=1).mean().bfill()
 
-    delta = df['close'].diff()
+    delta = df['Close'].diff()
     gain = delta.where(delta > 0, 0).rolling(window=14).mean()
     loss = (-delta).where(delta < 0, 0).rolling(window=14).mean()
     rs = gain / loss
@@ -108,7 +108,7 @@ def scale_and_split_gpu(df):
     """
     Scale numeric columns using StandardScaler (CPU required), then split into train and test sets.
     """
-    numeric_cols = ['open', 'high', 'low', 'close', 'volume', 'return', 'ma_10']
+    numeric_cols = ['Open', 'High', 'Low', 'Close', 'Volume', 'return', 'ma_10']
 
     # Drop NaNs from GPU DataFrame
     df = df.dropna(subset=numeric_cols).reset_index(drop=True)
@@ -135,7 +135,7 @@ def load_data_from_text_files(data_folder):
     for file in all_files:
         df = pd.read_csv(
             file,
-            names=['date_time', 'open', 'high', 'low', 'close', 'volume'],
+            names=['date_time', 'Open', 'High', 'Low', 'Close', 'Volume'],
             parse_dates=['date_time'],
             header=None
         )
@@ -158,10 +158,10 @@ def feature_engineering(df):
     df = df.sort_values('date_time').reset_index(drop=True)
 
     # Calculate returns
-    df['return'] = df['close'].pct_change().fillna(0)
+    df['return'] = df['Close'].pct_change().fillna(0)
 
     # Calculate 10-period moving average
-    df['ma_10'] = df['close'].rolling(window=10, min_periods=1).mean().bfill()
+    df['ma_10'] = df['Close'].rolling(window=10, min_periods=1).mean().bfill()
 
     # Define segments by combining weekday and 15-minute intervals into a unique identifier
     # Create a dictionary mapping each (weekday, time) combination to a unique segment
@@ -199,7 +199,7 @@ def scale_and_split(df):
     """
     CPU-based scaling and splitting.
     """
-    numeric_cols = ['open', 'high', 'low', 'close', 'volume', 'return', 'ma_10']
+    numeric_cols = ['Open', 'High', 'Low', 'Close', 'Volume', 'return', 'ma_10']
     df = df.dropna(subset=numeric_cols).reset_index(drop=True)
 
     scaler = StandardScaler()
@@ -217,8 +217,16 @@ def scale_and_split(df):
 def create_environment_data(data_folder, max_rows=None, use_gpu=True, cache_folder='./cached_data'):
     """
     High-performance loading, preprocessing, scaling, and splitting pipeline.
-    - `max_rows`: Optional limit for faster testing. Set to None for no limit.
-    - `use_gpu`: Boolean flag to utilize GPU acceleration.
+
+    Args:
+        data_folder (str): Directory containing raw .txt data files.
+        max_rows (int, optional): Number of rows to keep from the end of the dataset.
+                                  If None, use all data. If positive, take the last max_rows.
+        use_gpu (bool): Flag to enable GPU acceleration for data loading and processing.
+        cache_folder (str): Directory to store cached preprocessed data.
+
+    Returns:
+        tuple: (train_data, test_data, scaler) as pandas DataFrames and a fitted scaler.
     """
     if use_gpu:
         df = load_data_from_text_files_gpu(data_folder, cache_dir=cache_folder)
@@ -229,9 +237,13 @@ def create_environment_data(data_folder, max_rows=None, use_gpu=True, cache_fold
         df = feature_engineering(df)
         train_data, test_data, scaler = scale_and_split(df)
 
+    # Apply row limiting if max_rows is specified (take last max_rows rows)
     if max_rows is not None:
-        train_data = train_data.iloc[:max_rows].copy()
-        test_data = test_data.iloc[:max_rows].copy()
+        if max_rows > 0:
+            train_data = train_data.iloc[-max_rows:].copy()  # Last max_rows of train
+            test_data = test_data.iloc[-max_rows:].copy()  # Last max_rows of test
+        else:
+            raise ValueError(f"max_rows must be positive or None, got {max_rows}")
 
     return train_data, test_data, scaler
 
@@ -241,7 +253,7 @@ def process_live_row(new_row, scaler, segment_dict):
     Processes a new incoming 1-minute OHLCV row using the existing scaler and segment dictionary.
 
     Parameters:
-    - new_row (dict or DataFrame): New data row with keys ['date_time', 'open', 'high', 'low', 'close', 'volume'].
+    - new_row (dict or DataFrame): New data row with keys ['date_time', 'Open', 'High', 'Low', 'Close', 'Volume'].
     - scaler (StandardScaler): Previously fitted scaler object.
     - segment_dict (dict): Previously created dictionary of day-time segments.
 
@@ -257,7 +269,7 @@ def process_live_row(new_row, scaler, segment_dict):
 
     # Feature engineering
     new_row['return'] = 0  # Cannot compute pct_change for single row
-    new_row['ma_10'] = new_row['close']  # Approximate as current close
+    new_row['ma_10'] = new_row['Close']  # Approximate as current Close
 
     # Compute day_time_segment
     weekday = new_row['date_time'].iloc[0].weekday()
@@ -271,7 +283,7 @@ def process_live_row(new_row, scaler, segment_dict):
 
     new_row['day_time_segment'] = segment_dict[key]
 
-    numeric_cols = ['open', 'high', 'low', 'close', 'volume', 'return', 'ma_10']
+    numeric_cols = ['Open', 'High', 'Low', 'Close', 'Volume', 'return', 'ma_10']
     new_row[numeric_cols] = scaler.transform(new_row[numeric_cols])
 
     return new_row
