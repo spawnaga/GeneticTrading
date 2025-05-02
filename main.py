@@ -1,445 +1,252 @@
+import sys
+import os
+import time
+import warnings
+import logging
+
 import torch
 import torch.distributed as dist
 import numpy as np
 import matplotlib.pyplot as plt
-import os
-import cudf
-import time
-import datetime
 from torch.nn.parallel import DistributedDataParallel as DDP
+
+try:
+    import cudf
+    has_cudf = True
+except Exception as e:
+    warnings.warn(f"cudf import failed ({e}); aliasing pandas as cudf. GPU acceleration disabled.")
+    import pandas as pd
+    sys.modules['cudf'] = pd
+    cudf = pd
+    has_cudf = False
 
 from data_preprocessing import create_environment_data
 from ga_policy_evolution import run_ga_evolution, PolicyNetwork
-from policy_gradient_methods import PPOTrainer
-
-# 1) Import your new environment & state
+from policy_gradient_methods import PPOTrainer, ActorCriticNet
 from futures_env import FuturesEnv, TimeSeriesState
 
+def setup_logging(local_rank: int) -> None:
+    fmt = "%(asctime)s [%(levelname)s] %(message)s"
+    logging.basicConfig(level=logging.INFO, format=fmt)
+    logger = logging.getLogger()
+    logfile = f"main_rank{local_rank}.log"
+    fh = logging.FileHandler(logfile)
+    fh.setFormatter(logging.Formatter(fmt))
+    logger.addHandler(fh)
+    logger.info(f"Logging initialized for rank {local_rank} → {logfile}")
 
-def build_states_for_futures_env(df):
-    """
-    Convert each row of a pandas DataFrame into a TimeSeriesState object.
-    Each state comprises a timestamp (ts), a price, and a set of numeric features.
-
-    For example, we use the columns:
-      - date_time (converted to ts)
-      - Close (price)
-      - [Open, High, Low, Close, Volume, return, ma_10] as the features.
-
-    Feel free to adjust these features to match your data's structure.
-    """
+def build_states_for_futures_env(df_chunk):
     states = []
-    for i, row in df.iterrows():
-        ts = row['date_time']
-        price = float(row['Close'])
+    for row in df_chunk.itertuples(index=False):
+        ts = row.date_time
+        price = float(row.Close)
         features = [
-            row['Open'], row['High'], row['Low'],
-            row['Close'], row['Volume'], row['return'],
-            row['ma_10']
+            float(row.Open),
+            float(row.High),
+            float(row.Low),
+            float(row.Close),
+            float(row.Volume),
+            float(row.return_),
+            float(row.ma_10)
         ]
-        # Convert each row into a TimeSeriesState
-        s = TimeSeriesState(ts=ts, price=price, features=features)
-        states.append(s)
+        states.append(TimeSeriesState(ts=ts, price=price, features=features))
     return states
 
-
-def compute_performance_metrics(balance_history):
-    """
-    Compute standard performance metrics:
-      - CAGR
-      - Sharpe Ratio
-      - Maximum Drawdown
-    from a list/array of running PnL or 'balance' values (balance_history).
-    """
-    steps_per_year = 252 * 390  # approximate trading days x minutes
-    if len(balance_history) <= 1:
+def compute_performance_metrics(balance_history, timestamps):
+    if len(balance_history) < 2:
         return 0.0, 0.0, 0.0
 
-    # Defensive check to avoid division by zero if the first element is 0
-    if balance_history[0] == 0:
-        total_return = 0
-    else:
-        total_return = (balance_history[-1] - balance_history[0]) / balance_history[0]
+    bh = np.array(balance_history, dtype=np.float64)
+    total_return = bh[-1] / (bh[0] + 1e-8)
+    elapsed = (timestamps[-1] - timestamps[0]).total_seconds()
+    years = elapsed / (365.25 * 24 * 3600)
+    cagr = total_return ** (1/years) - 1 if years > 0 else 0.0
 
-    years = len(balance_history) / steps_per_year
-    cagr = (1 + total_return) ** (1 / years) - 1 if years > 0 else 0.0
+    rets = np.diff(bh) / (bh[:-1] + 1e-8)
+    freq = (timestamps[1] - timestamps[0]).total_seconds()
+    annual_factor = (365.25 * 24 * 3600) / freq
+    ann_mean = np.mean(rets) * annual_factor
+    ann_std  = np.std(rets) * np.sqrt(annual_factor)
+    sharpe   = ann_mean / (ann_std + 1e-8)
 
-    returns = np.diff(balance_history) / np.array(balance_history[:-1], dtype=np.float64)
-    ann_mean = np.mean(returns) * steps_per_year
-    ann_std = np.std(returns) * np.sqrt(steps_per_year)
-    sharpe = ann_mean / (ann_std + 1e-8)
-
-    running_max = np.maximum.accumulate(balance_history)
-    if len(running_max) > 0:
-        mdd = np.max((running_max - balance_history) / running_max)
-    else:
-        mdd = 0.0
+    peak = np.maximum.accumulate(bh)
+    drawdowns = (peak - bh) / (peak + 1e-8)
+    mdd = np.max(drawdowns)
 
     return cagr, sharpe, mdd
 
-
-def evaluate_agent_distributed(env, agent, local_rank, world_size):
-    """
-    Evaluate an agent's performance across all distributed ranks on the given environment.
-
-    Returns a profit_history list only on rank 0 (others get local partial lists).
-    The environment's built-in render() method is called on rank 0
-    to produce any histograms or distribution plots of trades.
-    """
-    profit_history = []
-
+def evaluate_agent_distributed(env, agent, local_rank):
+    profits, times = [], []
     obs = env.reset()
     done = False
-    device = next(agent.parameters()).device
-
-    # Convert obs to Torch tensor
-    obs_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(device)
 
     while not done:
+        tensor = torch.tensor(obs, dtype=torch.float32) \
+                      .unsqueeze(0) \
+                      .to(next(agent.parameters()).device)
         with torch.no_grad():
-            if hasattr(agent, 'act'):
-                # GA or Q-like policy: agent.act(...) picks the best action
-                action = agent.act(obs_tensor)
-            else:
-                # PPO actor: forward -> sample an action from the policy distribution
-                policy_logits, _ = agent.forward(obs_tensor)
-                dist_ = torch.distributions.Categorical(logits=policy_logits)
-                action = dist_.sample().item()
+            action = agent.act(tensor)
+        obs, _, done, info = env.step(action)
+        profits.append(info.get("total_profit", 0.0))
+        times.append(info.get("timestamp", env.states[env.current_index-1].ts))
 
-        obs, reward, done, info = env.step(action)
-        obs_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(device)
-
-        # Info dict has 'total_profit'
-        profit_history.append(info.get('total_profit', 0.0))
-
-    # Gather profit histories from each rank to rank 0
-    profit_tensor = torch.tensor(profit_history, dtype=torch.float32).to(device)
-    gather_list = (
-        [torch.zeros(len(profit_history), dtype=torch.float32).to(device) for _ in range(world_size)]
-        if local_rank == 0 else None
-    )
-    dist.gather(
-        profit_tensor,
-        gather_list=gather_list if local_rank == 0 else None,
-        dst=0
-    )
-
-    # On rank 0, we can combine them and produce final results
     if local_rank == 0:
-        full_profit_history = torch.cat(gather_list).cpu().numpy().tolist()
-        # Render environment charts (histograms, distributions of trades, etc.)
-        env.render()
-        plt.show()
-        return full_profit_history
-
-    return profit_history
-
+        return profits, times
+    else:
+        return [], []
 
 def main():
-    """
-    Main function for distributed training & testing with GA and PPO on a futures environment.
-
-    Steps:
-      1) Distributed init, environment creation, data loading & sharding
-      2) GA training, evaluation
-      3) PPO training, evaluation
-      4) Single unbroken backtest for GA
-      5) Single unbroken backtest for PPO
-      6) Plot & save final trades for both.
-
-    Produces 4 CSV files:
-      final_ga_orders.csv, final_ga_trades.csv
-      final_ppo_orders.csv, final_ppo_trades.csv
-    And 2 single-run backtest plots for GA & PPO.
-    """
-    # ------------------------------------------------
-    # 1) Initialize distributed environment
-    # ------------------------------------------------
-    timeout = datetime.timedelta(seconds=3600)
-    dist.init_process_group(backend='nccl', init_method='env://', timeout=timeout)
-    local_rank = int(os.environ["LOCAL_RANK"])
+    os.environ["NCCL_TIMEOUT"] = "1800000"
+    dist.init_process_group(backend="nccl", init_method="env://")
+    local_rank = int(os.environ.get("LOCAL_RANK", "0"))
     world_size = dist.get_world_size()
     torch.cuda.set_device(local_rank)
     device = torch.device(f"cuda:{local_rank}")
 
-    # ------------------------------------------------
-    # 2) Data loading / caching
-    # ------------------------------------------------
-    data_folder = './data_txt'
-    cache_folder = './cached_data'
-    os.makedirs(cache_folder, exist_ok=True)
-    train_data_path = os.path.join(cache_folder, 'train_data.parquet')
-    test_data_path = os.path.join(cache_folder, 'test_data.parquet')
+    setup_logging(local_rank)
+    logging.info(f"Rank {local_rank}/{world_size} starting on {device} (has_cudf={has_cudf})")
 
-    # --------------------------------------------------------------
-    # Data preparation (rank 0 only: loads & caches data to parquet)
-    # --------------------------------------------------------------
+    data_folder  = "./data_txt"
+    cache_folder = "./cached_data"
+    os.makedirs(cache_folder, exist_ok=True)
+    train_path = os.path.join(cache_folder, "train_data.parquet")
+    test_path  = os.path.join(cache_folder, "test_data.parquet")
+
     if local_rank == 0:
-        if not (os.path.exists(train_data_path) and os.path.exists(test_data_path)):
-            train_data, test_data, scaler = create_environment_data(
+        if not (os.path.exists(train_path) and os.path.exists(test_path)):
+            train_df, test_df, scaler = create_environment_data(
                 data_folder=data_folder,
                 max_rows=1000,
-                use_gpu=True,
+                use_gpu=has_cudf,
                 cache_folder=cache_folder
             )
-            train_data.to_parquet(train_data_path)
-            test_data.to_parquet(test_data_path)
-            print("✅ Data cached successfully.")
+            train_df.to_parquet(train_path)
+            test_df.to_parquet(test_path)
+            logging.info("Data cached to parquet.")
         else:
-            print("✅ Cached data already exists.")
-    dist.barrier()  # Sync all ranks
-
-    # Load data on all ranks from cached parquet
-    train_data = cudf.read_parquet(train_data_path).to_pandas()
-    test_data = cudf.read_parquet(test_data_path).to_pandas()
-
-    if local_rank == 0:
-        print(f"Total train data size: {len(train_data)}, Total test data size: {len(test_data)}")
-
-    # Shard data across ranks to ensure balanced workloads
-    train_chunk_size = max(1, len(train_data) // world_size)
-    test_chunk_size = max(1, len(test_data) // world_size)
-    train_start = local_rank * train_chunk_size
-    train_end = min((local_rank + 1) * train_chunk_size, len(train_data))
-    test_start = local_rank * test_chunk_size
-    test_end = min((local_rank + 1) * test_chunk_size, len(test_data))
-
-    train_chunk = train_data[train_start:train_end]
-    test_chunk = test_data[test_start:test_end]
-
-    print(
-        f"Rank {local_rank}: Train chunk {train_start}:{train_end} "
-        f"({len(train_chunk)} rows), Test chunk {test_start}:{test_end} "
-        f"({len(test_chunk)} rows)"
-    )
-    if len(train_chunk) == 0 or len(test_chunk) == 0:
-        raise ValueError(f"Rank {local_rank}: Empty data chunk.")
-
-    # Convert shards to TimeSeriesState sequences
-    train_states = build_states_for_futures_env(train_chunk)
-    test_states = build_states_for_futures_env(test_chunk)
-
-    # ------------------------------------------------
-    # 3) Create environment
-    # ------------------------------------------------
-    train_env = FuturesEnv(
-        states=train_states,
-        value_per_tick=12.5,
-        tick_size=0.25,
-        fill_probability=1.0,
-        execution_cost_per_order=0.0,
-        log_dir=f"./logs/futures_env/train_rank{local_rank}"
-    )
-    test_env = FuturesEnv(
-        states=test_states,
-        value_per_tick=12.5,
-        tick_size=0.25,
-        fill_probability=1.0,
-        execution_cost_per_order=0.0,
-        log_dir=f"./logs/futures_env/test_rank{local_rank}"
-    )
-
-    # ------------------------------------------------
-    # 4) GA (Genetic Algorithm) training
-    # ------------------------------------------------
-    ga_model_path = "ga_policy_model.pth"
-    start_time = time.time()
-    if not os.path.exists(ga_model_path):
-        ga_agent, best_fit = run_ga_evolution(
-            train_env,
-            population_size=40,
-            generations=20,
-            device=device,
-            model_save_path=ga_model_path,
-            distributed=True,
-            local_rank=local_rank,
-            world_size=world_size
-        )
-        if local_rank == 0:
-            print(f"GA best fitness: {best_fit:.2f}")
+            logging.info("Parquet cache found; skipping preprocessing.")
     dist.barrier()
 
-    # Load GA agent
-    input_dim = int(np.prod(train_env.observation_space.shape))
-    ga_agent = PolicyNetwork(input_dim, 64, train_env.action_space.n, device=device)
-    ga_agent.load_model(ga_model_path)
-    ga_training_time = time.time() - start_time
+    if has_cudf:
+        full_train = cudf.read_parquet(train_path)
+        full_test  = cudf.read_parquet(test_path)
+    else:
+        import pandas as pd
+        full_train = pd.read_parquet(train_path)
+        full_test  = pd.read_parquet(test_path)
+
+    n_train, n_test = len(full_train), len(full_test)
+    chunk_train    = n_train // world_size
+    chunk_test     = n_test  // world_size
+
+    s_t = local_rank * chunk_train
+    e_t = (local_rank+1)*chunk_train if local_rank<world_size-1 else n_train
+    s_v = local_rank * chunk_test
+    e_v = (local_rank+1)*chunk_test  if local_rank<world_size-1 else n_test
+
+    train_slice = full_train.iloc[s_t:e_t]
+    test_slice  = full_test.iloc[s_v:e_v]
+
+    if has_cudf:
+        train_pd = train_slice.to_pandas()
+        test_pd  = test_slice.to_pandas()
+    else:
+        train_pd = train_slice.copy()
+        test_pd  = test_slice.copy()
+
+    train_pd.rename(columns={"return": "return_"}, inplace=True)
+    test_pd.rename(columns={"return": "return_"},  inplace=True)
+
+    train_states = build_states_for_futures_env(train_pd)
+    test_states  = build_states_for_futures_env(test_pd)
+
+    env_kwargs = {
+        "value_per_tick": 12.5,
+        "tick_size": 0.25,
+        "fill_probability": 1.0,
+        "execution_cost_per_order": 0.0005,
+        "contracts_per_trade": 1,
+        "margin_rate": 0.01,
+        "bid_ask_spread": 0.05,
+        "add_current_position_to_state": True
+    }
+    train_env = FuturesEnv(states=train_states,
+                           log_dir=f"./logs/train_rank{local_rank}",
+                           **env_kwargs)
+    env_kwargs["execution_cost_per_order"] = 0.00005
+    test_env  = FuturesEnv(states=test_states,
+                           log_dir=f"./logs/test_rank{local_rank}",
+                           **env_kwargs)
+
+    ga_model = "ga_policy_model.pth"
     if local_rank == 0:
-        print(f"GA training completed in {ga_training_time:.2f} seconds")
+        best_agent, best_fit, _, _ = run_ga_evolution(
+            train_env,
+            population_size=80,
+            generations=100,
+            tournament_size=7,
+            mutation_rate=0.8,
+            mutation_scale=1.0,
+            num_workers=2,
+            device=str(device),
+            model_save_path=ga_model
+        )
+        logging.info(f"GA training complete – best fitness: {best_fit:.2f}")
+        best_agent.save_model(ga_model)
+    dist.barrier()
 
-    # Evaluate GA on test_env
-    balance_history_ga = evaluate_agent_distributed(test_env, ga_agent, local_rank, world_size)
+    ga_input_dim = int(np.prod(train_env.observation_space.shape))
+    ga_agent = PolicyNetwork(
+        input_dim=ga_input_dim,
+        hidden_dim=64,
+        output_dim=train_env.action_space.n,
+        device=str(device)
+    )
+    ga_agent.load_model(ga_model)
+    ga_profits, ga_times = evaluate_agent_distributed(test_env, ga_agent, local_rank)
     if local_rank == 0:
-        if len(balance_history_ga) > 1:
-            cagr_ga, sharpe_ga, mdd_ga = compute_performance_metrics(balance_history_ga)
-            print(f"GA Results - CAGR: {cagr_ga:.4f}, Sharpe: {sharpe_ga:.4f}, MaxDD: {mdd_ga:.4f}")
+        cagr, sharpe, mdd = compute_performance_metrics(ga_profits, ga_times)
+        logging.info(f"GA Eval → CAGR: {cagr:.4f}, Sharpe: {sharpe:.4f}, MDD: {mdd:.4f}")
 
-    # ------------------------------------------------
-    # 5) PPO training
-    # ------------------------------------------------
-    ppo_model_path = "ppo_actor_critic_model.pth"
-
+    ppo_model = "ppo_model.pth"
     ppo_trainer = PPOTrainer(
         env=train_env,
-        input_dim=input_dim,
+        input_dim=int(np.prod(train_env.observation_space.shape)),
         action_dim=train_env.action_space.n,
         hidden_dim=64,
         lr=3e-4,
         gamma=0.99,
         gae_lambda=0.95,
         clip_epsilon=0.2,
-        update_epochs=10,  # increased from default 4 to help training
-        rollout_steps=512,  # shortened from 2048 for more frequent updates
+        update_epochs=10,
+        rollout_steps=512,
         batch_size=64,
-        device=device,
-        model_save_path=ppo_model_path,
+        device=str(device),
+        model_save_path=ppo_model,
         local_rank=local_rank
     )
+
+    logging.info("About to wrap PPO model in DDP – calling dist.barrier()")
+    dist.barrier()
     ppo_trainer.model = DDP(ppo_trainer.model, device_ids=[local_rank])
 
-    start_time = time.time()
-    if not os.path.exists(ppo_model_path):
-        # Train PPO
-        ppo_trainer.train(total_timesteps=1000000 // world_size)
-        if local_rank == 0:
-            ppo_trainer.model.module.save_model(ppo_model_path)
-    else:
-        ppo_trainer.model.module.load_model(ppo_model_path)
-        if local_rank == 0:
-            print("Loaded existing PPO model.")
+    if local_rank == 0:
+        ppo_trainer.train(total_timesteps=1_000_000 // world_size)
     dist.barrier()
 
-    ppo_training_time = time.time() - start_time
+    ppo_agent = ActorCriticNet(
+        input_dim=int(np.prod(train_env.observation_space.shape)),
+        hidden_dim=64,
+        action_dim=train_env.action_space.n,
+        device=str(device)
+    )
+    ppo_agent.load_model(ppo_model)
+    ppo_profits, ppo_times = evaluate_agent_distributed(test_env, ppo_agent, local_rank)
     if local_rank == 0:
-        print(f"PPO training completed in {ppo_training_time:.2f} seconds")
+        cagr, sharpe, mdd = compute_performance_metrics(ppo_profits, ppo_times)
+        logging.info(f"PPO Eval → CAGR: {cagr:.4f}, Sharpe: {sharpe:.4f}, MDD: {mdd:.4f}")
 
-    # Evaluate PPO
-    balance_history_ppo = evaluate_agent_distributed(test_env, ppo_trainer.model.module, local_rank, world_size)
-
-    # ------------------------------------------------
-    # 6) SINGLE UNBROKEN BACKTEST for GA
-    #    (to avoid "sharp falling line" from multiple partial runs)
-    # ------------------------------------------------
-    if local_rank == 0:
-        # GA single-run final backtest
-        best_ga_agent = PolicyNetwork(input_dim, 64, train_env.action_space.n, device=device)
-        best_ga_agent.load_model(ga_model_path)
-
-        # We'll run one single test from start to finish on the test set
-        final_env = FuturesEnv(
-            states=test_states,  # or train_states if you prefer
-            value_per_tick=12.5,
-            tick_size=0.25,
-            fill_probability=1.0,
-            execution_cost_per_order=0.0,
-            log_dir="./logs/final_ga_test"
-        )
-
-        obs = final_env.reset()
-        done = False
-        profit_history = []
-        while not done:
-            obs_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(device)
-            with torch.no_grad():
-                action = best_ga_agent.act(obs_tensor)
-            obs, reward, done, info = final_env.step(action)
-            profit_history.append(info.get("total_profit", 0.0))
-
-        # Optionally, remove the final data point if it causes a drop you don't want to see:
-        # if len(profit_history) > 0:
-        #     profit_history.pop()
-
-        # Save orders & trades to CSV for debugging or inspection
-        final_orders_df, final_trades_df = final_env.get_episode_data()
-        final_orders_df.to_csv("final_ga_orders.csv", index=False)
-        final_trades_df.to_csv("final_ga_trades.csv", index=False)
-        print("Saved final GA orders & trades to CSV.")
-
-        # Plot final GA single-run equity curve
-        plt.figure()
-        plt.plot(profit_history, label="GA Final Single Run")
-        plt.title("GA Single Unbroken Backtest")
-        plt.xlabel("Steps")
-        plt.ylabel("Total Profit")
-        plt.legend()
-        plt.grid(True)
-        plt.show()
-
-    # ------------------------------------------------
-    # 7) SINGLE UNBROKEN BACKTEST for PPO
-    #    (to produce distinct CSV and plot)
-    # ------------------------------------------------
-
-    # if local_rank == 0:
-    #     # For PPO, use the ActorCriticNet since the PPO model was trained with it.
-    #     best_ppo_net = ActorCriticNet(
-    #         input_dim=input_dim,
-    #         hidden_dim=64,
-    #         action_dim=train_env.action_space.n,
-    #         device=device
-    #     )
-    #     best_ppo_net.load_model(ppo_model_path)
-    #
-    #     final_ppo_env = FuturesEnv(
-    #         states=test_states,
-    #         value_per_tick=12.5,
-    #         tick_size=0.25,
-    #         fill_probability=1.0,
-    #         execution_cost_per_order=0.0,
-    #         log_dir="./logs/final_ppo_test"
-    #     )
-    #
-    #     obs = final_ppo_env.reset()
-    #     done = False
-    #     final_ppo_profit_history = []
-    #     while not done:
-    #         obs_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(device)
-    #         with torch.no_grad():
-    #             policy_logits, _ = best_ppo_net(obs_tensor)
-    #             dist_ = torch.distributions.Categorical(logits=policy_logits)
-    #             action = dist_.sample().item()
-    #         obs, reward, done, info = final_ppo_env.step(action)
-    #         final_ppo_profit_history.append(info.get("total_profit", 0.0))
-    #
-    #     # Save final PPO orders & trades to CSV for later inspection
-    #     ppo_orders_df, ppo_trades_df = final_ppo_env.get_episode_data()
-    #     ppo_orders_df.to_csv("final_ppo_orders.csv", index=False)
-    #     ppo_trades_df.to_csv("final_ppo_trades.csv", index=False)
-    #     print("Saved final PPO orders & trades to CSV.")
-    #
-    #     # Plot final PPO single-run equity curve
-    #     plt.figure()
-    #     plt.plot(final_ppo_profit_history, label="PPO Final Single Run")
-    #     plt.title("PPO Single Unbroken Backtest")
-    #     plt.xlabel("Steps")
-    #     plt.ylabel("Total Profit")
-    #     plt.legend()
-    #     plt.grid(True)
-    #     plt.show()
-
-    # ------------------------------------------------
-    # Optionally, if you want to see combined final curves for GA/PPO:
-    #    (currently commented out but retained for reference)
-    # ------------------------------------------------
-    # if local_rank == 0:
-    #     if len(balance_history_ppo) > 1:
-    #         cagr_ppo, sharpe_ppo, mdd_ppo = compute_performance_metrics(balance_history_ppo)
-    #         print(f"PPO Results - CAGR: {cagr_ppo:.4f}, Sharpe: {sharpe_ppo:.4f}, MaxDD: {mdd_ppo:.4f}")
-    #
-    #         # Plot equity curves for entire test run (not the single-run final backtest)
-    #         plt.figure(figsize=(10, 6))
-    #         plt.plot(balance_history_ga, label='GA Policy (test run)')
-    #         plt.plot(balance_history_ppo, label='PPO Policy (test run)')
-    #         plt.title('Equity Curves Comparison')
-    #         plt.xlabel('Time Steps')
-    #         plt.ylabel('Total Profit')
-    #         plt.legend()
-    #         plt.grid(True)
-    #         plt.show()
-
-    # Clean up distributed process group
     dist.destroy_process_group()
-
 
 if __name__ == "__main__":
     main()
