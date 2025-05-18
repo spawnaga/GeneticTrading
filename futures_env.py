@@ -6,8 +6,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import gym
-from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
 from uuid import uuid4
 
 
@@ -105,7 +105,7 @@ class FuturesEnv(gym.Env):
 
         # Define action & observation spaces
         self.action_space = spaces.Discrete(3)
-        base_dim = len(states[0].features)           # always 7
+        base_dim = len(states[0].features)  # will now be >> 7
         extras = 3 if add_current_position_to_state else 0
         obs_dim = base_dim + extras                  # 7 or 10
         self.observation_space = spaces.Box(
@@ -218,19 +218,41 @@ class FuturesEnv(gym.Env):
             self.orders.append([str(uuid4()), str(state.ts), filled_price, -1])
             self.current_position = -1
 
-    def _simulate_fill(self, price, trade_type):
+    def _simulate_fill(self, price: float, trade_type: int) -> float:
         """
-        Simulate slippage & half-spread cost.
+        Simulate slippage, half‐spread cost, and fill probability.
+
+        Parameters:
+        - price:        The mid‐market price at which the order is placed.
+        - trade_type:   +1 for a buy/long, -1 for a sell/short.
+
+        Returns:
+        - The executed price after slippage and spread adjustments.
+          If the order “does not fill” (based on fill_probability), returns
+          the mid‐price unchanged.
         """
+        # 1) Decide whether the order actually fills
+        if np.random.rand() > self.fill_probability:
+            # No fill: assume execution at mid‐market price (no slippage/spread)
+            return price
+
+        # 2) Sample slippage if custom distributions are provided
         slippage = 0.0
         if self.can_random:
             if trade_type == 1:
                 slippage = np.random.choice(self.long_values, p=self.long_probabilities)
             else:
                 slippage = np.random.choice(self.short_values, p=self.short_probabilities)
+
+        # 3) Apply half the bid‐ask spread in the direction of the trade
         spread_adj = (self.bid_ask_spread / 2.0) * (1 if trade_type == 1 else -1)
-        raw = price + slippage + spread_adj
-        return round_to_nearest_increment(raw, self.tick_size)
+
+        # 4) Combine into a raw execution price
+        raw_price = price + slippage + spread_adj
+
+        # 5) Round to the nearest tick increment
+        return round_to_nearest_increment(raw_price, self.tick_size)
+
 
     def _get_reward(self, state):
         """
