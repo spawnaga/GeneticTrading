@@ -184,7 +184,7 @@ def main_debug():
 
     start_time = time.time()
     if not os.path.exists(ppo_model_path):
-        ppo_trainer.train(total_timesteps=1000000)
+        ppo_trainer.train(total_timesteps=1000000, eval_env=test_env)
         ppo_trainer.model.save_model(ppo_model_path)
     else:
         ppo_trainer.model.load_model(ppo_model_path)

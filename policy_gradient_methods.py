@@ -315,7 +315,12 @@ class PPOTrainer:
         logger.info(f"PPO update complete — mean reward: {mean_reward:.4f}")
         return mean_reward
 
-    def train(self, total_timesteps: int, start_update: int = 0):
+    def train(
+        self,
+        total_timesteps: int,
+        start_update: int = 0,
+        eval_env=None,
+    ):
         """
         Run PPO until `total_timesteps` env steps are collected.
         Also performs periodic evaluation and logs profitability metrics,
@@ -341,8 +346,9 @@ class PPOTrainer:
         # for elapsed time
         start_time = time.time()
 
-        # NOTE: assumes `test_env` and `evaluate_agent_distributed` are in scope
-        from main import test_env
+        # evaluation environment for periodic metrics
+        if eval_env is None:
+            logger.warning("No evaluation environment provided; skipping eval logs")
 
         for update in trange(start_update, n_updates, desc="PPO updates"):
             self.current_update = update
@@ -356,8 +362,12 @@ class PPOTrainer:
             self.tb_writer.add_scalar("PPO/ElapsedSeconds", elapsed, update)
 
             # 3) periodic evaluation & profit metrics
-            if self.local_rank == 0 and (update + 1) % self.eval_interval == 0:
-                profits, times = evaluate_agent_distributed(test_env, self.model, 0)
+            if (
+                eval_env is not None
+                and self.local_rank == 0
+                and (update + 1) % self.eval_interval == 0
+            ):
+                profits, times = evaluate_agent_distributed(eval_env, self.model, 0)
                 cagr, sharpe, mdd = compute_performance_metrics(profits, times)
                 self.tb_writer.add_scalar("PPO/Eval/CAGR", cagr, update)
                 self.tb_writer.add_scalar("PPO/Eval/Sharpe", sharpe, update)
