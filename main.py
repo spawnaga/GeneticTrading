@@ -87,7 +87,14 @@ def build_states_for_futures_env(df_chunk):
             row.sin_weekday, row.cos_weekday,
             # plus all tb_* and wd_* one-hots…
         ]
-        states.append(TimeSeriesState(ts=row.date_time, price=row.Close, features=feats))
+        states.append(
+            TimeSeriesState(
+                ts=row.date_time,
+                open_price=row.Open,
+                close_price=row.Close,
+                features=feats,
+            )
+        )
     return states
 
 # ──────────────────────────────────────────────────────────────────────────────
