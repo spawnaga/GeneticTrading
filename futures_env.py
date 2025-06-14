@@ -263,7 +263,9 @@ class FuturesEnv(gym.Env):
         volume: float | None = None,
     ) -> float:
         """
-        Simulate slippage, half‐spread cost, and fill probability.
+        Simulate execution price with slippage and spread adjustments.
+        High/low bounds are used for clipping, while volume modulates
+        slippage magnitude (lower volume -> more slippage).
         """
         # 1) Decide whether the order actually fills
         if np.random.rand() > self.fill_probability:
@@ -276,6 +278,13 @@ class FuturesEnv(gym.Env):
                 slippage = np.random.choice(self.long_values, p=self.long_probabilities)
             else:
                 slippage = np.random.choice(self.short_values, p=self.short_probabilities)
+
+        # 3) Use high/low range to derive a dynamic spread when available
+        dynamic_spread = self.bid_ask_spread
+        if high_price is not None and low_price is not None:
+            dynamic_spread = max(dynamic_spread, high_price - low_price)
+
+        spread_adj = (dynamic_spread / 2.0) * (1 if trade_type == 1 else -1)
 
         # 3) Apply half the bid-ask spread in the direction of the trade
         spread_adj = (self.bid_ask_spread / 2.0) * (1 if trade_type == 1 else -1)
