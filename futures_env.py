@@ -286,6 +286,9 @@ class FuturesEnv(gym.Env):
 
         spread_adj = (dynamic_spread / 2.0) * (1 if trade_type == 1 else -1)
 
+        # 3) Apply half the bid-ask spread in the direction of the trade
+        spread_adj = (self.bid_ask_spread / 2.0) * (1 if trade_type == 1 else -1)
+
         # 4) Volume-based scaling of slippage
         volume_scale = 1.0
         if volume is not None and volume > 0:
