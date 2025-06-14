@@ -381,7 +381,7 @@ class FuturesEnv(gym.Env):
             "intraday_low": intraday_low,
             "monotonicity": monotonicity(running),
             "running_equity": running
-        }rove
+        }
 
         if as_file:
             Path(self.log_dir + "/metrics").mkdir(parents=True, exist_ok=True)
