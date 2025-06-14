@@ -383,7 +383,8 @@ class PPOTrainer:
 
             # 4) periodic weight histograms
             if self.local_rank == 0 and (update + 1) % (self.eval_interval * 2) == 0:
-                for i, layer in enumerate(self.model.base):
+                wrapped = self.model.module if isinstance(self.model, DDP) else self.model
+                for i, layer in enumerate(wrapped.base):
                     if isinstance(layer, nn.Linear):
                         w = layer.weight.data.cpu().numpy()
                         self.tb_writer.add_histogram(f"PPO/Layer{i}_Weights", w, update)

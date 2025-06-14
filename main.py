@@ -11,6 +11,7 @@ from threading import Lock
 import time
 import sys
 import warnings
+import logging
 import pickle
 import collections
 
@@ -38,8 +39,9 @@ from policy_gradient_methods import PPOTrainer, ActorCriticNet
 from utils import evaluate_agent_distributed, compute_performance_metrics
 from futures_env import FuturesEnv, TimeSeriesState
 
+
 # ──────────────────────────────────────────────────────────────────────────────
-# Globals for live‐inference buffering
+# Globals for live-inference buffering
 # ──────────────────────────────────────────────────────────────────────────────
 WINDOW_MA      = 10
 WINDOW_RSI     = 14
@@ -65,10 +67,10 @@ def setup_logging(local_rank: int) -> None:
     """
     fmt = "%(asctime)s [%(levelname)s] %(message)s"
     logging.basicConfig(level=logging.INFO, format=fmt)
+    logger = logging.getLogger()
     logfile = f"main_rank{local_rank}.log"
     fh = logging.FileHandler(logfile)
     fh.setFormatter(logging.Formatter(fmt))
-    logger = logging.getLogger()
     logger.addHandler(fh)
     logger.info(f"Logging initialized for rank {local_rank} → {logfile}")
 
@@ -97,6 +99,55 @@ def build_states_for_futures_env(df_chunk):
         )
     return states
 
+# ──────────────────────────────────────────────────────────────────────────────
+def compute_performance_metrics(balance_history, timestamps):
+    """
+    Compute CAGR, Sharpe ratio, and maximum drawdown from profit history.
+    """
+    if len(balance_history) < 2:
+        return 0.0, 0.0, 0.0
+
+    bh      = np.array(balance_history, dtype=np.float64)
+    total   = bh[-1] / (bh[0] + 1e-8)
+    elapsed = (timestamps[-1] - timestamps[0]).total_seconds()
+    years   = elapsed / (365.25 * 24 * 3600)
+    cagr    = total**(1/years) - 1 if years > 0 else 0.0
+
+    rets    = np.diff(bh) / (bh[:-1] + 1e-8)
+    freq    = (timestamps[1] - timestamps[0]).total_seconds()
+    ann_fac = (365.25 * 24 * 3600) / freq
+    ann_mean = np.mean(rets) * ann_fac
+    ann_std  = np.std(rets) * np.sqrt(ann_fac)
+    sharpe   = ann_mean / (ann_std + 1e-8)
+
+    peak       = np.maximum.accumulate(bh)
+    drawdowns  = (peak - bh) / (peak + 1e-8)
+    mdd        = np.max(drawdowns)
+
+    return cagr, sharpe, mdd
+
+# ──────────────────────────────────────────────────────────────────────────────
+def evaluate_agent_distributed(env, agent, local_rank):
+    """
+    Run the trained agent in the test environment. Only rank 0 returns results.
+    """
+    profits, times = [], []
+    obs = env.reset()
+    done = False
+
+    while not done:
+        tensor = torch.tensor(obs, dtype=torch.float32) \
+                      .unsqueeze(0) \
+                      .to(next(agent.parameters()).device)
+        with torch.no_grad():
+            action = agent.act(tensor)
+        obs, _, done, info = env.step(action)
+        profits.append(info.get("total_profit", 0.0))
+        times.append(info.get("timestamp", env.states[env.current_index-1].ts))
+
+    return (profits, times) if local_rank == 0 else ([], [])
+
+# ──────────────────────────────────────────────────────────────────────────────
 def process_live_row(bar: dict) -> "cudf.DataFrame":
     """
     Given a single OHLCV bar dict, compute all features exactly as in training,
@@ -108,6 +159,7 @@ def process_live_row(bar: dict) -> "cudf.DataFrame":
     ts    = bar["date_time"]
     close = bar["Close"]
     history["closes"].append(close)
+
     if len(history["closes"]) >= 2:
         prev  = history["closes"][-2]
         delta = close - prev
@@ -118,12 +170,12 @@ def process_live_row(bar: dict) -> "cudf.DataFrame":
     history["deltas"].append(delta)
     history["returns"].append(rtn)
 
-    ma10 = float(np.mean(history["closes"]))
-    gain = float(np.mean([d for d in history["deltas"] if d > 0])) if history["deltas"] else 0.0
-    loss = float(np.mean([-d for d in history["deltas"] if d < 0])) if history["deltas"] else 1e-8
-    rs   = gain / (loss + 1e-8)
-    rsi  = 100 - (100 / (1 + rs))
-    vol  = float(np.std(history["returns"])) if len(history["returns"]) > 1 else 0.0
+    ma10  = float(np.mean(history["closes"]))
+    gain  = float(np.mean([d for d in history["deltas"] if d > 0])) if history["deltas"] else 0.0
+    loss  = float(np.mean([-d for d in history["deltas"] if d < 0])) if history["deltas"] else 1e-8
+    rs    = gain / (loss + 1e-8)
+    rsi   = 100 - (100 / (1 + rs))
+    vol   = float(np.std(history["returns"])) if len(history["returns"]) > 1 else 0.0
 
     # 2) Time features
     weekday = ts.weekday()
@@ -135,6 +187,8 @@ def process_live_row(bar: dict) -> "cudf.DataFrame":
 
     # 3) One-hot via segment_dict mapping
     bin_index = minutes // BIN_SIZE
+    seg_key   = weekday * (SECONDS_IN_DAY // BIN_SIZE) + bin_index
+    # Build a zeroed dictionary for all OHE cols
     ohe = {}
     # weekday one-hot
     for d in range(7):
@@ -160,6 +214,7 @@ def process_live_row(bar: dict) -> "cudf.DataFrame":
     df_live = cudf.DataFrame([row])
     num_cols = ["Open","High","Low","Close","Volume","return","ma_10"]
     df_live[num_cols] = scaler.transform(df_live[num_cols])
+
     return df_live
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -168,7 +223,7 @@ def main():
     # suppress TF logs
     os.environ["TF_CPP_MIN_LOG_LEVEL"]  = "2"
     os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
-    os.environ["NCCL_TIMEOUT"]          = "1800000"
+    os.environ["NCCL_TIMEOUT"]         = "1800000"
 
     # 1) Pull in the torchrun‐provided env vars
     local_rank = int(os.environ["LOCAL_RANK"])
@@ -194,7 +249,7 @@ def main():
     setup_logging(local_rank)
     logging.info(f"Rank {local_rank}/{world_size} starting on {device} (has_cudf={has_cudf})")
 
-    # 2) Preprocess / load data
+    # Load or preprocess train/test data once (rank 0), then barrier
     data_folder  = "./data_txt"
     cache_folder = "./cached_data"
     os.makedirs(cache_folder, exist_ok=True)
@@ -267,7 +322,7 @@ def main():
     train_states = build_states_for_futures_env(train_pd)
     test_states  = build_states_for_futures_env(test_pd)
 
-    # 4) Initialize environments
+    # Common env kwargs
     env_kwargs = {
         "value_per_tick": 12.5,
         "tick_size": 0.25,
@@ -287,23 +342,26 @@ def main():
                            **env_kwargs)
 
     # ──────────────────────────────────────────────────────────────────────────
-    # Genetic Algorithm Training & Evaluation
+    # Genetic Algorithm Training & Evaluation (skip if model exists)
     # ──────────────────────────────────────────────────────────────────────────
     ga_model = "ga_policy_model.pth"
     if local_rank == 0:
-        best_agent, best_fit, _, _ = run_ga_evolution(
-            env=train_env,
-            population_size=80,
-            generations=100,
-            tournament_size=7,
-            mutation_rate=0.8,
-            mutation_scale=1.0,
-            num_workers=4,
-            device=str(device),
-            model_save_path=ga_model
-        )
-        logging.info(f"GA training complete – best fitness: {best_fit:.2f}")
-        best_agent.save_model(ga_model)
+        if not os.path.exists(ga_model):
+            best_agent, best_fit, _, _ = run_ga_evolution(
+                train_env,
+                population_size=80,
+                generations=100,
+                tournament_size=7,
+                mutation_rate=0.8,
+                mutation_scale=1.0,
+                num_workers=4,
+                device=str(device),
+                model_save_path=ga_model
+            )
+            logging.info(f"GA training complete – best fitness: {best_fit:.2f}")
+            best_agent.save_model(ga_model)
+        else:
+            logging.info(f"Found existing GA model at {ga_model}; skipping GA training")
     dist.barrier(device_ids=[local_rank])
 
     ga_agent = PolicyNetwork(
@@ -357,12 +415,11 @@ def main():
         start_update = 0
         logging.info("No PPO checkpoint found; starting from scratch")
 
-    # 2) Run or resume training on rank 0
-    if local_rank == 0:
+    # 2) Run or resume training on _all_ ranks (so DDP actually syncs gradients)
+    ppo_trainer.train(
         ppo_trainer.train(
             total_timesteps=1_000_000 // world_size,
-            start_update=start_update,
-            eval_env=test_env
+            start_update=start_update
         )
     dist.barrier(device_ids=[local_rank])
 
