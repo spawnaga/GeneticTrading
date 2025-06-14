@@ -18,18 +18,24 @@ def build_states_for_futures_env(df):
     Convert each row of df into a TimeSeriesState.
     Here we define the 'features' that the agent will see.
     For instance, we'll use [Open, High, Low, Close, Volume, return, ma_10].
-    We also pick 'date_time' as ts, and 'Close' as price (or you might pick something else).
+    We store both open and close prices separately for each TimeSeriesState.
     """
     states = []
     for i, row in df.iterrows():
         ts = row['date_time']
-        price = float(row['Close'])
+        open_price = float(row['Open'])
+        close_price = float(row['Close'])
         features = [
             row['Open'], row['High'], row['Low'],
             row['Close'], row['Volume'], row['return'],
             row['ma_10']
         ]
-        s = TimeSeriesState(ts=ts, price=price, features=features)
+        s = TimeSeriesState(
+            ts=ts,
+            open_price=open_price,
+            close_price=close_price,
+            features=features,
+        )
         states.append(s)
     return states
 
@@ -178,7 +184,7 @@ def main_debug():
 
     start_time = time.time()
     if not os.path.exists(ppo_model_path):
-        ppo_trainer.train(total_timesteps=1000000)
+        ppo_trainer.train(total_timesteps=1000000, eval_env=test_env)
         ppo_trainer.model.save_model(ppo_model_path)
     else:
         ppo_trainer.model.load_model(ppo_model_path)

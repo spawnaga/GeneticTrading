@@ -17,7 +17,7 @@ import time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from tqdm import trange
+from tqdm import trange, tqdm
 
 import torch
 import torch.nn as nn
@@ -312,10 +312,17 @@ class PPOTrainer:
             }
             torch.save(ckpt, self.model_save_path + ".ckpt")
 
-        logger.info(f"PPO update complete — mean reward: {mean_reward:.4f}")
+        tqdm.write(
+            f"PPO update complete — mean reward: {mean_reward:.4f}"
+        )
         return mean_reward
 
-    def train(self, total_timesteps: int, start_update: int = 0):
+    def train(
+        self,
+        total_timesteps: int,
+        start_update: int = 0,
+        eval_env=None,
+    ):
         """
         Run PPO until `total_timesteps` env steps are collected.
         Also performs periodic evaluation and logs profitability metrics,
@@ -341,23 +348,29 @@ class PPOTrainer:
         # for elapsed time
         start_time = time.time()
 
-        # NOTE: assumes `test_env` and `evaluate_agent_distributed` are in scope
-        from main import test_env
+        # evaluation environment for periodic metrics
+        if eval_env is None:
+            logger.warning("No evaluation environment provided; skipping eval logs")
 
-        for update in trange(start_update, n_updates, desc="PPO updates"):
+        pbar = trange(start_update, n_updates, desc="PPO updates")
+        for update in pbar:
             self.current_update = update
 
             # 1) do one PPO update
             mean_reward = self.train_step()
-            logger.info(f"Update {update + 1}/{n_updates} done — mean reward: {mean_reward:.4f}")
+            pbar.set_postfix(mean_reward=f"{mean_reward:.4f}")
 
             # 2) log elapsed time
             elapsed = time.time() - start_time
             self.tb_writer.add_scalar("PPO/ElapsedSeconds", elapsed, update)
 
             # 3) periodic evaluation & profit metrics
-            if self.local_rank == 0 and (update + 1) % self.eval_interval == 0:
-                profits, times = evaluate_agent_distributed(test_env, self.model, 0)
+            if (
+                eval_env is not None
+                and self.local_rank == 0
+                and (update + 1) % self.eval_interval == 0
+            ):
+                profits, times = evaluate_agent_distributed(eval_env, self.model, 0)
                 cagr, sharpe, mdd = compute_performance_metrics(profits, times)
                 self.tb_writer.add_scalar("PPO/Eval/CAGR", cagr, update)
                 self.tb_writer.add_scalar("PPO/Eval/Sharpe", sharpe, update)

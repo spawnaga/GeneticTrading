@@ -30,12 +30,12 @@ def monotonicity(series):
 
 
 class TimeSeriesState:
-    """
-    Single time-step state holding the immutable base features.
-    """
-    def __init__(self, ts, price, features):
+    """Single time-step state holding immutable OHLC data and features."""
+
+    def __init__(self, ts, open_price, close_price, features):
         self.ts = ts
-        self.price = price
+        self.open_price = open_price
+        self.close_price = close_price
         # always keep this at length-7 base features
         self.features = np.array(features, dtype=np.float32)
 
@@ -156,13 +156,16 @@ class FuturesEnv(gym.Env):
 
         # current state for reward & trade logic
         current_state = self.states[self.current_index]
+        next_state = (self.states[self.current_index + 1]
+                      if self.current_index + 1 < self.limit
+                      else current_state)
         self.current_index += 1
 
-        # Handle BUY/SELL actions
+        # Handle BUY/SELL actions at the next bar's open
         if action == 0:
-            self._handle_buy(current_state)
+            self._handle_buy(next_state)
         elif action == 2:
-            self._handle_sell(current_state)
+            self._handle_sell(next_state)
 
         # compute reward from this time-step
         reward = self._get_reward(current_state)
@@ -198,7 +201,7 @@ class FuturesEnv(gym.Env):
             self._close_short(state)
         elif self.current_position == 0:
             self.partial_reward_sum = 0.0
-            filled_price = self._simulate_fill(state.price, 1)
+            filled_price = self._simulate_fill(state.open_price, 1)
             self.entry_time = state.ts
             self.entry_price = filled_price
             self.orders.append([str(uuid4()), str(state.ts), filled_price, 1])
@@ -212,7 +215,7 @@ class FuturesEnv(gym.Env):
             self._close_long(state)
         elif self.current_position == 0:
             self.partial_reward_sum = 0.0
-            filled_price = self._simulate_fill(state.price, -1)
+            filled_price = self._simulate_fill(state.open_price, -1)
             self.entry_time = state.ts
             self.entry_price = filled_price
             self.orders.append([str(uuid4()), str(state.ts), filled_price, -1])
@@ -261,7 +264,7 @@ class FuturesEnv(gym.Env):
         net = 0.0
         # unrealized
         if self.current_position != 0:
-            diff = (state.price - self.entry_price) if self.current_position == 1 else (self.entry_price - state.price)
+            diff = (state.close_price - self.entry_price) if self.current_position == 1 else (self.entry_price - state.close_price)
             unrealized = (diff / self.tick_size) * self.value_per_tick * self.contracts_per_trade
         else:
             unrealized = 0.0
@@ -289,7 +292,7 @@ class FuturesEnv(gym.Env):
             margin_cost = (self.margin_rate
                            * abs(self.current_position)
                            * self.contracts_per_trade
-                           * state.price
+                           * state.close_price
                            * (delta / year_secs))
             net -= margin_cost
 
@@ -303,7 +306,7 @@ class FuturesEnv(gym.Env):
         Close an existing long position.
         """
         self.exit_time = state.ts
-        self.exit_price = self._simulate_fill(state.price, -1)
+        self.exit_price = self._simulate_fill(state.open_price, -1)
         self.orders.append([str(uuid4()), str(state.ts), self.exit_price, -1])
         self.current_position = 0
         self._record_trade("long")
@@ -313,7 +316,7 @@ class FuturesEnv(gym.Env):
         Close an existing short position.
         """
         self.exit_time = state.ts
-        self.exit_price = self._simulate_fill(state.price, 1)
+        self.exit_price = self._simulate_fill(state.open_price, 1)
         self.orders.append([str(uuid4()), str(state.ts), self.exit_price, 1])
         self.current_position = 0
         self._record_trade("short")

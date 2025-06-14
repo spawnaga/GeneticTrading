@@ -87,7 +87,14 @@ def build_states_for_futures_env(df_chunk):
             row.sin_weekday, row.cos_weekday,
             # plus all tb_* and wd_* one-hots…
         ]
-        states.append(TimeSeriesState(ts=row.date_time, price=row.Close, features=feats))
+        states.append(
+            TimeSeriesState(
+                ts=row.date_time,
+                open_price=row.Open,
+                close_price=row.Close,
+                features=feats,
+            )
+        )
     return states
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -407,7 +414,8 @@ def main():
     if local_rank == 0:
         ppo_trainer.train(
             total_timesteps=1_000_000 // world_size,
-            start_update=start_update
+            start_update=start_update,
+            eval_env=test_env
         )
     dist.barrier(device_ids=[local_rank])
 
