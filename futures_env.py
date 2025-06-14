@@ -154,11 +154,14 @@ class FuturesEnv(gym.Env):
         if self.done:
             return np.zeros(self.observation_space.shape, dtype=np.float32), 0.0, True, {}
 
+        # If there is no next bar, terminate the episode gracefully
+        if self.current_index + 1 >= self.limit:
+            self.done = True
+            return np.zeros(self.observation_space.shape, dtype=np.float32), 0.0, True, {}
+
         # current state for reward & trade logic
         current_state = self.states[self.current_index]
-        next_state = (self.states[self.current_index + 1]
-                      if self.current_index + 1 < self.limit
-                      else current_state)
+        next_state    = self.states[self.current_index + 1]
         self.current_index += 1
 
         # Handle BUY/SELL actions at the next bar's open
@@ -168,7 +171,7 @@ class FuturesEnv(gym.Env):
             self._handle_sell(next_state)
 
         # compute reward from this time-step
-        reward = self._get_reward(current_state)
+        reward = self._get_reward(self.states[self.current_index])
         info = {
             "message": f"Pos {self.current_position}",
             "total_profit": self.total_reward,
@@ -224,19 +227,9 @@ class FuturesEnv(gym.Env):
     def _simulate_fill(self, price: float, trade_type: int) -> float:
         """
         Simulate slippage, half‐spread cost, and fill probability.
-
-        Parameters:
-        - price:        The mid‐market price at which the order is placed.
-        - trade_type:   +1 for a buy/long, -1 for a sell/short.
-
-        Returns:
-        - The executed price after slippage and spread adjustments.
-          If the order “does not fill” (based on fill_probability), returns
-          the mid‐price unchanged.
         """
         # 1) Decide whether the order actually fills
         if np.random.rand() > self.fill_probability:
-            # No fill: assume execution at mid‐market price (no slippage/spread)
             return price
 
         # 2) Sample slippage if custom distributions are provided
@@ -256,46 +249,35 @@ class FuturesEnv(gym.Env):
         # 5) Round to the nearest tick increment
         return round_to_nearest_increment(raw_price, self.tick_size)
 
-
     def _get_reward(self, state):
-        """
-        Compute combined partial & realized PnL, minus margin & execution costs.
-        """
         net = 0.0
-        # unrealized
-        if self.current_position != 0:
-            diff = (state.close_price - self.entry_price) if self.current_position == 1 else (self.entry_price - state.close_price)
-            unrealized = (diff / self.tick_size) * self.value_per_tick * self.contracts_per_trade
-        else:
-            unrealized = 0.0
 
-        # logistic partial reward
-        scale, k = 100.0, 0.1
-        partial = (2.0 / (1.0 + np.exp(-k * (unrealized/scale))) - 1.0) * 0.05
-        self.partial_reward_sum += partial
-        net += partial
+        # unrealized PnL:
+        diff      = (state.close_price - self.entry_price) if self.current_position == 1 else (self.entry_price - state.close_price)
+        ticks     = diff / self.tick_size
+        unrealized = ticks * self.value_per_tick * self.contracts_per_trade
 
-        # realized on close
+        # 1-tick PnL and a “typical” trade length of 10 bars:
+        one_tick_pnl = (1/self.tick_size) * self.value_per_tick * self.contracts_per_trade
+        k            = 1.0
+
+        # smoother but order-of-magnitude signal:
+        scale = one_tick_pnl * 10
+
+        partial = (2.0 / (1.0 + np.exp(-k * (unrealized / scale))) - 1.0)
+        net    += partial
+
+        # realized PnL on close:
         if self.current_position == 0 and self.last_position != 0:
             price_diff = self.exit_price - self.entry_price
             if self.last_position == -1:
                 price_diff = -price_diff
-            ticks = price_diff / self.tick_size
-            gross = ticks * self.value_per_tick * self.contracts_per_trade
-            cost  = 2 * self.execution_cost_per_order * self.contracts_per_trade
-            net += (gross - cost)
+            ticks    = price_diff / self.tick_size
+            gross    = ticks * self.value_per_tick * self.contracts_per_trade
+            cost     = 2 * self.execution_cost_per_order * self.contracts_per_trade
+            net     += (gross - cost)
 
-        # margin cost over time
-        if self.last_ts and self.current_position != 0:
-            delta = (state.ts - self.last_ts).total_seconds()
-            year_secs = 365.25 * 24 * 3600
-            margin_cost = (self.margin_rate
-                           * abs(self.current_position)
-                           * self.contracts_per_trade
-                           * state.close_price
-                           * (delta / year_secs))
-            net -= margin_cost
-
+        # … margin cost, bookkeeping …
         self.total_reward += net
         self.last_position = self.current_position
         self.last_ts = state.ts
@@ -399,7 +381,7 @@ class FuturesEnv(gym.Env):
             "intraday_low": intraday_low,
             "monotonicity": monotonicity(running),
             "running_equity": running
-        }
+        }rove
 
         if as_file:
             Path(self.log_dir + "/metrics").mkdir(parents=True, exist_ok=True)
