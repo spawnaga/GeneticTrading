@@ -17,7 +17,7 @@ import time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from tqdm import trange
+from tqdm import trange, tqdm
 
 import torch
 import torch.nn as nn
@@ -312,7 +312,9 @@ class PPOTrainer:
             }
             torch.save(ckpt, self.model_save_path + ".ckpt")
 
-        logger.info(f"PPO update complete — mean reward: {mean_reward:.4f}")
+        tqdm.write(
+            f"PPO update complete — mean reward: {mean_reward:.4f}"
+        )
         return mean_reward
 
     def train(
@@ -350,12 +352,13 @@ class PPOTrainer:
         if eval_env is None:
             logger.warning("No evaluation environment provided; skipping eval logs")
 
-        for update in trange(start_update, n_updates, desc="PPO updates"):
+        pbar = trange(start_update, n_updates, desc="PPO updates")
+        for update in pbar:
             self.current_update = update
 
             # 1) do one PPO update
             mean_reward = self.train_step()
-            logger.info(f"Update {update + 1}/{n_updates} done — mean reward: {mean_reward:.4f}")
+            pbar.set_postfix(mean_reward=f"{mean_reward:.4f}")
 
             # 2) log elapsed time
             elapsed = time.time() - start_time
