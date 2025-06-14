@@ -93,8 +93,9 @@ class FuturesEnv(gym.Env):
         self.entry_price = None
         self.exit_time = None
         self.exit_price = None
-        self.partial_reward_sum = 0.0
-        self.total_reward = 0.0
+        self.balance = 0.0               # realized PnL minus costs
+        self.entry_cost = 0.0            # commission paid at entry
+        self.total_reward = 0.0          # running equity (balance + unrealized)
         self.orders = []
         self.trades = []
         self.episode = 0
@@ -126,7 +127,8 @@ class FuturesEnv(gym.Env):
         self.entry_price = None
         self.exit_time = None
         self.exit_price = None
-        self.partial_reward_sum = 0.0
+        self.balance = 0.0
+        self.entry_cost = 0.0
         self.total_reward = 0.0
         self.orders.clear()
         self.trades.clear()
@@ -154,10 +156,21 @@ class FuturesEnv(gym.Env):
         if self.done:
             return np.zeros(self.observation_space.shape, dtype=np.float32), 0.0, True, {}
 
-        # If there is no next bar, terminate the episode gracefully
+        # If there is no next bar, close any open position and end episode
         if self.current_index + 1 >= self.limit:
+            last_state = self.states[self.current_index]
+            if self.current_position == 1:
+                self._close_long(last_state)
+            elif self.current_position == -1:
+                self._close_short(last_state)
+            reward = self._get_reward(last_state)
             self.done = True
-            return np.zeros(self.observation_space.shape, dtype=np.float32), 0.0, True, {}
+            return (
+                np.zeros(self.observation_space.shape, dtype=np.float32),
+                reward,
+                True,
+                {"timestamp": last_state.ts, "total_profit": self.total_reward},
+            )
 
         # current state for reward & trade logic
         current_state = self.states[self.current_index]
@@ -203,10 +216,11 @@ class FuturesEnv(gym.Env):
         if self.current_position == -1:
             self._close_short(state)
         elif self.current_position == 0:
-            self.partial_reward_sum = 0.0
             filled_price = self._simulate_fill(state.open_price, 1)
             self.entry_time = state.ts
             self.entry_price = filled_price
+            self.entry_cost = self.execution_cost_per_order * self.contracts_per_trade
+            self.balance -= self.entry_cost
             self.orders.append([str(uuid4()), str(state.ts), filled_price, 1])
             self.current_position = 1
 
@@ -217,10 +231,11 @@ class FuturesEnv(gym.Env):
         if self.current_position == 1:
             self._close_long(state)
         elif self.current_position == 0:
-            self.partial_reward_sum = 0.0
             filled_price = self._simulate_fill(state.open_price, -1)
             self.entry_time = state.ts
             self.entry_price = filled_price
+            self.entry_cost = self.execution_cost_per_order * self.contracts_per_trade
+            self.balance -= self.entry_cost
             self.orders.append([str(uuid4()), str(state.ts), filled_price, -1])
             self.current_position = -1
 
@@ -250,38 +265,34 @@ class FuturesEnv(gym.Env):
         return round_to_nearest_increment(raw_price, self.tick_size)
 
     def _get_reward(self, state):
-        net = 0.0
+        """Compute change in total equity since last step."""
+        if self.last_ts and self.current_position != 0:
+            delta = (state.ts - self.last_ts).total_seconds()
+            year_secs = 365.25 * 24 * 3600
+            margin_cost = (
+                self.margin_rate
+                * abs(self.current_position)
+                * self.contracts_per_trade
+                * state.close_price
+                * (delta / year_secs)
+            )
+            self.balance -= margin_cost
 
-        # unrealized PnL:
-        diff      = (state.close_price - self.entry_price) if self.current_position == 1 else (self.entry_price - state.close_price)
-        ticks     = diff / self.tick_size
-        unrealized = ticks * self.value_per_tick * self.contracts_per_trade
+        if self.current_position == 1:
+            diff = state.close_price - self.entry_price
+        elif self.current_position == -1:
+            diff = self.entry_price - state.close_price
+        else:
+            diff = 0.0
 
-        # 1-tick PnL and a “typical” trade length of 10 bars:
-        one_tick_pnl = (1/self.tick_size) * self.value_per_tick * self.contracts_per_trade
-        k            = 1.0
+        unrealized = (diff / self.tick_size) * self.value_per_tick * self.contracts_per_trade
+        equity = self.balance + unrealized
+        reward = equity - self.total_reward
 
-        # smoother but order-of-magnitude signal:
-        scale = one_tick_pnl * 10
-
-        partial = (2.0 / (1.0 + np.exp(-k * (unrealized / scale))) - 1.0)
-        net    += partial
-
-        # realized PnL on close:
-        if self.current_position == 0 and self.last_position != 0:
-            price_diff = self.exit_price - self.entry_price
-            if self.last_position == -1:
-                price_diff = -price_diff
-            ticks    = price_diff / self.tick_size
-            gross    = ticks * self.value_per_tick * self.contracts_per_trade
-            cost     = 2 * self.execution_cost_per_order * self.contracts_per_trade
-            net     += (gross - cost)
-
-        # … margin cost, bookkeeping …
-        self.total_reward += net
+        self.total_reward = equity
         self.last_position = self.current_position
         self.last_ts = state.ts
-        return net
+        return reward
 
     def _close_long(self, state):
         """
@@ -289,9 +300,16 @@ class FuturesEnv(gym.Env):
         """
         self.exit_time = state.ts
         self.exit_price = self._simulate_fill(state.open_price, -1)
+        price_diff = self.exit_price - self.entry_price
+        ticks = price_diff / self.tick_size
+        pnl = ticks * self.value_per_tick * self.contracts_per_trade
+        exit_cost = self.execution_cost_per_order * self.contracts_per_trade
+        trade_profit = pnl - self.entry_cost - exit_cost
+        self.balance += trade_profit
         self.orders.append([str(uuid4()), str(state.ts), self.exit_price, -1])
         self.current_position = 0
-        self._record_trade("long")
+        self._record_trade("long", trade_profit)
+        self.entry_cost = 0.0
 
     def _close_short(self, state):
         """
@@ -299,21 +317,27 @@ class FuturesEnv(gym.Env):
         """
         self.exit_time = state.ts
         self.exit_price = self._simulate_fill(state.open_price, 1)
+        price_diff = self.entry_price - self.exit_price
+        ticks = price_diff / self.tick_size
+        pnl = ticks * self.value_per_tick * self.contracts_per_trade
+        exit_cost = self.execution_cost_per_order * self.contracts_per_trade
+        trade_profit = pnl - self.entry_cost - exit_cost
+        self.balance += trade_profit
         self.orders.append([str(uuid4()), str(state.ts), self.exit_price, 1])
         self.current_position = 0
-        self._record_trade("short")
+        self._record_trade("short", trade_profit)
+        self.entry_cost = 0.0
 
-    def _record_trade(self, trade_type):
+    def _record_trade(self, trade_type, profit):
         """
         Log a completed trade.
         """
         duration = ((self.exit_time - self.entry_time).total_seconds()
                     if self.entry_time else 0.0)
-        profit = self.total_reward
         self.trades.append([
             str(uuid4()), trade_type,
             self.entry_price, self.exit_price,
-            profit, duration, self.partial_reward_sum
+            profit, duration
         ])
 
     def render(self, mode='human'):
@@ -350,7 +374,7 @@ class FuturesEnv(gym.Env):
         """
         orders_cols = ["order_id", "timestamp", "price", "type"]
         trades_cols = ["trade_id", "trade_type", "entry_price", "exit_price",
-                       "profit", "duration", "partial_sum"]
+                       "profit", "duration"]
         orders_df = (pd.DataFrame(self.orders, columns=orders_cols)
                      if self.orders else pd.DataFrame(columns=orders_cols))
         trades_df = (pd.DataFrame(self.trades, columns=trades_cols)

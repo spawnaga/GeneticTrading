@@ -83,6 +83,9 @@ def build_states_for_futures_env(df_chunk):
             row.sin_time, row.cos_time,
             row.sin_weekday, row.cos_weekday,
         ]
+        for col in df_chunk.columns:
+            if col.startswith("tb_") or col.startswith("wd_"):
+                feats.append(getattr(row, col))
         states.append(
             TimeSeriesState(
                 ts=row.date_time,
@@ -91,9 +94,6 @@ def build_states_for_futures_env(df_chunk):
                 features=feats,
             )
         )
-        for col in df_chunk.columns:
-            if col.startswith("tb_") or col.startswith("wd_"):
-                feats.append(getattr(row, col))
     return states
 
 # ──────────────────────────────────────────────────────────────────────────────
