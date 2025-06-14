@@ -175,6 +175,7 @@ class PPOTrainer:
         rew_buf, done_buf = [], []
 
         state = self.env.reset()
+        final_state = state
         for _ in range(self.rollout_steps):
             state_t = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
             logits, value = self.model(state_t)
@@ -191,7 +192,12 @@ class PPOTrainer:
             rew_buf.append(reward)
             done_buf.append(done)
 
-            state = next_state if not done else self.env.reset()
+            if done:
+                final_state = next_state
+                state = self.env.reset()
+            else:
+                state = next_state
+                final_state = next_state
 
         return (
             np.array(obs_buf, dtype=np.float32),
@@ -200,7 +206,7 @@ class PPOTrainer:
             np.array(logp_buf, dtype=np.float32),
             np.array(val_buf, dtype=np.float32),
             np.array(done_buf, dtype=np.bool_),
-            state  # final state after rollout
+            final_state  # final environment state for bootstrapping
         )
 
     def compute_gae(self, rewards, values, dones, last_state):
