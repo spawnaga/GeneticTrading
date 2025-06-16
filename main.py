@@ -296,7 +296,8 @@ def main():
             train_env, population_size=80, generations=100,
             tournament_size=7, mutation_rate=0.8, mutation_scale=1.0,
             num_workers=4, device=str(device),
-            model_save_path=ga_model
+            model_save_path=ga_model,
+            fitness_metric="sharpe"
         )
         logging.info(f"GA training complete – best fitness: {best_fit:.2f}")
         best_agent.save_model(ga_model)
