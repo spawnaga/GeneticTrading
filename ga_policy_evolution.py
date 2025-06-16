@@ -119,9 +119,18 @@ class PolicyNetwork(ActorCriticNet):
         tqdm.write(f"[GA] Saved GA model to {path}")
 
 
-def evaluate_fitness(param_vector, env, device="cpu"):
+from utils import compute_performance_metrics
+
+
+def evaluate_fitness(param_vector, env, device="cpu", metric="profit"):
     """
-    Roll out one episode with given parameters, return total scaled reward.
+    Roll out one episode with given parameters and return a fitness value.
+
+    Args:
+        param_vector: Flattened network parameters.
+        env: Evaluation environment.
+        device: Torch device string.
+        metric: "profit" for raw profit sum or "sharpe" for Sharpe-minus-drawdown.
     """
     if not isinstance(env.observation_space, gym.spaces.Box):
         raise ValueError("GA policy only supports Box observation spaces")
@@ -135,6 +144,7 @@ def evaluate_fitness(param_vector, env, device="cpu"):
     policy.set_params(param_vector)
 
     total_reward = 0.0
+    profits, times = [], []
     obs = _unpack_reset(env.reset())
     done = False
     while not done:
@@ -142,16 +152,21 @@ def evaluate_fitness(param_vector, env, device="cpu"):
         action = policy.act(state_tensor)
         obs, reward, done, info = _unpack_step(env.step(action))
         total_reward += float(reward)
+        if metric == "sharpe":
+            profits.append(float(reward))
+            times.append(info.get("timestamp"))
 
-    return total_reward
+    if metric == "sharpe":
+        _, sharpe, mdd = compute_performance_metrics(profits, times)
+        return float(sharpe - mdd)
+    else:
+        return total_reward
 
 
 def parallel_gpu_eval(args):
-    """
-    Allow multiprocessing evaluation across multiple GPUs.
-    """
-    params, env, gpu_id = args
-    return evaluate_fitness(params, env, device=f"cuda:{gpu_id}")
+    """Allow multiprocessing evaluation across multiple GPUs."""
+    params, env, gpu_id, metric = args
+    return evaluate_fitness(params, env, device=f"cuda:{gpu_id}", metric=metric)
 
 
 def run_ga_evolution(
@@ -167,7 +182,8 @@ def run_ga_evolution(
     n_local_updates=5,
     num_workers=None,
     device="cpu",
-    model_save_path="ga_policy_model.pth"
+    model_save_path="ga_policy_model.pth",
+    fitness_metric="profit"
 ):
     """
     Genetic Algorithm main loop with:
@@ -175,6 +191,22 @@ def run_ga_evolution(
       - Linear decay of mutation parameters
       - Local refinement via PPOTrainer every `local_refinement_interval`
       - Enhanced TensorBoard logging
+
+    Args:
+        env: trading environment
+        population_size: number of genomes per generation
+        generations: number of GA iterations
+        tournament_size: selection tournament size
+        mutation_rate: initial mutation probability
+        mutation_scale: mutation noise std
+        hall_of_fame_size: number of top individuals kept
+        inject_interval: how often to inject hall-of-famers
+        local_refinement_interval: generations between PPO refinement
+        n_local_updates: PPO updates during refinement
+        num_workers: CPU workers for evaluation
+        device: torch device string
+        model_save_path: where to save the champion
+        fitness_metric: "profit" or "sharpe" fitness evaluation
     """
     local_rank  = int(os.environ.get("LOCAL_RANK", 0))
     disable_bar = (local_rank != 0)
@@ -204,7 +236,7 @@ def run_ga_evolution(
     hall_of_fame = []  # list of (fitness, params)
 
     # initial fitness logging
-    inits = [ evaluate_fitness(ind, env, device) for ind in pop ]
+    inits = [ evaluate_fitness(ind, env, device, metric=fitness_metric) for ind in pop ]
     writer.add_scalar("GA/InitMinFitness",    np.min(inits),    0)
     writer.add_scalar("GA/InitAvgFitness",    np.mean(inits),   0)
     writer.add_scalar("GA/InitMedianFitness", np.median(inits), 0)
@@ -231,14 +263,14 @@ def run_ga_evolution(
             # evaluate
             if gpu_count > 0:
                 with Pool(gpu_count) as p:
-                    args = [(ind, env, i % gpu_count) for i, ind in enumerate(pop)]
+                    args = [(ind, env, i % gpu_count, fitness_metric) for i, ind in enumerate(pop)]
                     fits = p.map(parallel_gpu_eval, args)
             elif num_workers > 1:
                 with Pool(num_workers) as p:
-                    args = [(ind, env, device) for ind in pop]
+                    args = [(ind, env, device, fitness_metric) for ind in pop]
                     fits = p.starmap(evaluate_fitness, args)
             else:
-                fits = [ evaluate_fitness(ind, env, device) for ind in pop ]
+                fits = [evaluate_fitness(ind, env, device, metric=fitness_metric) for ind in pop]
 
             # stats
             gen_min, gen_avg, gen_med, gen_max = (
