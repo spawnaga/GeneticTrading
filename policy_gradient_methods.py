@@ -199,18 +199,17 @@ class PPOTrainer:
             np.array(rew_buf, dtype=np.float32),
             np.array(logp_buf, dtype=np.float32),
             np.array(val_buf, dtype=np.float32),
-            np.array(done_buf, dtype=np.bool_)
+            np.array(done_buf, dtype=np.bool_),
+            state  # final state after rollout
         )
 
-    def compute_gae(self, rewards, values, dones):
+    def compute_gae(self, rewards, values, dones, last_state):
         """
         Compute advantages and discounted returns using GAE.
         """
         # bootstrap last value
-        state = self.env.reset()
-        last_val = self.model(
-            torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
-        )[1].item()
+        state_t = torch.tensor(last_state, dtype=torch.float32).unsqueeze(0).to(self.device)
+        last_val = self.model(state_t)[1].item()
         values = np.append(values, last_val)
 
         advantages = np.zeros_like(rewards, dtype=np.float32)
@@ -236,8 +235,8 @@ class PPOTrainer:
         Returns mean rollout reward.
         """
         # 1) rollout
-        obs, acts, rews, old_lps, vals, dones = self.collect_trajectories()
-        advs, rets = self.compute_gae(rews, vals, dones)
+        obs, acts, rews, old_lps, vals, dones, last_state = self.collect_trajectories()
+        advs, rets = self.compute_gae(rews, vals, dones, last_state)
 
         # tensors
         obs_t = torch.tensor(obs, dtype=torch.float32).to(self.device)

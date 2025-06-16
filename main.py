@@ -83,17 +83,20 @@ def build_states_for_futures_env(df_chunk):
             row.sin_time, row.cos_time,
             row.sin_weekday, row.cos_weekday,
         ]
-        states.append(
-            TimeSeriesState(
-                ts=row.date_time,
-                open_price=row.Open,
-                close_price=row.Close,
-                features=feats,
-            )
-        )
         for col in df_chunk.columns:
             if col.startswith("tb_") or col.startswith("wd_"):
                 feats.append(getattr(row, col))
+        states.append(
+            TimeSeriesState(
+                ts=row.date_time,
+                open_price=getattr(row, "Open_raw", row.Open),
+                high_price=getattr(row, "High_raw", row.High),
+                low_price=getattr(row, "Low_raw", row.Low),
+                close_price=getattr(row, "Close_raw", row.Close),
+                volume=getattr(row, "Volume_raw", row.Volume),
+                features=feats,
+            )
+        )
     return states
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -195,6 +198,9 @@ def process_live_row(bar: dict) -> "cudf.DataFrame":
         "volatility": vol,     "sin_time": sin_t,
         "cos_time": cos_t,     "sin_weekday": sin_w,
         "cos_weekday": cos_w,
+        "Open_raw": bar["Open"], "High_raw": bar["High"],
+        "Low_raw": bar["Low"],   "Close_raw": close,
+        "Volume_raw": bar["Volume"],
         **ohe
     }
 

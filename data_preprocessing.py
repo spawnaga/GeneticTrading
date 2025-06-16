@@ -177,11 +177,16 @@ def scale_and_split_gpu(
     # Drop rows with NaN in numeric columns
     df = df.dropna(subset=numeric_cols).reset_index(drop=True)
 
+    # Preserve raw OHLCV columns for the trading environment
+    raw_cols = ["Open", "High", "Low", "Close", "Volume"]
+    for col in raw_cols:
+        df[f"{col}_raw"] = df[col].astype("float64")
+
     X = df[numeric_cols]
     scaler = CuStandardScaler()
     X_scaled = scaler.fit_transform(X)
 
-    # Replace in-place
+    # Replace in-place with scaled values
     df[numeric_cols] = X_scaled
 
     # Split on-GPU

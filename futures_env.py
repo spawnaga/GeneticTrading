@@ -30,14 +30,27 @@ def monotonicity(series):
 
 
 class TimeSeriesState:
-    """Single time-step state holding immutable OHLC data and features."""
+    """Single time-step state holding immutable OHLCV data and features."""
 
-    def __init__(self, ts, open_price, close_price, features):
+    def __init__(
+        self,
+        ts,
+        open_price,
+        high_price=None,
+        low_price=None,
+        close_price=None,
+        volume=None,
+        features=None,
+    ):
         self.ts = ts
         self.open_price = open_price
+        self.high_price = high_price
+        self.low_price = low_price
         self.close_price = close_price
-        # always keep this at length-7 base features
-        self.features = np.array(features, dtype=np.float32)
+        self.volume = volume
+        self.features = (
+            np.array(features, dtype=np.float32) if features is not None else None
+        )
 
 
 class FuturesEnv(gym.Env):
@@ -93,8 +106,9 @@ class FuturesEnv(gym.Env):
         self.entry_price = None
         self.exit_time = None
         self.exit_price = None
-        self.partial_reward_sum = 0.0
-        self.total_reward = 0.0
+        self.balance = 0.0               # realized PnL minus costs
+        self.entry_cost = 0.0            # commission paid at entry
+        self.total_reward = 0.0          # running equity (balance + unrealized)
         self.orders = []
         self.trades = []
         self.episode = 0
@@ -126,7 +140,8 @@ class FuturesEnv(gym.Env):
         self.entry_price = None
         self.exit_time = None
         self.exit_price = None
-        self.partial_reward_sum = 0.0
+        self.balance = 0.0
+        self.entry_cost = 0.0
         self.total_reward = 0.0
         self.orders.clear()
         self.trades.clear()
@@ -154,10 +169,21 @@ class FuturesEnv(gym.Env):
         if self.done:
             return np.zeros(self.observation_space.shape, dtype=np.float32), 0.0, True, {}
 
-        # If there is no next bar, terminate the episode gracefully
+        # If there is no next bar, close any open position and end episode
         if self.current_index + 1 >= self.limit:
+            last_state = self.states[self.current_index]
+            if self.current_position == 1:
+                self._close_long(last_state)
+            elif self.current_position == -1:
+                self._close_short(last_state)
+            reward = self._get_reward(last_state)
             self.done = True
-            return np.zeros(self.observation_space.shape, dtype=np.float32), 0.0, True, {}
+            return (
+                np.zeros(self.observation_space.shape, dtype=np.float32),
+                reward,
+                True,
+                {"timestamp": last_state.ts, "total_profit": self.total_reward},
+            )
 
         # current state for reward & trade logic
         current_state = self.states[self.current_index]
@@ -165,10 +191,14 @@ class FuturesEnv(gym.Env):
         self.current_index += 1
 
         # Handle BUY/SELL actions at the next bar's open
+        high_p = getattr(next_state, "high_price", None)
+        low_p = getattr(next_state, "low_price", None)
+        volume = getattr(next_state, "volume", None)
+
         if action == 0:
-            self._handle_buy(next_state)
+            self._handle_buy(next_state, high_p, low_p, volume)
         elif action == 2:
-            self._handle_sell(next_state)
+            self._handle_sell(next_state, high_p, low_p, volume)
 
         # compute reward from this time-step
         reward = self._get_reward(self.states[self.current_index])
@@ -196,38 +226,50 @@ class FuturesEnv(gym.Env):
 
         return obs, reward, self.done, info
 
-    def _handle_buy(self, state):
+    def _handle_buy(self, state, high_price=None, low_price=None, volume=None):
         """
         Open/close long positions.
         """
         if self.current_position == -1:
             self._close_short(state)
         elif self.current_position == 0:
-            self.partial_reward_sum = 0.0
-            filled_price = self._simulate_fill(state.open_price, 1)
+            filled_price = self._simulate_fill(
+                state.open_price, 1, high_price, low_price, volume
+            )
             self.entry_time = state.ts
             self.entry_price = filled_price
+            self.entry_cost = self.execution_cost_per_order * self.contracts_per_trade
+            self.balance -= self.entry_cost
             self.orders.append([str(uuid4()), str(state.ts), filled_price, 1])
             self.current_position = 1
 
-    def _handle_sell(self, state):
+    def _handle_sell(self, state, high_price=None, low_price=None, volume=None):
         """
         Open/close short positions.
         """
         if self.current_position == 1:
             self._close_long(state)
         elif self.current_position == 0:
-            self.partial_reward_sum = 0.0
-            filled_price = self._simulate_fill(state.open_price, -1)
+            filled_price = self._simulate_fill(
+                state.open_price, -1, high_price, low_price, volume
+            )
             self.entry_time = state.ts
             self.entry_price = filled_price
+            self.entry_cost = self.execution_cost_per_order * self.contracts_per_trade
+            self.balance -= self.entry_cost
             self.orders.append([str(uuid4()), str(state.ts), filled_price, -1])
             self.current_position = -1
 
-    def _simulate_fill(self, price: float, trade_type: int) -> float:
-        """
-        Simulate slippage, half‐spread cost, and fill probability.
-        """
+    def _simulate_fill(
+        self,
+        price: float,
+        trade_type: int,
+        high_price: float | None = None,
+        low_price: float | None = None,
+        volume: float | None = None,
+    ) -> float:
+        """Simulate execution price with slippage and dynamic spread."""
+
         # 1) Decide whether the order actually fills
         if np.random.rand() > self.fill_probability:
             return price
@@ -240,80 +282,114 @@ class FuturesEnv(gym.Env):
             else:
                 slippage = np.random.choice(self.short_values, p=self.short_probabilities)
 
-        # 3) Apply half the bid‐ask spread in the direction of the trade
-        spread_adj = (self.bid_ask_spread / 2.0) * (1 if trade_type == 1 else -1)
+        # 3) Spread based on high/low range when available
+        dynamic_spread = self.bid_ask_spread
+        if high_price is not None and low_price is not None:
+            dynamic_spread = max(dynamic_spread, high_price - low_price)
 
-        # 4) Combine into a raw execution price
-        raw_price = price + slippage + spread_adj
+        spread_adj = (dynamic_spread / 2.0) * (1 if trade_type == 1 else -1)
 
-        # 5) Round to the nearest tick increment
+        # 4) Volume-based scaling of slippage
+        volume_scale = 1.0
+        if volume is not None and volume > 0:
+            volume_scale += 1.0 / (volume + 1e-8)
+
+        # 5) Combine all components
+        raw_price = price + (slippage + spread_adj) * volume_scale
+
+        # 6) Clip to high/low range if provided
+        if high_price is not None and low_price is not None:
+            raw_price = np.clip(raw_price, low_price, high_price)
+
+        # 7) Round to nearest tick
         return round_to_nearest_increment(raw_price, self.tick_size)
 
     def _get_reward(self, state):
-        net = 0.0
+        """Compute change in total equity since last step."""
+        if self.last_ts and self.current_position != 0:
+            delta = (state.ts - self.last_ts).total_seconds()
+            year_secs = 365.25 * 24 * 3600
+            margin_cost = (
+                self.margin_rate
+                * abs(self.current_position)
+                * self.contracts_per_trade
+                * state.close_price
+                * (delta / year_secs)
+            )
+            self.balance -= margin_cost
 
-        # unrealized PnL:
-        diff      = (state.close_price - self.entry_price) if self.current_position == 1 else (self.entry_price - state.close_price)
-        ticks     = diff / self.tick_size
-        unrealized = ticks * self.value_per_tick * self.contracts_per_trade
+        if self.current_position == 1:
+            diff = state.close_price - self.entry_price
+        elif self.current_position == -1:
+            diff = self.entry_price - state.close_price
+        else:
+            diff = 0.0
 
-        # 1-tick PnL and a “typical” trade length of 10 bars:
-        one_tick_pnl = (1/self.tick_size) * self.value_per_tick * self.contracts_per_trade
-        k            = 1.0
+        unrealized = (diff / self.tick_size) * self.value_per_tick * self.contracts_per_trade
+        equity = self.balance + unrealized
+        reward = equity - self.total_reward
 
-        # smoother but order-of-magnitude signal:
-        scale = one_tick_pnl * 10
-
-        partial = (2.0 / (1.0 + np.exp(-k * (unrealized / scale))) - 1.0)
-        net    += partial
-
-        # realized PnL on close:
-        if self.current_position == 0 and self.last_position != 0:
-            price_diff = self.exit_price - self.entry_price
-            if self.last_position == -1:
-                price_diff = -price_diff
-            ticks    = price_diff / self.tick_size
-            gross    = ticks * self.value_per_tick * self.contracts_per_trade
-            cost     = 2 * self.execution_cost_per_order * self.contracts_per_trade
-            net     += (gross - cost)
-
-        # … margin cost, bookkeeping …
-        self.total_reward += net
+        self.total_reward = equity
         self.last_position = self.current_position
         self.last_ts = state.ts
-        return net
+        return reward
 
     def _close_long(self, state):
         """
         Close an existing long position.
         """
         self.exit_time = state.ts
-        self.exit_price = self._simulate_fill(state.open_price, -1)
+        self.exit_price = self._simulate_fill(
+            state.open_price,
+            -1,
+            getattr(state, "high_price", None),
+            getattr(state, "low_price", None),
+            getattr(state, "volume", None),
+        )
+        price_diff = self.exit_price - self.entry_price
+        ticks = price_diff / self.tick_size
+        pnl = ticks * self.value_per_tick * self.contracts_per_trade
+        exit_cost = self.execution_cost_per_order * self.contracts_per_trade
+        trade_profit = pnl - self.entry_cost - exit_cost
+        self.balance += trade_profit
         self.orders.append([str(uuid4()), str(state.ts), self.exit_price, -1])
         self.current_position = 0
-        self._record_trade("long")
+        self._record_trade("long", trade_profit)
+        self.entry_cost = 0.0
 
     def _close_short(self, state):
         """
         Close an existing short position.
         """
         self.exit_time = state.ts
-        self.exit_price = self._simulate_fill(state.open_price, 1)
+        self.exit_price = self._simulate_fill(
+            state.open_price,
+            1,
+            getattr(state, "high_price", None),
+            getattr(state, "low_price", None),
+            getattr(state, "volume", None),
+        )
+        price_diff = self.entry_price - self.exit_price
+        ticks = price_diff / self.tick_size
+        pnl = ticks * self.value_per_tick * self.contracts_per_trade
+        exit_cost = self.execution_cost_per_order * self.contracts_per_trade
+        trade_profit = pnl - self.entry_cost - exit_cost
+        self.balance += trade_profit
         self.orders.append([str(uuid4()), str(state.ts), self.exit_price, 1])
         self.current_position = 0
-        self._record_trade("short")
+        self._record_trade("short", trade_profit)
+        self.entry_cost = 0.0
 
-    def _record_trade(self, trade_type):
+    def _record_trade(self, trade_type, profit):
         """
         Log a completed trade.
         """
         duration = ((self.exit_time - self.entry_time).total_seconds()
                     if self.entry_time else 0.0)
-        profit = self.total_reward
         self.trades.append([
             str(uuid4()), trade_type,
             self.entry_price, self.exit_price,
-            profit, duration, self.partial_reward_sum
+            profit, duration
         ])
 
     def render(self, mode='human'):
@@ -350,7 +426,7 @@ class FuturesEnv(gym.Env):
         """
         orders_cols = ["order_id", "timestamp", "price", "type"]
         trades_cols = ["trade_id", "trade_type", "entry_price", "exit_price",
-                       "profit", "duration", "partial_sum"]
+                       "profit", "duration"]
         orders_df = (pd.DataFrame(self.orders, columns=orders_cols)
                      if self.orders else pd.DataFrame(columns=orders_cols))
         trades_df = (pd.DataFrame(self.trades, columns=trades_cols)
