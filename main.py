@@ -90,10 +90,7 @@ def build_states_for_futures_env(df_chunk):
             TimeSeriesState(
                 ts=row.date_time,
                 open_price=getattr(row, "Open_raw", row.Open),
-                high_price=getattr(row, "High_raw", row.High),
-                low_price=getattr(row, "Low_raw", row.Low),
                 close_price=getattr(row, "Close_raw", row.Close),
-                volume=getattr(row, "Volume_raw", row.Volume),
                 features=feats,
             )
         )
@@ -380,6 +377,13 @@ def main():
         start_update = 0
         logging.info("No PPO checkpoint found; starting from scratch")
 
+    # 2) Run or resume training on rank 0
+    if local_rank == 0:
+        ppo_trainer.train(
+            total_timesteps=1_000_000 // world_size,
+            start_update=start_update,
+            eval_env=test_env
+        )
     # — Wrap in DDP and barrier
     logging.info("Wrapping PPO model in DDP – waiting at barrier")
     dist.barrier(device_ids=[local_rank])
