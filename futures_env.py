@@ -225,7 +225,6 @@ class FuturesEnv(gym.Env):
         if self.current_position == -1:
             self._close_short(state)
         elif self.current_position == 0:
-
             filled_price = self._simulate_fill(state.open_price, 1)
 
             filled_price = self._simulate_fill(
@@ -246,7 +245,6 @@ class FuturesEnv(gym.Env):
         if self.current_position == 1:
             self._close_long(state)
         elif self.current_position == 0:
-
             filled_price = self._simulate_fill(state.open_price, -1)
 
             filled_price = self._simulate_fill(
@@ -346,11 +344,6 @@ class FuturesEnv(gym.Env):
         """
         self.exit_time = state.ts
         self.exit_price = self._simulate_fill(state.open_price, -1)
-        self.exit_price = self._simulate_fill(
-            state.open_price, -1,
-            high_price=state.features[1], low_price=state.features[2],
-            volume=state.features[4] if len(state.features) > 4 else None
-        )
         price_diff = self.exit_price - self.entry_price
         ticks = price_diff / self.tick_size
         pnl = ticks * self.value_per_tick * self.contracts_per_trade
@@ -368,12 +361,6 @@ class FuturesEnv(gym.Env):
         """
         self.exit_time = state.ts
         self.exit_price = self._simulate_fill(state.open_price, 1)
-
-        self.exit_price = self._simulate_fill(
-            state.open_price, 1,
-            high_price=state.features[1], low_price=state.features[2],
-            volume=state.features[4] if len(state.features) > 4 else None
-        )
         price_diff = self.entry_price - self.exit_price
         ticks = price_diff / self.tick_size
         pnl = ticks * self.value_per_tick * self.contracts_per_trade

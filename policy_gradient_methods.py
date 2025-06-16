@@ -207,9 +207,6 @@ class PPOTrainer:
             np.array(val_buf, dtype=np.float32),
             np.array(done_buf, dtype=np.bool_),
             state  # final state after rollout
-
-            final_state  # final environment state for bootstrapping
-
         )
 
     def compute_gae(self, rewards, values, dones, last_state):

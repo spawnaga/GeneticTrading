@@ -89,8 +89,8 @@ def build_states_for_futures_env(df_chunk):
         states.append(
             TimeSeriesState(
                 ts=row.date_time,
-                open_price=row.Open,
-                close_price=row.Close,
+                open_price=getattr(row, "Open_raw", row.Open),
+                close_price=getattr(row, "Close_raw", row.Close),
                 features=feats,
             )
         )
@@ -195,6 +195,9 @@ def process_live_row(bar: dict) -> "cudf.DataFrame":
         "volatility": vol,     "sin_time": sin_t,
         "cos_time": cos_t,     "sin_weekday": sin_w,
         "cos_weekday": cos_w,
+        "Open_raw": bar["Open"], "High_raw": bar["High"],
+        "Low_raw": bar["Low"],   "Close_raw": close,
+        "Volume_raw": bar["Volume"],
         **ohe
     }
 
