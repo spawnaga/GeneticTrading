@@ -27,11 +27,7 @@ from cuml.model_selection import train_test_split
 # ──────────────────────────────────────────────────────────────────────────────
 # Logger setup
 # ──────────────────────────────────────────────────────────────────────────────
-logging.basicConfig(
-    format="%(asctime)s %(levelname)s %(name)s ─ %(message)s",
-    level=logging.INFO
-)
-logger = logging.getLogger("data_prep")
+logger = logging.getLogger(__name__)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Constants & Defaults

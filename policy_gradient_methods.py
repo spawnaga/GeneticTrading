@@ -31,10 +31,6 @@ from utils import evaluate_agent_distributed, compute_performance_metrics
 # Set up logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-if not logger.handlers:
-    ch = logging.StreamHandler()
-    ch.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
-    logger.addHandler(ch)
 
 
 class ActorCriticNet(nn.Module):

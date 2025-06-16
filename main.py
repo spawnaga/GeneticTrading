@@ -7,6 +7,7 @@ os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
 # ────────────────────────────────────────────────────────────────────────────────
 
 import logging
+from logging.handlers import RotatingFileHandler
 import sys
 import warnings
 import pickle
@@ -63,17 +64,20 @@ segment_dict: dict[int,int] = {}
 
 # ──────────────────────────────────────────────────────────────────────────────
 def setup_logging(local_rank: int) -> None:
-    """
-    Configure root logger to write to console and a per‐rank file.
-    """
+    """Configure root logger with rotating file shared by all ranks."""
+    os.makedirs("logs", exist_ok=True)
     fmt = "%(asctime)s [%(levelname)s] %(message)s"
-    logging.basicConfig(level=logging.INFO, format=fmt)
-    logger = logging.getLogger()
-    logfile = f"main_rank{local_rank}.log"
-    fh = logging.FileHandler(logfile)
-    fh.setFormatter(logging.Formatter(fmt))
-    logger.addHandler(fh)
-    logger.info(f"Logging initialized for rank {local_rank} → {logfile}")
+
+    log_path = os.path.join("logs", "run.log")
+    file_handler = RotatingFileHandler(log_path, maxBytes=0, backupCount=9)
+    file_handler.doRollover()
+    file_handler.setFormatter(logging.Formatter(fmt))
+
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setFormatter(logging.Formatter(fmt))
+
+    logging.basicConfig(level=logging.INFO, format=fmt, handlers=[stream_handler, file_handler])
+    logging.getLogger().info(f"Logging initialized for rank {local_rank} → {log_path}")
 
 # ──────────────────────────────────────────────────────────────────────────────
 def build_states_for_futures_env(df_chunk):
