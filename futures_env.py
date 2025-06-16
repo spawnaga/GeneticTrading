@@ -328,7 +328,7 @@ class FuturesEnv(gym.Env):
         self.last_position = self.current_position
         self.last_ts = state.ts
         return reward
-      
+
     def _close_long(self, state):
         """
         Close an existing long position.
