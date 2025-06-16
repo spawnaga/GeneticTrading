@@ -69,6 +69,8 @@ class FuturesEnv(gym.Env):
         self.limit = len(states)
         self.value_per_tick = value_per_tick
         self.tick_size = tick_size
+        if self.value_per_tick <= 0 or self.tick_size <= 0:
+            raise ValueError("value_per_tick and tick_size must be positive")
         self.fill_probability = fill_probability
         self.execution_cost_per_order = execution_cost_per_order
         self.contracts_per_trade = contracts_per_trade
@@ -120,7 +122,10 @@ class FuturesEnv(gym.Env):
         """
         # Reset all internal trackers
         self.done = False
-        self.current_index = 0
+        start_idx = 0
+        if self.limit > 1:
+            start_idx = np.random.randint(0, self.limit - 1)
+        self.current_index = start_idx
         self.current_position = 0
         self.last_position = 0
         self.entry_time = None
@@ -133,14 +138,14 @@ class FuturesEnv(gym.Env):
         self.orders.clear()
         self.trades.clear()
         self.episode += 1
-        self.last_ts = self.states[0].ts if self.limit > 0 else None
+        self.last_ts = self.states[start_idx].ts if self.limit > 0 else None
 
         if self.limit == 0:
             # no data case
             return np.zeros(self.observation_space.shape, dtype=np.float32)
 
         # build a fresh obs from base features + zeros for extras
-        base = self.states[0].features  # length=7
+        base = self.states[start_idx].features  # length=7
         if self.add_current_position_to_state:
             extras = np.zeros(3, dtype=np.float32)
             return np.concatenate([base, extras])
@@ -178,10 +183,14 @@ class FuturesEnv(gym.Env):
         self.current_index += 1
 
         # Handle BUY/SELL actions at the next bar's open
+        high_p = next_state.features[1]
+        low_p = next_state.features[2]
+        volume = next_state.features[4] if len(next_state.features) > 4 else None
+
         if action == 0:
-            self._handle_buy(next_state)
+            self._handle_buy(next_state, high_p, low_p, volume)
         elif action == 2:
-            self._handle_sell(next_state)
+            self._handle_sell(next_state, high_p, low_p, volume)
 
         # compute reward from this time-step
         reward = self._get_reward(self.states[self.current_index])
@@ -208,6 +217,7 @@ class FuturesEnv(gym.Env):
             obs = base.copy()
 
         return obs, reward, self.done, info
+
 
     def _handle_buy(self, state):
         """
@@ -239,9 +249,18 @@ class FuturesEnv(gym.Env):
             self.orders.append([str(uuid4()), str(state.ts), filled_price, -1])
             self.current_position = -1
 
-    def _simulate_fill(self, price: float, trade_type: int) -> float:
+    def _simulate_fill(
+        self,
+        price: float,
+        trade_type: int,
+        high_price: float | None = None,
+        low_price: float | None = None,
+        volume: float | None = None,
+    ) -> float:
         """
-        Simulate slippage, half‐spread cost, and fill probability.
+        Simulate execution price with slippage and spread adjustments.
+        High/low bounds are used for clipping, while volume modulates
+        slippage magnitude (lower volume -> more slippage).
         """
         # 1) Decide whether the order actually fills
         if np.random.rand() > self.fill_probability:
@@ -255,13 +274,29 @@ class FuturesEnv(gym.Env):
             else:
                 slippage = np.random.choice(self.short_values, p=self.short_probabilities)
 
-        # 3) Apply half the bid‐ask spread in the direction of the trade
+        # 3) Use high/low range to derive a dynamic spread when available
+        dynamic_spread = self.bid_ask_spread
+        if high_price is not None and low_price is not None:
+            dynamic_spread = max(dynamic_spread, high_price - low_price)
+
+        spread_adj = (dynamic_spread / 2.0) * (1 if trade_type == 1 else -1)
+
+        # 3) Apply half the bid-ask spread in the direction of the trade
         spread_adj = (self.bid_ask_spread / 2.0) * (1 if trade_type == 1 else -1)
 
-        # 4) Combine into a raw execution price
-        raw_price = price + slippage + spread_adj
+        # 4) Volume-based scaling of slippage
+        volume_scale = 1.0
+        if volume is not None and volume > 0:
+            volume_scale += 1.0 / (volume + 1e-8)
 
-        # 5) Round to the nearest tick increment
+        # 5) Combine all components
+        raw_price = price + (slippage + spread_adj) * volume_scale
+
+        # 6) Clip to high/low range if provided
+        if high_price is not None and low_price is not None:
+            raw_price = np.clip(raw_price, low_price, high_price)
+
+        # 7) Round to the nearest tick increment
         return round_to_nearest_increment(raw_price, self.tick_size)
 
     def _get_reward(self, state):
@@ -327,6 +362,18 @@ class FuturesEnv(gym.Env):
         self.current_position = 0
         self._record_trade("short", trade_profit)
         self.entry_cost = 0.0
+
+    def _record_trade(self, trade_type, profit):
+        """
+        Log a completed trade.
+        """
+        duration = ((self.exit_time - self.entry_time).total_seconds()
+                    if self.entry_time else 0.0)
+        self.trades.append([
+            str(uuid4()), trade_type,
+            self.entry_price, self.exit_price,
+            profit, duration
+        ])
 
     def _record_trade(self, trade_type, profit):
         """
