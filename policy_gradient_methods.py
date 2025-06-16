@@ -199,18 +199,17 @@ class PPOTrainer:
             np.array(rew_buf, dtype=np.float32),
             np.array(logp_buf, dtype=np.float32),
             np.array(val_buf, dtype=np.float32),
-            np.array(done_buf, dtype=np.bool_)
+            np.array(done_buf, dtype=np.bool_),
+            state  # final state after rollout
         )
 
-    def compute_gae(self, rewards, values, dones):
+    def compute_gae(self, rewards, values, dones, last_state):
         """
         Compute advantages and discounted returns using GAE.
         """
         # bootstrap last value
-        state = self.env.reset()
-        last_val = self.model(
-            torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
-        )[1].item()
+        state_t = torch.tensor(last_state, dtype=torch.float32).unsqueeze(0).to(self.device)
+        last_val = self.model(state_t)[1].item()
         values = np.append(values, last_val)
 
         advantages = np.zeros_like(rewards, dtype=np.float32)
@@ -236,8 +235,8 @@ class PPOTrainer:
         Returns mean rollout reward.
         """
         # 1) rollout
-        obs, acts, rews, old_lps, vals, dones = self.collect_trajectories()
-        advs, rets = self.compute_gae(rews, vals, dones)
+        obs, acts, rews, old_lps, vals, dones, last_state = self.collect_trajectories()
+        advs, rets = self.compute_gae(rews, vals, dones, last_state)
 
         # tensors
         obs_t = torch.tensor(obs, dtype=torch.float32).to(self.device)
@@ -266,14 +265,18 @@ class PPOTrainer:
                 clipped = torch.clamp(ratio, 1 - self.clip_epsilon, 1 + self.clip_epsilon)
                 policy_loss = -torch.min(ratio * b_adv, clipped * b_adv).mean()
 
-                # value loss
+                # value loss (clipped)
                 value_pred = value_pred.squeeze()
                 with torch.no_grad():
                     old_vals = torch.tensor(vals, dtype=torch.float32, device=self.device)[idx]
-                v_clipped = old_vals + torch.clamp(value_pred - old_vals,
-                                                   -self.clip_epsilon, self.clip_epsilon)
-                value_loss = 0.5 * torch.max((value_pred - b_ret) ** 2,
-                                             (v_clipped - b_ret) ** 2).mean()
+                v_clipped = old_vals + torch.clamp(
+                    value_pred - old_vals,
+                    -self.clip_epsilon, self.clip_epsilon
+                )
+                value_loss = 0.5 * torch.max(
+                    (value_pred - b_ret) ** 2,
+                    (v_clipped - b_ret) ** 2
+                ).mean()
 
                 # total loss
                 loss = policy_loss + value_loss - self.entropy_coef * entropy
@@ -296,13 +299,22 @@ class PPOTrainer:
 
         # 3) rollout reward
         mean_reward = float(rews.mean())
+        # ───────────────────────────────────────────────────────────────────
+        # Note: `mean_reward` is the average *environment* reward per step/trade,
+        #       NOT a mean-squared error. If it stays around a small negative
+        #       value (e.g. –0.04), your policy is currently losing on average.
+        #       To improve, check your reward signal, baseline normalization,
+        #       network capacity, and learning rates.
+        # ───────────────────────────────────────────────────────────────────
         self.tb_writer.add_scalar("ppo/rollout_reward", mean_reward, self.global_step)
 
         # 4) checkpoint
         if self.local_rank == 0:
-            state_dict = (self.model.module.state_dict()
-                          if isinstance(self.model, DDP)
-                          else self.model.state_dict())
+            state_dict = (
+                self.model.module.state_dict()
+                if isinstance(self.model, DDP)
+                else self.model.state_dict()
+            )
             ckpt = {
                 "update_idx": getattr(self, "current_update", 0),
                 "model_state": state_dict,
@@ -326,7 +338,7 @@ class PPOTrainer:
         """
         Run PPO until `total_timesteps` env steps are collected.
         Also performs periodic evaluation and logs profitability metrics,
-        with a tqdm progress bar and elapsed‐time scalars.
+        with a tqdm progress bar only on rank 0 and elapsed‐time scalars.
         """
         n_updates = max(1, total_timesteps // self.rollout_steps)
         logger.info(f"Starting training: updates {start_update} → {n_updates - 1}")
@@ -345,15 +357,19 @@ class PPOTrainer:
             {"rollout_reward": 0}
         )
 
-        # for elapsed time
         start_time = time.time()
 
-        # evaluation environment for periodic metrics
+
         if eval_env is None:
             logger.warning("No evaluation environment provided; skipping eval logs")
 
-        pbar = trange(start_update, n_updates, desc="PPO updates")
-        for update in pbar:
+        # only rank 0 shows tqdm bar
+        if self.local_rank == 0:
+            update_iter = trange(start_update, n_updates, desc="PPO updates")
+        else:
+            update_iter = range(start_update, n_updates)
+
+        for update in update_iter:
             self.current_update = update
 
             # 1) do one PPO update
@@ -370,7 +386,10 @@ class PPOTrainer:
                 and self.local_rank == 0
                 and (update + 1) % self.eval_interval == 0
             ):
-                profits, times = evaluate_agent_distributed(eval_env, self.model, 0)
+
+                # unwrap DDP to get real model with .act
+                real_agent = self.model.module if isinstance(self.model, DDP) else self.model
+                profits, times = evaluate_agent_distributed(eval_env, real_agent, 0)
                 cagr, sharpe, mdd = compute_performance_metrics(profits, times)
                 self.tb_writer.add_scalar("PPO/Eval/CAGR", cagr, update)
                 self.tb_writer.add_scalar("PPO/Eval/Sharpe", sharpe, update)
@@ -386,11 +405,13 @@ class PPOTrainer:
 
             # 4) periodic weight histograms
             if self.local_rank == 0 and (update + 1) % (self.eval_interval * 2) == 0:
-                for i, layer in enumerate(self.model.base):
+                real_model = self.model.module if isinstance(self.model, DDP) else self.model
+                for i, layer in enumerate(real_model.base):
                     if isinstance(layer, nn.Linear):
                         w = layer.weight.data.cpu().numpy()
                         self.tb_writer.add_histogram(f"PPO/Layer{i}_Weights", w, update)
 
-        # finalize
+        if self.local_rank == 0:
+            update_iter.close()
         self.tb_writer.close()
         return self.model.module if isinstance(self.model, DDP) else self.model

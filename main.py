@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 import os
 # ─── SILENCE TensorFlow / oneDNN / XLA CUDA logs ───────────────────────────────
-os.environ["TF_CPP_MIN_LOG_LEVEL"]   = "3"   # only error messages
-os.environ["TF_ENABLE_ONEDNN_OPTS"]  = "0"   # disable oneDNN logging
+os.environ["TF_CPP_MIN_LOG_LEVEL"]       = "3"
+os.environ["TF_ENABLE_ONEDNN_OPTS"]      = "0"
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
 # ────────────────────────────────────────────────────────────────────────────────
 
-import sys
-import time
-import warnings
 import logging
+import time
+import sys
+import warnings
 import pickle
 import collections
 
@@ -37,9 +37,8 @@ from policy_gradient_methods import PPOTrainer, ActorCriticNet
 from utils import evaluate_agent_distributed, compute_performance_metrics
 from futures_env import FuturesEnv, TimeSeriesState
 
-
 # ──────────────────────────────────────────────────────────────────────────────
-# Globals for live-inference buffering
+# Globals for live‐inference buffering
 # ──────────────────────────────────────────────────────────────────────────────
 WINDOW_MA      = 10
 WINDOW_RSI     = 14
@@ -47,21 +46,19 @@ WINDOW_VOL     = 10
 BIN_SIZE       = 15
 SECONDS_IN_DAY = 24 * 60
 
-# Buffers to compute rolling features on live data
 history = {
     "closes":  collections.deque(maxlen=WINDOW_MA),
     "deltas":  collections.deque(maxlen=WINDOW_RSI),
     "returns": collections.deque(maxlen=WINDOW_VOL),
 }
 
-# Artifacts loaded once at startup
 scaler: "cuml.preprocessing.StandardScaler" = None
 segment_dict: dict[int,int] = {}
 
 # ──────────────────────────────────────────────────────────────────────────────
 def setup_logging(local_rank: int) -> None:
     """
-    Configure root logger to write to both console and a per-rank log file.
+    Configure root logger to write to both console and a per‐rank log file.
     """
     fmt = "%(asctime)s [%(levelname)s] %(message)s"
     logging.basicConfig(level=logging.INFO, format=fmt)
@@ -85,13 +82,15 @@ def build_states_for_futures_env(df_chunk):
             row.rsi, row.volatility,
             row.sin_time, row.cos_time,
             row.sin_weekday, row.cos_weekday,
-            # plus all tb_* and wd_* one-hots…
         ]
+        for col in df_chunk.columns:
+            if col.startswith("tb_") or col.startswith("wd_"):
+                feats.append(getattr(row, col))
         states.append(
             TimeSeriesState(
                 ts=row.date_time,
-                open_price=row.Open,
-                close_price=row.Close,
+                open_price=getattr(row, "Open_raw", row.Open),
+                close_price=getattr(row, "Close_raw", row.Close),
                 features=feats,
             )
         )
@@ -152,8 +151,6 @@ def process_live_row(bar: dict) -> "cudf.DataFrame":
     apply the saved scaler, and return a 1-row cuDF DataFrame ready for inference.
     """
     global history, scaler, segment_dict
-
-    # 1) Update buffers & compute raw features
     ts    = bar["date_time"]
     close = bar["Close"]
     history["closes"].append(close)
@@ -175,7 +172,6 @@ def process_live_row(bar: dict) -> "cudf.DataFrame":
     rsi   = 100 - (100 / (1 + rs))
     vol   = float(np.std(history["returns"])) if len(history["returns"]) > 1 else 0.0
 
-    # 2) Time features
     weekday = ts.weekday()
     minutes = ts.hour * 60 + ts.minute
     theta_t = 2 * np.pi * (minutes / SECONDS_IN_DAY)
@@ -183,20 +179,14 @@ def process_live_row(bar: dict) -> "cudf.DataFrame":
     sin_t, cos_t = np.sin(theta_t), np.cos(theta_t)
     sin_w, cos_w = np.sin(theta_w), np.cos(theta_w)
 
-    # 3) One-hot via segment_dict mapping
     bin_index = minutes // BIN_SIZE
-    seg_key   = weekday * (SECONDS_IN_DAY // BIN_SIZE) + bin_index
-    # Build a zeroed dictionary for all OHE cols
     ohe = {}
-    # weekday one-hot
     for d in range(7):
         ohe[f"wd_{d}"] = 1 if d == weekday else 0
-    # time-bin one-hot
     total_bins = SECONDS_IN_DAY // BIN_SIZE
     for b in range(total_bins):
         ohe[f"tb_{b}"] = 1 if b == bin_index else 0
 
-    # 4) Assemble row dict
     row = {
         "Open": bar["Open"],   "High": bar["High"],
         "Low": bar["Low"],     "Close": close,
@@ -205,49 +195,35 @@ def process_live_row(bar: dict) -> "cudf.DataFrame":
         "volatility": vol,     "sin_time": sin_t,
         "cos_time": cos_t,     "sin_weekday": sin_w,
         "cos_weekday": cos_w,
+        "Open_raw": bar["Open"], "High_raw": bar["High"],
+        "Low_raw": bar["Low"],   "Close_raw": close,
+        "Volume_raw": bar["Volume"],
         **ohe
     }
 
-    # 5) Build cuDF, scale numeric columns
     df_live = cudf.DataFrame([row])
     num_cols = ["Open","High","Low","Close","Volume","return","ma_10"]
     df_live[num_cols] = scaler.transform(df_live[num_cols])
-
     return df_live
 
 # ──────────────────────────────────────────────────────────────────────────────
 def main():
-
-    # suppress TF logs
+    # suppress TF logs further
     os.environ["TF_CPP_MIN_LOG_LEVEL"]  = "2"
     os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
     os.environ["NCCL_TIMEOUT"]         = "1800000"
 
-    # 1) Pull in the torchrun‐provided env vars
-    local_rank = int(os.environ["LOCAL_RANK"])
-    # (RANK and WORLD_SIZE are also set if you need them explicitly)
-    # 2) Tell PyTorch which GPU this process should use
+    # torchrun / torch.distributed sets LOCAL_RANK
+    local_rank = int(os.environ.get("LOCAL_RANK", 0))
     torch.cuda.set_device(local_rank)
-
-    # 3) Initialize the default process group
     dist.init_process_group(backend="nccl", init_method="env://")
-
-    # Now you can safely call:
     world_size = dist.get_world_size()
-    rank = dist.get_rank()
 
     setup_logging(local_rank)
-    logging.info(f"Rank {rank}/{world_size} starting on cuda:{local_rank} (has_cudf={has_cudf})")
-
-    torch.cuda.set_device(local_rank)
-    world_size = dist.get_world_size()
-    torch.cuda.set_device(local_rank)
     device = torch.device(f"cuda:{local_rank}")
-
-    setup_logging(local_rank)
     logging.info(f"Rank {local_rank}/{world_size} starting on {device} (has_cudf={has_cudf})")
 
-    # Load or preprocess train/test data once (rank 0), then barrier
+    # ─── Data prep ────────────────────────────────────────────────────────────────
     data_folder  = "./data_txt"
     cache_folder = "./cached_data"
     os.makedirs(cache_folder, exist_ok=True)
@@ -256,7 +232,6 @@ def main():
 
     if local_rank == 0:
         if not (os.path.exists(train_path) and os.path.exists(test_path)):
-            # NOTE: unpack the four returns: train, test, scaler, segment_dict
             train_df, test_df, scaler, segment_dict = create_environment_data(
                 data_folder=data_folder,
                 max_rows=1000,
@@ -264,10 +239,8 @@ def main():
                 use_gpu=has_cudf,
                 test_size=0.2
             )
-            # For pandas-backed DataFrames you can still pass index=False; cudf ignores it
             train_df.to_parquet(train_path, index=False)
             test_df.to_parquet(test_path,  index=False)
-            # Persist scaler & segment_dict for live inference
             with open(os.path.join(cache_folder, "scaler.pkl"), "wb") as f:
                 pickle.dump(scaler, f)
             with open(os.path.join(cache_folder, "segment_dict.pkl"), "wb") as f:
@@ -277,7 +250,6 @@ def main():
             logging.info("Parquet cache found; skipping preprocessing.")
     dist.barrier(device_ids=[local_rank])
 
-    # Load preprocessed data
     if has_cudf:
         full_train = cudf.read_parquet(train_path)
         full_test  = cudf.read_parquet(test_path)
@@ -286,25 +258,23 @@ def main():
         full_train = pd.read_parquet(train_path)
         full_test  = pd.read_parquet(test_path)
 
-    # Load scaler & segment_dict for live inference
     with open(os.path.join(cache_folder, "scaler.pkl"),     "rb") as f:
         scaler = pickle.load(f)
     with open(os.path.join(cache_folder, "segment_dict.pkl"), "rb") as f:
         segment_dict = pickle.load(f)
 
-    # Split data across ranks
-    n_train = len(full_train); n_test = len(full_test)
-    chunk_t = n_train // world_size
-    chunk_v = n_test  // world_size
-    s_t = local_rank * chunk_t
-    e_t = s_t + chunk_t if local_rank < world_size-1 else n_train
-    s_v = local_rank * chunk_v
-    e_v = s_v + chunk_v if local_rank < world_size-1 else n_test
+    # ─── Shard for DDP ────────────────────────────────────────────────────────────
+    n_train, n_test = len(full_train), len(full_test)
+    per_rank_t = n_train // world_size
+    per_rank_v = n_test  // world_size
+    s_t = local_rank * per_rank_t
+    e_t = s_t + per_rank_t if local_rank < world_size-1 else n_train
+    s_v = local_rank * per_rank_v
+    e_v = s_v + per_rank_v if local_rank < world_size-1 else n_test
 
     train_slice = full_train.iloc[s_t:e_t]
     test_slice  = full_test.iloc[s_v:e_v]
 
-    # Convert to pandas for env (TimeSeriesState expects pandas types)
     if has_cudf:
         train_pd = train_slice.to_pandas()
         test_pd  = test_slice.to_pandas()
@@ -312,16 +282,13 @@ def main():
         train_pd = train_slice.copy()
         test_pd  = test_slice.copy()
 
-    # Rename return column to avoid keyword clash
     train_pd.rename(columns={"return": "return_"}, inplace=True)
     test_pd.rename(columns={"return": "return_"},  inplace=True)
 
-    # Build environment states
     train_states = build_states_for_futures_env(train_pd)
     test_states  = build_states_for_futures_env(test_pd)
 
-    # Common env kwargs
-    env_kwargs = {
+    base_env_kwargs = {
         "value_per_tick": 12.5,
         "tick_size": 0.25,
         "fill_probability": 1.0,
@@ -333,17 +300,15 @@ def main():
     }
     train_env = FuturesEnv(states=train_states,
                            log_dir=f"./logs/train_rank{local_rank}",
-                           **env_kwargs)
-    env_kwargs["execution_cost_per_order"] = 0.00005
+                           **base_env_kwargs)
+    base_env_kwargs["execution_cost_per_order"] = 0.00005
     test_env  = FuturesEnv(states=test_states,
                            log_dir=f"./logs/test_rank{local_rank}",
-                           **env_kwargs)
+                           **base_env_kwargs)
 
-    # ──────────────────────────────────────────────────────────────────────────
-    # Genetic Algorithm Training & Evaluation
-    # ──────────────────────────────────────────────────────────────────────────
+    # ─── GA Training / Eval ─────────────────────────────────────────────────────
     ga_model = "ga_policy_model.pth"
-    if local_rank == 0:
+    if local_rank == 0 and not os.path.exists(ga_model):
         best_agent, best_fit, _, _ = run_ga_evolution(
             train_env,
             population_size=80,
@@ -371,10 +336,13 @@ def main():
         cagr, sharpe, mdd = compute_performance_metrics(ga_profits, ga_times)
         logging.info(f"GA Eval → CAGR: {cagr:.4f}, Sharpe: {sharpe:.4f}, MDD: {mdd:.4f}")
 
-    # ──────────────────────────────────────────────────────────────────────────
-    # PPO Training & Evaluation
-    # ──────────────────────────────────────────────────────────────────────────
+    # ─── PPO Training / Eval ─────────────────────────────────────────────────────
     ppo_model = "ppo_model.pth"
+    # total timesteps split across ranks
+    total_timesteps = 1_000_000
+    per_rank_steps  = total_timesteps // world_size
+
+    # build trainer with local_rank so it knows who shows the bar
     ppo_trainer = PPOTrainer(
         env=train_env,
         input_dim=int(np.prod(train_env.observation_space.shape)),
@@ -389,14 +357,11 @@ def main():
         batch_size=64,
         device=str(device),
         model_save_path=ppo_model,
-        local_rank=local_rank
+        local_rank=local_rank,
+        eval_interval=10
     )
 
-    logging.info("Wrapping PPO model in DDP – waiting at barrier")
-    dist.barrier(device_ids=[local_rank])
-    ppo_trainer.model = DDP(ppo_trainer.model, device_ids=[local_rank])
-
-    # 1) Load checkpoint (if any) to resume
+    # — Load / resume before wrapping in DDP
     ckpt_path = ppo_model + ".ckpt"
     if os.path.exists(ckpt_path):
         ckpt = torch.load(ckpt_path, map_location=device)
@@ -404,7 +369,9 @@ def main():
         ppo_trainer.optimizer.load_state_dict(ckpt["optimizer_state"])
         ppo_trainer.scheduler.load_state_dict(ckpt["scheduler_state"])
         ppo_trainer.entropy_coef = ckpt["entropy_coef"]
-        start_update = ckpt["update_idx"] + 1
+        last_upd = ckpt.get("update_idx", -1)
+        max_upd  = max(1, per_rank_steps // ppo_trainer.rollout_steps)
+        start_update = last_upd + 1 if last_upd + 1 < max_upd else 0
         logging.info(f"Resuming PPO from update {start_update}")
     else:
         start_update = 0
@@ -417,8 +384,20 @@ def main():
             start_update=start_update,
             eval_env=test_env
         )
+    # — Wrap in DDP and barrier
+    logging.info("Wrapping PPO model in DDP – waiting at barrier")
+    dist.barrier(device_ids=[local_rank])
+    ppo_trainer.model = DDP(ppo_trainer.model, device_ids=[local_rank])
+
+    # — Run training
+    ppo_trainer.train(
+        total_timesteps=per_rank_steps,
+        start_update=start_update,
+        eval_env=test_env
+    )
     dist.barrier(device_ids=[local_rank])
 
+    # — Final evaluation
     ppo_agent = ActorCriticNet(
         input_dim=int(np.prod(train_env.observation_space.shape)),
         hidden_dim=64,
@@ -432,17 +411,6 @@ def main():
         logging.info(f"PPO Eval → CAGR: {cagr:.4f}, Sharpe: {sharpe:.4f}, MDD: {mdd:.4f}")
 
     dist.destroy_process_group()
-
-    # ──────────────────────────────────────────────────────────────────────────
-    # Example: processing one live bar (uncomment & adapt in production)
-    # new_bar = {
-    #     "date_time": pd.Timestamp.utcnow(),
-    #     "Open": 3357.0, "High": 3360.0,
-    #     "Low": 3355.0, "Close": 3358.0,
-    #     "Volume": 120
-    # }
-    # df_live = process_live_row(new_bar)
-    # logging.info("Live features:\n%s", df_live.head(1))
 
 if __name__ == "__main__":
     main()
