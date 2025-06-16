@@ -187,8 +187,9 @@ class PPOTrainer:
             logp_buf.append(logp.item())
             val_buf.append(value.item())
 
-            next_state, reward, done, _ = self.env.step(action.item())
-            rew_buf.append(reward)
+            next_state, _, done, info = self.env.step(action.item())
+            profit = float(info.get("total_profit", 0.0))
+            rew_buf.append(profit)
             done_buf.append(done)
 
             state = next_state if not done else self.env.reset()
@@ -205,23 +206,44 @@ class PPOTrainer:
 
     def compute_gae(self, rewards, values, dones, last_state):
         """
-        Compute advantages and discounted returns using GAE.
+        Compute advantages and discounted returns using GAE — all on the GPU.
+        Args:
+          rewards: np.ndarray of shape [T]
+          values:  np.ndarray of shape [T]
+          dones:   np.ndarray of shape [T], dtype=bool
+          last_state: final state for bootstrapping
+        Returns:
+          adv_t: torch.Tensor [T] on self.device
+          ret_t: torch.Tensor [T] on self.device
         """
+        # move to GPU
+        rewards_t = torch.tensor(rewards, dtype=torch.float32, device=self.device)
+        values_t = torch.tensor(values, dtype=torch.float32, device=self.device)
+        dones_t = torch.tensor(dones, dtype=torch.float32, device=self.device)
+
         # bootstrap last value
-        state_t = torch.tensor(last_state, dtype=torch.float32).unsqueeze(0).to(self.device)
-        last_val = self.model(state_t)[1].item()
-        values = np.append(values, last_val)
+        with torch.no_grad():
+            last_state_t = torch.tensor(last_state, dtype=torch.float32, device=self.device).unsqueeze(0)
+            _, last_val_t = self.model(last_state_t)
+            last_val_t = last_val_t.squeeze()
+        # append for ease of indexing
+        values_t = torch.cat([values_t, last_val_t[None]], dim=0)
 
-        advantages = np.zeros_like(rewards, dtype=np.float32)
-        last_gae = 0.0
-        for t in reversed(range(len(rewards))):
-            mask = 1.0 - float(dones[t])
-            delta = rewards[t] + self.gamma * values[t+1] * mask - values[t]
-            last_gae = delta + self.gamma * self.gae_lambda * mask * last_gae
-            advantages[t] = last_gae
+        # allocate
+        T = rewards_t.size(0)
+        advantages = torch.zeros_like(rewards_t, device=self.device)
+        gae = torch.tensor(0.0, device=self.device)
 
-        returns = advantages + values[:-1]
-        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+        for t in reversed(range(T)):
+            mask = 1.0 - dones_t[t]
+            delta = rewards_t[t] + self.gamma * values_t[t + 1] * mask - values_t[t]
+            gae = delta + self.gamma * self.gae_lambda * mask * gae
+            advantages[t] = gae
+
+        returns = advantages + values_t[:-1]
+        # normalize advantages in-place
+        advantages = (advantages - advantages.mean()) / (advantages.std(unbiased=False) + 1e-8)
+
         return advantages, returns
 
     def train_step(self):
@@ -239,11 +261,13 @@ class PPOTrainer:
         advs, rets = self.compute_gae(rews, vals, dones, last_state)
 
         # tensors
-        obs_t = torch.tensor(obs, dtype=torch.float32).to(self.device)
-        acts_t = torch.tensor(acts, dtype=torch.long).to(self.device)
-        oldlp_t = torch.tensor(old_lps, dtype=torch.float32).to(self.device)
-        adv_t = torch.tensor(advs, dtype=torch.float32).to(self.device)
-        ret_t = torch.tensor(rets, dtype=torch.float32).to(self.device)
+        # push everything to GPU without copy warnings
+        obs_t   = torch.as_tensor(obs,    dtype=torch.float32, device=self.device)
+        acts_t  = torch.as_tensor(acts,   dtype=torch.long,   device=self.device)
+        oldlp_t = torch.as_tensor(old_lps,dtype=torch.float32, device=self.device)
+        # advantages & returns come from NumPy → use as_tensor to avoid wrap-warnings
+        adv_t   = torch.as_tensor(advs,  dtype=torch.float32, device=self.device)
+        ret_t   = torch.as_tensor(rets,  dtype=torch.float32, device=self.device)
 
         dataset_size = len(obs)
         # 2) PPO epochs
@@ -297,16 +321,9 @@ class PPOTrainer:
             self.scheduler.step()
             self.entropy_coef *= 0.95
 
-        # 3) rollout reward
-        mean_reward = float(rews.mean())
-        # ───────────────────────────────────────────────────────────────────
-        # Note: `mean_reward` is the average *environment* reward per step/trade,
-        #       NOT a mean-squared error. If it stays around a small negative
-        #       value (e.g. –0.04), your policy is currently losing on average.
-        #       To improve, check your reward signal, baseline normalization,
-        #       network capacity, and learning rates.
-        # ───────────────────────────────────────────────────────────────────
-        self.tb_writer.add_scalar("ppo/rollout_reward", mean_reward, self.global_step)
+        # 3) rollout reward: log total PnL over the rollout, not per-step mean
+        total_reward = float(rews.sum())
+        self.tb_writer.add_scalar("ppo/rollout_reward_total", total_reward, self.global_step)
 
         # 4) checkpoint
         if self.local_rank == 0:
@@ -324,10 +341,8 @@ class PPOTrainer:
             }
             torch.save(ckpt, self.model_save_path + ".ckpt")
 
-        tqdm.write(
-            f"PPO update complete — mean reward: {mean_reward:.4f}"
-        )
-        return mean_reward
+        # **remove** any tqdm.write here — return the reward instead
+        return total_reward
 
     def train(
         self,
@@ -337,8 +352,7 @@ class PPOTrainer:
     ):
         """
         Run PPO until `total_timesteps` env steps are collected.
-        Also performs periodic evaluation and logs profitability metrics,
-        with a tqdm progress bar only on rank 0 and elapsed‐time scalars.
+        Only rank 0 displays a single-line tqdm bar updated in place.
         """
         n_updates = max(1, total_timesteps // self.rollout_steps)
         logger.info(f"Starting training: updates {start_update} → {n_updates - 1}")
@@ -358,36 +372,35 @@ class PPOTrainer:
         )
 
         start_time = time.time()
-
-
         if eval_env is None:
             logger.warning("No evaluation environment provided; skipping eval logs")
 
         # only rank 0 shows tqdm bar
         if self.local_rank == 0:
-            update_iter = trange(start_update, n_updates, desc="PPO updates")
+            pbar = trange(start_update, n_updates, desc="PPO updates")
         else:
-            update_iter = range(start_update, n_updates)
+            pbar = range(start_update, n_updates)
 
-        for update in update_iter:
+        for update in pbar:
             self.current_update = update
 
-            # 1) do one PPO update
+            # 1) do one PPO update and get its mean reward
             mean_reward = self.train_step()
-            pbar.set_postfix(mean_reward=f"{mean_reward:.4f}")
 
-            # 2) log elapsed time
+            # 2) update the single-line progress bar
+            if self.local_rank == 0:
+                pbar.set_postfix(total_reward=f"{mean_reward:.4f}")
+
+            # 3) log elapsed time
             elapsed = time.time() - start_time
             self.tb_writer.add_scalar("PPO/ElapsedSeconds", elapsed, update)
 
-            # 3) periodic evaluation & profit metrics
+            # 4) periodic eval and histogram logging…
             if (
                 eval_env is not None
                 and self.local_rank == 0
                 and (update + 1) % self.eval_interval == 0
             ):
-
-                # unwrap DDP to get real model with .act
                 real_agent = self.model.module if isinstance(self.model, DDP) else self.model
                 profits, times = evaluate_agent_distributed(eval_env, real_agent, 0)
                 cagr, sharpe, mdd = compute_performance_metrics(profits, times)
@@ -395,7 +408,6 @@ class PPOTrainer:
                 self.tb_writer.add_scalar("PPO/Eval/Sharpe", sharpe, update)
                 self.tb_writer.add_scalar("PPO/Eval/MDD", mdd, update)
 
-                # log equity curve image
                 fig = plt.figure()
                 pd.Series(profits).cumsum().plot(
                     title=f"PPO Equity after update {update + 1}"
@@ -403,7 +415,7 @@ class PPOTrainer:
                 self.tb_writer.add_figure("PPO/Eval/EquityCurve", fig, update)
                 plt.close(fig)
 
-            # 4) periodic weight histograms
+            # 5) periodic weight histograms…
             if self.local_rank == 0 and (update + 1) % (self.eval_interval * 2) == 0:
                 real_model = self.model.module if isinstance(self.model, DDP) else self.model
                 for i, layer in enumerate(real_model.base):
@@ -412,6 +424,6 @@ class PPOTrainer:
                         self.tb_writer.add_histogram(f"PPO/Layer{i}_Weights", w, update)
 
         if self.local_rank == 0:
-            update_iter.close()
+            pbar.close()
         self.tb_writer.close()
         return self.model.module if isinstance(self.model, DDP) else self.model

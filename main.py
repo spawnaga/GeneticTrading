@@ -325,19 +325,26 @@ def main():
 
     # resume if checkpoint exists
     ckpt_path = ppo_model + ".ckpt"
+    start_update = 0
     if os.path.exists(ckpt_path):
         ckpt = torch.load(ckpt_path, map_location=device)
-        ppo_trainer.model.load_state_dict(ckpt["model_state"])
-        ppo_trainer.optimizer.load_state_dict(ckpt["optimizer_state"])
-        ppo_trainer.scheduler.load_state_dict(ckpt["scheduler_state"])
-        ppo_trainer.entropy_coef = ckpt["entropy_coef"]
-        last_upd = ckpt.get("update_idx", -1)
-        max_upd  = max(1, per_rank_steps // ppo_trainer.rollout_steps)
-        start_update = last_upd + 1 if last_upd + 1 < max_upd else 0
-        logging.info(f"Resuming PPO from update {start_update}")
+        try:
+            ppo_trainer.model.load_state_dict(ckpt["model_state"])
+            ppo_trainer.optimizer.load_state_dict(ckpt["optimizer_state"])
+            ppo_trainer.scheduler.load_state_dict(ckpt["scheduler_state"])
+            ppo_trainer.entropy_coef = ckpt.get("entropy_coef", ppo_trainer.entropy_coef)
+            last_upd = ckpt.get("update_idx", -1)
+            max_upd = max(1, per_rank_steps // ppo_trainer.rollout_steps)
+            start_update = last_upd + 1 if (last_upd + 1) < max_upd else 0
+            logging.info(f"Resuming PPO from update {start_update}")
+        except RuntimeError as e:
+            logging.warning(
+                "Could not load PPO checkpoint (%s)!  "
+                "This usually means the feature dimension changed.  "
+                "Starting PPO from scratch.", e
+            )
     else:
-        start_update = 0
-        logging.info("No PPO checkpoint found; starting fresh")
+        logging.info("No PPO checkpoint found; starting PPO from scratch")
 
     # rank 0 warm‐up / eval, then DDP wrap
     if local_rank == 0:
