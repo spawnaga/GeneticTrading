@@ -19,6 +19,8 @@ import torch.distributed as dist
 import numpy as np
 from torch.nn.parallel import DistributedDataParallel as DDP
 
+logging.getLogger("torch.distributed").setLevel(logging.WARNING)
+logging.getLogger("torch.distributed").setLevel(logging.INFO)
 # ─── TRY GPU DATAFRAME SUPPORT ─────────────────────────────────────────────────
 try:
     import cudf
@@ -76,7 +78,7 @@ def setup_logging(local_rank: int) -> None:
         pass
     file_handler.setFormatter(logging.Formatter(fmt))
 
-    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler = logging.StreamHandler(sys.stderr)
     stream_handler.setFormatter(logging.Formatter(fmt))
 
     logging.basicConfig(level=logging.INFO, format=fmt, handlers=[stream_handler, file_handler])
@@ -297,7 +299,6 @@ def main():
             tournament_size=7, mutation_rate=0.8, mutation_scale=1.0,
             num_workers=4, device=str(device),
             model_save_path=ga_model,
-            fitness_metric="sharpe"
         )
         logging.info(f"GA training complete – best fitness: {best_fit:.2f}")
         best_agent.save_model(ga_model)

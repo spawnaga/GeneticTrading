@@ -6,7 +6,8 @@ Proximal Policy Optimization (PPO) implementation using PyTorch and DistributedD
 This module defines:
   - ActorCriticNet: shared-base actor-critic network
   - PPOTrainer: collects trajectories, computes GAE, and updates policy/value heads
-  - Extensive TensorBoard instrumentation for losses, rewards, LR, entropy, and periodic evaluation metrics
+  - Extensive TensorBoard instrumentation for losses, rewards, LR, entropy, histograms of
+    predictions & returns, and periodic evaluation metrics
 """
 
 import os
@@ -17,7 +18,7 @@ import time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from tqdm import trange, tqdm
+from tqdm import trange
 
 import torch
 import torch.nn as nn
@@ -146,19 +147,13 @@ class PPOTrainer:
 
         # Build model (will wrap in DDP externally)
         self.model = ActorCriticNet(input_dim, hidden_dim, action_dim, device=device)
-        ckpt = self.model_save_path + ".ckpt"
-        if os.path.exists(ckpt):
-            data = torch.load(ckpt, map_location=self.device)
-            self.model.load_state_dict(data["model_state"])
-            logger.info(f"Loaded PPO checkpoint from {ckpt}")
-        else:
-            logger.info(f"No PPO checkpoint at {ckpt}, training from scratch")
+        self.model.load_model(self.model_save_path)
 
-        # Optimizer & LR scheduler
+        # Optimizer & LR scheduler: decay once per update_step
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
-        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=100, gamma=0.9)
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=1, gamma=0.99)
 
-        # Entropy coefficient for exploration
+        # Entropy coefficient for exploration: decay once per update_step
         self.entropy_coef = 0.05
 
         # TensorBoard writer (one logdir per rank)
@@ -189,8 +184,9 @@ class PPOTrainer:
             logp_buf.append(logp.item())
             val_buf.append(value.item())
 
-            next_state, step_reward, done, info = self.env.step(action.item())
-            rew_buf.append(step_reward)
+            # *** USE STEP-LEVEL reward (not cumulative total_profit) ***
+            next_state, reward, done, info = self.env.step(action.item())
+            rew_buf.append(float(reward))
             done_buf.append(done)
 
             state = next_state if not done else self.env.reset()
@@ -217,20 +213,17 @@ class PPOTrainer:
           adv_t: torch.Tensor [T] on self.device
           ret_t: torch.Tensor [T] on self.device
         """
-        # move to GPU
         rewards_t = torch.tensor(rewards, dtype=torch.float32, device=self.device)
         values_t = torch.tensor(values, dtype=torch.float32, device=self.device)
         dones_t = torch.tensor(dones, dtype=torch.float32, device=self.device)
 
-        # bootstrap last value
         with torch.no_grad():
             last_state_t = torch.tensor(last_state, dtype=torch.float32, device=self.device).unsqueeze(0)
             _, last_val_t = self.model(last_state_t)
             last_val_t = last_val_t.squeeze()
-        # append for ease of indexing
+
         values_t = torch.cat([values_t, last_val_t[None]], dim=0)
 
-        # allocate
         T = rewards_t.size(0)
         advantages = torch.zeros_like(rewards_t, device=self.device)
         gae = torch.tensor(0.0, device=self.device)
@@ -242,7 +235,6 @@ class PPOTrainer:
             advantages[t] = gae
 
         returns = advantages + values_t[:-1]
-        # normalize advantages in-place
         advantages = (advantages - advantages.mean()) / (advantages.std(unbiased=False) + 1e-8)
 
         return advantages, returns
@@ -253,25 +245,22 @@ class PPOTrainer:
           - collect rollouts
           - compute GAE & returns
           - multiple minibatch updates
-          - log losses, entropy, and LR
+          - log losses, entropy, LR, histograms
           - save checkpoint
         Returns mean rollout reward.
         """
-        # 1) rollout
+        # 1) rollout & GAE
         obs, acts, rews, old_lps, vals, dones, last_state = self.collect_trajectories()
         advs, rets = self.compute_gae(rews, vals, dones, last_state)
 
-        # tensors
-        # push everything to GPU without copy warnings
         obs_t   = torch.as_tensor(obs,    dtype=torch.float32, device=self.device)
         acts_t  = torch.as_tensor(acts,   dtype=torch.long,   device=self.device)
         oldlp_t = torch.as_tensor(old_lps,dtype=torch.float32, device=self.device)
-        # advantages & returns come from NumPy → use as_tensor to avoid wrap-warnings
         adv_t   = torch.as_tensor(advs,  dtype=torch.float32, device=self.device)
         ret_t   = torch.as_tensor(rets,  dtype=torch.float32, device=self.device)
 
-        dataset_size = len(obs)
         # 2) PPO epochs
+        dataset_size = len(obs)
         for epoch in range(self.update_epochs):
             perm = torch.randperm(dataset_size, device=self.device)
             for start in range(0, dataset_size, self.batch_size):
@@ -303,7 +292,6 @@ class PPOTrainer:
                     (v_clipped - b_ret) ** 2
                 ).mean()
 
-                # total loss
                 loss = policy_loss + value_loss - self.entropy_coef * entropy
 
                 self.optimizer.zero_grad()
@@ -316,17 +304,35 @@ class PPOTrainer:
                 self.tb_writer.add_scalar("ppo/value_loss", value_loss.item(), self.global_step)
                 self.tb_writer.add_scalar("ppo/entropy", entropy.item(), self.global_step)
                 self.tb_writer.add_scalar("ppo/lr", self.scheduler.get_last_lr()[0], self.global_step)
+
+                # log histograms
+                self.tb_writer.add_histogram(
+                    "ppo/value_preds",
+                    value_pred.detach().cpu().numpy(),
+                    self.global_step
+                )
+                self.tb_writer.add_histogram(
+                    "ppo/returns",
+                    b_ret.detach().cpu().numpy(),
+                    self.global_step
+                )
+                self.tb_writer.add_histogram(
+                    "ppo/advantages",
+                    b_adv.detach().cpu().numpy(),
+                    self.global_step
+                )
+
                 self.global_step += 1
 
-            # decay LR & entropy
-            self.scheduler.step()
-            self.entropy_coef *= 0.95
+        # decay LR & entropy once per train_step
+        self.scheduler.step()
+        self.entropy_coef *= 0.95
 
-        # 3) rollout reward: log total PnL over the rollout, not per-step mean
+        # rollout reward: total sum of step rewards
         total_reward = float(rews.sum())
         self.tb_writer.add_scalar("ppo/rollout_reward_total", total_reward, self.global_step)
 
-        # 4) checkpoint
+        # checkpoint
         if self.local_rank == 0:
             state_dict = (
                 self.model.module.state_dict()
@@ -342,7 +348,6 @@ class PPOTrainer:
             }
             torch.save(ckpt, self.model_save_path + ".ckpt")
 
-        # **remove** any tqdm.write here — return the reward instead
         return total_reward
 
     def train(
@@ -376,7 +381,6 @@ class PPOTrainer:
         if eval_env is None:
             logger.warning("No evaluation environment provided; skipping eval logs")
 
-        # only rank 0 shows tqdm bar
         if self.local_rank == 0:
             pbar = trange(start_update, n_updates, desc="PPO updates")
         else:
@@ -384,19 +388,15 @@ class PPOTrainer:
 
         for update in pbar:
             self.current_update = update
-
-            # 1) do one PPO update and get its mean reward
             mean_reward = self.train_step()
 
-            # 2) update the single-line progress bar
             if self.local_rank == 0:
                 pbar.set_postfix(total_reward=f"{mean_reward:.4f}")
 
-            # 3) log elapsed time
             elapsed = time.time() - start_time
             self.tb_writer.add_scalar("PPO/ElapsedSeconds", elapsed, update)
 
-            # 4) periodic eval and histogram logging…
+            # periodic evaluation
             if (
                 eval_env is not None
                 and self.local_rank == 0
@@ -416,7 +416,7 @@ class PPOTrainer:
                 self.tb_writer.add_figure("PPO/Eval/EquityCurve", fig, update)
                 plt.close(fig)
 
-            # 5) periodic weight histograms…
+            # periodic weight histograms
             if self.local_rank == 0 and (update + 1) % (self.eval_interval * 2) == 0:
                 real_model = self.model.module if isinstance(self.model, DDP) else self.model
                 for i, layer in enumerate(real_model.base):
