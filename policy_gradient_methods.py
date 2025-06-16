@@ -146,7 +146,13 @@ class PPOTrainer:
 
         # Build model (will wrap in DDP externally)
         self.model = ActorCriticNet(input_dim, hidden_dim, action_dim, device=device)
-        self.model.load_model(self.model_save_path)
+        ckpt = self.model_save_path + ".ckpt"
+        if os.path.exists(ckpt):
+            data = torch.load(ckpt, map_location=self.device)
+            self.model.load_state_dict(data["model_state"])
+            logger.info(f"Loaded PPO checkpoint from {ckpt}")
+        else:
+            logger.info(f"No PPO checkpoint at {ckpt}, training from scratch")
 
         # Optimizer & LR scheduler
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
@@ -183,9 +189,8 @@ class PPOTrainer:
             logp_buf.append(logp.item())
             val_buf.append(value.item())
 
-            next_state, _, done, info = self.env.step(action.item())
-            profit = float(info.get("total_profit", 0.0))
-            rew_buf.append(profit)
+            next_state, step_reward, done, info = self.env.step(action.item())
+            rew_buf.append(step_reward)
             done_buf.append(done)
 
             state = next_state if not done else self.env.reset()
