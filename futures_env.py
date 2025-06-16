@@ -30,14 +30,27 @@ def monotonicity(series):
 
 
 class TimeSeriesState:
-    """Single time-step state holding immutable OHLC data and features."""
+    """Single time-step state holding immutable OHLCV data and features."""
 
-    def __init__(self, ts, open_price, close_price, features):
+    def __init__(
+        self,
+        ts,
+        open_price,
+        high_price=None,
+        low_price=None,
+        close_price=None,
+        volume=None,
+        features=None,
+    ):
         self.ts = ts
         self.open_price = open_price
+        self.high_price = high_price
+        self.low_price = low_price
         self.close_price = close_price
-        # always keep this at length-7 base features
-        self.features = np.array(features, dtype=np.float32)
+        self.volume = volume
+        self.features = (
+            np.array(features, dtype=np.float32) if features is not None else None
+        )
 
 
 class FuturesEnv(gym.Env):
@@ -234,7 +247,7 @@ class FuturesEnv(gym.Env):
             self.orders.append([str(uuid4()), str(state.ts), filled_price, 1])
             self.current_position = 1
 
-    def _handle_sell(self, state):
+    def _handle_sell(self, state, high_price=None, low_price=None, volume=None):
         """
         Open/close short positions.
         """
@@ -273,7 +286,6 @@ class FuturesEnv(gym.Env):
                 slippage = np.random.choice(self.long_values, p=self.long_probabilities)
             else:
                 slippage = np.random.choice(self.short_values, p=self.short_probabilities)
-
         # 3) Use high/low range to derive a dynamic spread when available
         dynamic_spread = self.bid_ask_spread
         if high_price is not None and low_price is not None:

@@ -33,7 +33,10 @@ def build_states_for_futures_env(df):
         s = TimeSeriesState(
             ts=ts,
             open_price=open_price,
+            high_price=float(row['High']),
+            low_price=float(row['Low']),
             close_price=close_price,
+            volume=float(row['Volume']),
             features=features,
         )
         states.append(s)
