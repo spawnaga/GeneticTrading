@@ -19,50 +19,70 @@ try:
 except RuntimeError:
     pass
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Reuse the ActorCriticNet so GA & PPO share exactly the same architecture.
+# ──────────────────────────────────────────────────────────────────────────────
+from policy_gradient_methods import ActorCriticNet
 
-class PolicyNetwork(nn.Module):
+class PolicyNetwork(ActorCriticNet):
     """
-    A simple 3-layer MLP policy network for GA evolution.
+    GA version of the policy net; inherits the shared-base + policy_head
+    from ActorCriticNet. We simply never use the value_head here.
     """
-
     def __init__(self, input_dim, hidden_dim, output_dim, device="cpu"):
-        super().__init__()
-        self.device = torch.device(device)
-        self.net = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.Tanh(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.Tanh(),
-            nn.Linear(hidden_dim, output_dim)
-        ).to(self.device)
+        # note: output_dim → action_dim in ActorCriticNet
+        super().__init__(input_dim, hidden_dim, action_dim=output_dim, device=device)
 
     def forward(self, x):
-        if x.dim() > 2:
-            x = x.view(x.size(0), -1)
-        return self.net(x)
+        # returns only the policy logits, ignores the value head
+        logits, _ = super().forward(x)
+        return logits
 
     def act(self, state):
+        """
+        State is a torch.Tensor. Returns discrete action.
+        """
         state = state.to(self.device)
         with torch.no_grad():
             logits = self.forward(state)
         return int(torch.argmax(logits, dim=-1).item())
 
     def get_params(self):
-        return np.concatenate([p.cpu().data.numpy().ravel() for p in self.parameters()])
+        """
+        Flatten base + policy_head parameters into one vector.
+        """
+        params = []
+        # base layers
+        for p in self.base.parameters():
+            params.append(p.cpu().data.numpy().ravel())
+        # policy head
+        for p in self.policy_head.parameters():
+            params.append(p.cpu().data.numpy().ravel())
+        return np.concatenate(params)
 
     def set_params(self, vector):
+        """
+        Unflatten and copy into base + policy_head.
+        """
         vec = np.array(vector, dtype=np.float32)
         idx = 0
-        for p in self.parameters():
+        for p in list(self.base.parameters()) + list(self.policy_head.parameters()):
             numel = p.numel()
-            chunk = vec[idx:idx + numel].reshape(p.shape)
+            chunk = vec[idx : idx + numel].reshape(p.shape)
             p.data.copy_(torch.from_numpy(chunk).to(self.device))
             idx += numel
 
     def save_model(self, path):
+        """
+        Save just the policy weights (base + policy_head).
+        """
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
         torch.save(self.state_dict(), path)
 
     def load_model(self, path):
+        """
+        Load weights if they exist, else random init.
+        """
         if os.path.exists(path):
             self.load_state_dict(torch.load(path, map_location=self.device))
             print(f"[GA] Loaded existing model from {path}")
@@ -116,7 +136,7 @@ def evaluate_fitness(param_vector, env, device="cpu"):
 
     done = False
     while not done:
-        state_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(policy.device)
+        state_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0)
         action = policy.act(state_tensor)
 
         step_ret = env.step(action)
@@ -128,6 +148,9 @@ def evaluate_fitness(param_vector, env, device="cpu"):
 
 
 def parallel_gpu_eval(args):
+    """
+    Allow multiprocessing across GPUs.
+    """
     params, env, gpu_id = args
     return evaluate_fitness(params, env, device=f"cuda:{gpu_id}")
 
@@ -144,13 +167,13 @@ def run_ga_evolution(
     model_save_path="ga_policy_model.pth"
 ):
     """
-    Genetic Algorithm main loop with enhanced TensorBoard logging:
-      - logs Min, Avg, Median, Max fitness each generation
-      - logs distribution, parameter std-dev, elapsed time, and stagnation count
-      - applies mutation decay and adaptive selection pressure
+    Genetic Algorithm main loop with:
+      - shared ActorCriticNet architecture for GA & PPO
+      - TensorBoard logging of min/avg/median/max fitness + distribution + parameter std + stagnation
+      - full original GA machinery, plus now perfect symmetry with PPO’s load_state_dict
     """
-    local_rank = int(os.environ.get("LOCAL_RANK", 0))
-    disable_bar = (local_rank != 0)
+    local_rank   = int(os.environ.get("LOCAL_RANK", 0))
+    disable_bar  = (local_rank != 0)
     bar = tqdm(
         range(generations),
         desc="[GA gens]",
@@ -160,8 +183,10 @@ def run_ga_evolution(
         leave=True,
     )
 
+    # TensorBoard writer
     writer = SummaryWriter(log_dir="runs/ga_experiment", flush_secs=1)
 
+    # base policy to size params
     base_policy = PolicyNetwork(
         input_dim=int(np.prod(env.observation_space.shape)),
         hidden_dim=64,
@@ -171,39 +196,30 @@ def run_ga_evolution(
     base_policy.load_model(model_save_path)
     param_size = len(base_policy.get_params())
 
-    # initial population
+    # initialize population
     population = [
-        np.array(PolicyNetwork(
-            input_dim=int(np.prod(env.observation_space.shape)),
-            hidden_dim=64,
-            output_dim=env.action_space.n,
-            device=device
-        ).get_params(), dtype=np.float32)
+        np.array(base_policy.get_params(), dtype=np.float32)
         for _ in range(population_size)
     ]
 
     # initial fitness logging
     init_fits = [evaluate_fitness(ind, env, device) for ind in population]
-    init_min, init_avg, init_median, init_max = (
+    init_min, init_avg, init_med, init_max = (
         float(np.min(init_fits)),
         float(np.mean(init_fits)),
         float(np.median(init_fits)),
         float(np.max(init_fits))
     )
-    print(f"[GA DEBUG] Init fitness → min={init_min:.4f}, "
-          f"avg={init_avg:.4f}, median={init_median:.4f}, max={init_max:.4f}")
+    print(f"[GA DEBUG] Init fitness → min={init_min:.4f}, avg={init_avg:.4f}, "
+          f"median={init_med:.4f}, max={init_max:.4f}")
     writer.add_scalar("GA/InitMinFitness", init_min, 0)
     writer.add_scalar("GA/InitAvgFitness", init_avg, 0)
-    writer.add_scalar("GA/InitMedianFitness", init_median, 0)
+    writer.add_scalar("GA/InitMedianFitness", init_med, 0)
     writer.add_scalar("GA/InitMaxFitness", init_max, 0)
 
     best_fitness = -float("inf")
-    best_params = None
-    stagnation = 0
-
-    # decay factors for mutation
-    mutation_rate_decay  = 0.99   ### CHANGED
-    mutation_scale_decay = 0.98   ### CHANGED
+    best_params  = None
+    stagnation   = 0
 
     if num_workers is None:
         num_workers = max(1, cpu_count() - 1)
@@ -213,7 +229,7 @@ def run_ga_evolution(
 
     try:
         for gen in bar:
-            # ─── Evaluate population ─────────────────────────────────
+            # ─── Evaluate ───────────────────────────────────────
             if gpu_count > 0:
                 with Pool(gpu_count) as pool:
                     args = [(ind, env, i % gpu_count) for i, ind in enumerate(population)]
@@ -225,83 +241,60 @@ def run_ga_evolution(
             else:
                 fitnesses = [evaluate_fitness(ind, env, device) for ind in population]
 
-            # ─── Compute stats ─────────────────────────────────────
+            # ─── Stats & Logging ─────────────────────────────────
             gen_min    = float(np.min(fitnesses))
             gen_avg    = float(np.mean(fitnesses))
-            gen_median = float(np.median(fitnesses))
+            gen_med    = float(np.median(fitnesses))
             gen_max    = float(np.max(fitnesses))
             param_std  = float(np.std(np.stack(population)))
             elapsed    = time.time() - start_time
 
-            # ─── TensorBoard logging ──────────────────────────────
-            writer.add_scalar("GA/MinFitness", gen_min, gen)
-            writer.add_scalar("GA/AvgFitness", gen_avg, gen)
-            writer.add_scalar("GA/MedianFitness", gen_median, gen)
-            writer.add_scalar("GA/MaxFitness", gen_max, gen)
+            writer.add_scalar("GA/MinFitness",    gen_min, gen)
+            writer.add_scalar("GA/AvgFitness",    gen_avg, gen)
+            writer.add_scalar("GA/MedianFitness", gen_med, gen)
+            writer.add_scalar("GA/MaxFitness",    gen_max, gen)
             writer.add_histogram("GA/FitnessDist", np.array(fitnesses), gen)
-            writer.add_scalar("GA/ParamStd", param_std, gen)
-            writer.add_scalar("GA/ElapsedSeconds", elapsed, gen)
-            writer.add_scalar("GA/Stagnation", stagnation, gen)
-            # log current mutation settings
-            writer.add_scalar("GA/MutationRate",  mutation_rate,  gen)   ### CHANGED
-            writer.add_scalar("GA/MutationScale", mutation_scale, gen)   ### CHANGED
-
-            writer.add_text("GA/GenerationInfo",
-                            f"Gen {gen+1}/{generations} – best={gen_max:.2f}, "
-                            f"avg={gen_avg:.2f}, std={param_std:.3f}, stag={stagnation}",
-                            gen)
+            writer.add_scalar("GA/ParamStd",      param_std, gen)
+            writer.add_scalar("GA/ElapsedSeconds",elapsed, gen)
+            writer.add_scalar("GA/Stagnation",    stagnation, gen)
             writer.flush()
 
             bar.set_postfix({
                 "min":    f"{gen_min:.1f}",
                 "avg":    f"{gen_avg:.1f}",
-                "med":    f"{gen_median:.1f}",
+                "med":    f"{gen_med:.1f}",
                 "max":    f"{gen_max:.1f}",
                 "std":    f"{param_std:.3f}",
                 "stag":   f"{stagnation}"
             })
-
             if disable_bar:
                 print(f"[GA] Gen {gen}: min={gen_min:.2f}, avg={gen_avg:.2f}, "
-                      f"med={gen_median:.2f}, max={gen_max:.2f}, std={param_std:.4f}, "
+                      f"median={gen_med:.2f}, max={gen_max:.2f}, std={param_std:.4f}, "
                       f"stagnation={stagnation}")
 
-            # ─── Elitism & checkpoint ──────────────────────────────
+            # ─── Elitism & Checkpoint ───────────────────────────
             if gen_max > best_fitness:
                 best_fitness = gen_max
-                best_idx     = int(np.argmax(fitnesses))
-                best_params  = population[best_idx].copy()
+                best_params  = population[int(np.argmax(fitnesses))].copy()
                 base_policy.set_params(best_params)
                 base_policy.save_model(model_save_path)
                 stagnation = 0
             else:
                 stagnation += 1
 
-            # ─── Adjust selection pressure if stagnating ─────────── ### CHANGED
-            if stagnation and stagnation % 10 == 0:
-                tournament_size = max(2, tournament_size - 1)
-                writer.add_scalar("GA/TournamentSize", tournament_size, gen)
-                # temporarily increase elitism fraction
-                elite_n = max(1, int(0.2 * population_size))
-            else:
-                elite_n = max(1, int(0.1 * population_size))
-            ### END CHANGED: adaptive tournament and elitism
-
-            # ─── Breed next generation ─────────────────────────────
-            elites = [population[i] for i in np.argsort(fitnesses)[-elite_n:]]
+            # ─── Breed Next Generation ──────────────────────────
+            elite_n = max(1, int(0.1 * population_size))
+            elites  = [population[i] for i in np.argsort(fitnesses)[-elite_n:]]
             new_pop = elites.copy()
             while len(new_pop) < population_size:
-                # tournament selection
                 idxs1 = np.random.choice(population_size, tournament_size, replace=False)
-                p1    = population[idxs1[np.argmax([fitnesses[i] for i in idxs1])]]
+                p1     = population[idxs1[np.argmax([fitnesses[i] for i in idxs1])]]
                 idxs2 = np.random.choice(population_size, tournament_size, replace=False)
-                p2    = population[idxs2[np.argmax([fitnesses[i] for i in idxs2])]]
+                p2     = population[idxs2[np.argmax([fitnesses[i] for i in idxs2])]]
+                alpha  = np.random.rand()
+                child  = alpha * p1 + (1 - alpha) * p2
 
-                alpha = np.random.rand()
-                child = alpha * p1 + (1 - alpha) * p2
-
-                # mutation with decaying rate and scale
-                mask = np.random.rand(param_size) < mutation_rate
+                mask   = np.random.rand(param_size) < mutation_rate
                 child[mask] += np.random.randn(int(mask.sum())) * (
                     mutation_scale * (1 + 0.1 * stagnation)
                 )
@@ -309,16 +302,10 @@ def run_ga_evolution(
 
             population = new_pop
 
-            # ─── Decay mutation parameters ───────────────────────── ### CHANGED
-            mutation_rate  *= mutation_rate_decay
-            mutation_scale *= mutation_scale_decay
-            ###
-
     finally:
         writer.close()
 
-    # ─────────────────────────────────────────────────────────────────────────
-    # Return best agent
+    # ─── Return the best agent ────────────────────────────────────────────
     final_agent = PolicyNetwork(
         input_dim=int(np.prod(env.observation_space.shape)),
         hidden_dim=64,
