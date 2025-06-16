@@ -218,7 +218,8 @@ class FuturesEnv(gym.Env):
 
         return obs, reward, self.done, info
 
-    def _handle_buy(self, state, high_price, low_price, volume=None):
+
+    def _handle_buy(self, state):
         """
         Open/close long positions.
         """
@@ -226,11 +227,6 @@ class FuturesEnv(gym.Env):
             self._close_short(state)
         elif self.current_position == 0:
             filled_price = self._simulate_fill(state.open_price, 1)
-
-            filled_price = self._simulate_fill(
-                state.open_price, 1,
-                high_price=high_price, low_price=low_price, volume=volume
-            )
             self.entry_time = state.ts
             self.entry_price = filled_price
             self.entry_cost = self.execution_cost_per_order * self.contracts_per_trade
@@ -238,7 +234,7 @@ class FuturesEnv(gym.Env):
             self.orders.append([str(uuid4()), str(state.ts), filled_price, 1])
             self.current_position = 1
 
-    def _handle_sell(self, state, high_price, low_price, volume=None):
+    def _handle_sell(self, state):
         """
         Open/close short positions.
         """
@@ -246,11 +242,6 @@ class FuturesEnv(gym.Env):
             self._close_long(state)
         elif self.current_position == 0:
             filled_price = self._simulate_fill(state.open_price, -1)
-
-            filled_price = self._simulate_fill(
-                state.open_price, -1,
-                high_price=high_price, low_price=low_price, volume=volume
-            )
             self.entry_time = state.ts
             self.entry_price = filled_price
             self.entry_cost = self.execution_cost_per_order * self.contracts_per_trade
@@ -337,7 +328,7 @@ class FuturesEnv(gym.Env):
         self.last_position = self.current_position
         self.last_ts = state.ts
         return reward
-
+      
     def _close_long(self, state):
         """
         Close an existing long position.
@@ -371,6 +362,18 @@ class FuturesEnv(gym.Env):
         self.current_position = 0
         self._record_trade("short", trade_profit)
         self.entry_cost = 0.0
+
+    def _record_trade(self, trade_type, profit):
+        """
+        Log a completed trade.
+        """
+        duration = ((self.exit_time - self.entry_time).total_seconds()
+                    if self.entry_time else 0.0)
+        self.trades.append([
+            str(uuid4()), trade_type,
+            self.entry_price, self.exit_price,
+            profit, duration
+        ])
 
     def _record_trade(self, trade_type, profit):
         """
