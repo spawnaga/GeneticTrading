@@ -70,7 +70,10 @@ def setup_logging(local_rank: int) -> None:
 
     log_path = os.path.join("logs", "run.log")
     file_handler = RotatingFileHandler(log_path, maxBytes=0, backupCount=9)
-    file_handler.doRollover()
+    try:
+        file_handler.doRollover()
+    except FileNotFoundError:
+        pass
     file_handler.setFormatter(logging.Formatter(fmt))
 
     stream_handler = logging.StreamHandler(sys.stdout)
