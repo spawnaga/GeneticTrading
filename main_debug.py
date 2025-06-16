@@ -142,7 +142,7 @@ def main_debug():
         log_dir="./logs/futures_env/test_debug"
     )
 
-    ga_model_path = "ga_policy_model.pth"
+    ga_model_path = "runs/ga_policy_model.pth"
     start_time = time.time()
     if not os.path.exists(ga_model_path):
         ga_agent, best_fit = run_ga_evolution(

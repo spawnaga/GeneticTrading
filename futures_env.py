@@ -201,9 +201,9 @@ class FuturesEnv(gym.Env):
         volume = next_state.features[4] if len(next_state.features) > 4 else None
 
         if action == 0:
-            self._handle_buy(next_state, high_p, low_p, volume)
+            self._handle_buy(next_state)
         elif action == 2:
-            self._handle_sell(next_state, high_p, low_p, volume)
+            self._handle_sell(next_state)
 
         # compute reward from this time-step
         reward = self._get_reward(self.states[self.current_index])
