@@ -147,6 +147,10 @@ class AdaptiveTrainer:
         else:
             agent = self.ppo_trainer.model if self.ppo_trainer else self.ga_agent
 
+        # Move agent to CPU for evaluation to avoid CUDA issues
+        original_device = next(agent.parameters()).device
+        agent = agent.cpu()
+
         # Evaluate performance
         try:
             profits, times = evaluate_agent_distributed(self.test_env, agent, self.local_rank)
@@ -166,6 +170,9 @@ class AdaptiveTrainer:
         except Exception as e:
             logger.error(f"Error during policy evaluation: {e}")
             return 0.0, 0.0, {}
+        finally:
+            # Move agent back to original device
+            agent = agent.to(original_device)
 
         # Calculate composite performance score with better scaling
         # Normalize metrics to prevent extreme values
@@ -227,6 +234,8 @@ class AdaptiveTrainer:
                         logger.warning("NaN/infinite logits detected in policy entropy calculation")
                         continue
 
+                    # Clamp logits to prevent extreme values
+                    logits = torch.clamp(logits, -10.0, 10.0)
                     probs = torch.softmax(logits, dim=-1)
                     
                     # Additional safety check
@@ -237,7 +246,7 @@ class AdaptiveTrainer:
                     entropy = -torch.sum(probs * torch.log(probs + 1e-8), dim=-1)
                     
                     if torch.isfinite(entropy):
-                        entropies.append(entropy.item())
+                        entropies.append(entropy.cpu().item())  # Ensure CPU conversion
 
             except Exception as e:
                 logger.warning(f"Error calculating entropy for sample: {e}")
@@ -300,17 +309,24 @@ class AdaptiveTrainer:
             self.ppo_trainer.model.load_model(self.ppo_model_path)
         else:
             # Transfer weights from GA agent
-            self.ppo_trainer.model.load_state_dict(self.ga_agent.state_dict())
+            try:
+                self.ppo_trainer.model.load_state_dict(self.ga_agent.state_dict())
+            except Exception as e:
+                logger.warning(f"Failed to transfer GA weights to PPO: {e}")
+                self.ppo_trainer.model._initialize_weights()
 
         # Run PPO training with improved stability
         initial_performance = self.evaluate_current_policy()[0]
         best_performance = initial_performance
         patience_counter = 0
-        max_patience = 5  # Allow more patience for convergence
+        max_patience = 3  # Reduced patience for faster switching
+        consecutive_failures = 0
+        max_consecutive_failures = 10  # Stop after too many failures
 
         for update in range(total_updates):
             try:
                 reward = self.ppo_trainer.train_step()
+                consecutive_failures = 0  # Reset on successful update
                 
                 # Check if reward is valid
                 if not np.isfinite(reward):
@@ -318,36 +334,49 @@ class AdaptiveTrainer:
                     reward = 0.0
                     
             except Exception as e:
+                consecutive_failures += 1
                 logger.warning(f"PPO training step failed at update {update}: {e}")
+                
+                if consecutive_failures >= max_consecutive_failures:
+                    logger.error(f"Too many consecutive PPO failures ({consecutive_failures}), stopping PPO phase")
+                    break
+                    
                 # Try to recover by reinitializing the model
                 logger.info("Attempting to recover by reinitializing PPO model")
                 self.ppo_trainer.model._initialize_weights()
                 self.ppo_trainer.optimizer.state = {}  # Reset optimizer state
                 continue
 
-            # Periodic evaluation with improved early stopping
-            if (update + 1) % 10 == 0:
-                performance, entropy, metrics = self.evaluate_current_policy()
-                logger.info(f"PPO Update {update + 1}: Performance={performance:.4f}, Entropy={entropy:.4f}")
+            # Reduced evaluation frequency to avoid CUDA issues
+            if (update + 1) % 25 == 0:  # Evaluate every 25 updates instead of 10
+                try:
+                    performance, entropy, metrics = self.evaluate_current_policy()
+                    logger.info(f"PPO Update {update + 1}: Performance={performance:.4f}, Entropy={entropy:.4f}")
 
-                # Update best performance and patience counter
-                if performance > best_performance:
-                    best_performance = performance
-                    patience_counter = 0
-                else:
-                    patience_counter += 1
+                    # Update best performance and patience counter
+                    if performance > best_performance:
+                        best_performance = performance
+                        patience_counter = 0
+                    else:
+                        patience_counter += 1
 
-                # More conservative early stopping
-                if performance < initial_performance * 0.5:  # Allow more degradation
-                    patience_counter += 2  # Penalize severe degradation
+                    # More conservative early stopping
+                    if performance < initial_performance * 0.3:  # Earlier stopping for poor performance
+                        patience_counter += 2  # Penalize severe degradation
 
-                if patience_counter >= max_patience:
-                    logger.warning(f"PPO early stopping due to lack of improvement (patience: {patience_counter})")
-                    break
+                    if patience_counter >= max_patience:
+                        logger.warning(f"PPO early stopping due to lack of improvement (patience: {patience_counter})")
+                        break
+                except Exception as e:
+                    logger.warning(f"PPO evaluation failed: {e}")
+                    continue
 
         # Save PPO model
-        self.ppo_trainer.model.save_model(self.ppo_model_path)
-        self.current_method = "PPO"
+        try:
+            self.ppo_trainer.model.save_model(self.ppo_model_path)
+            self.current_method = "PPO"
+        except Exception as e:
+            logger.warning(f"Failed to save PPO model: {e}")
 
         final_performance = self.evaluate_current_policy()[0]
         logger.info(f"PPO phase completed with performance: {final_performance:.4f}")

@@ -324,6 +324,11 @@ class PPOTrainer:
           adv_t: torch.Tensor [T] on self.device
           ret_t: torch.Tensor [T] on self.device
         """
+        # Ensure inputs are finite
+        rewards = np.nan_to_num(rewards, nan=0.0, posinf=1.0, neginf=-1.0)
+        values = np.nan_to_num(values, nan=0.0, posinf=1.0, neginf=-1.0)
+        last_state = np.nan_to_num(last_state, nan=0.0, posinf=1.0, neginf=-1.0)
+        
         rewards_t = torch.tensor(rewards, dtype=torch.float32, device=self.device)
         values_t = torch.tensor(values, dtype=torch.float32, device=self.device)
         dones_t = torch.tensor(dones, dtype=torch.float32, device=self.device)
@@ -332,6 +337,9 @@ class PPOTrainer:
             last_state_t = torch.tensor(last_state, dtype=torch.float32, device=self.device).unsqueeze(0)
             _, last_val_t = self.model(last_state_t)
             last_val_t = last_val_t.squeeze()
+            
+            # Clamp last value to prevent extreme values
+            last_val_t = torch.clamp(last_val_t, -10.0, 10.0)
 
         values_t = torch.cat([values_t, last_val_t[None]], dim=0)
 
@@ -343,10 +351,22 @@ class PPOTrainer:
             mask = 1.0 - dones_t[t]
             delta = rewards_t[t] + self.gamma * values_t[t + 1] * mask - values_t[t]
             gae = delta + self.gamma * self.gae_lambda * mask * gae
+            
+            # Clamp GAE to prevent explosion
+            gae = torch.clamp(gae, -10.0, 10.0)
             advantages[t] = gae
 
         returns = advantages + values_t[:-1]
-        advantages = (advantages - advantages.mean()) / (advantages.std(unbiased=False) + 1e-8)
+        
+        # More robust advantage normalization
+        adv_mean = advantages.mean()
+        adv_std = advantages.std(unbiased=False)
+        
+        if torch.isfinite(adv_mean) and torch.isfinite(adv_std) and adv_std > 1e-8:
+            advantages = (advantages - adv_mean) / (adv_std + 1e-8)
+        else:
+            # Fallback normalization
+            advantages = torch.clamp(advantages, -1.0, 1.0)
 
         return advantages, returns
 
@@ -354,15 +374,25 @@ class PPOTrainer:
         """
         Perform one PPO update with comprehensive metrics and creative visualizations
         """
-        # 1) rollout & GAE
-        obs, acts, rews, old_lps, vals, dones, last_state = self.collect_trajectories()
-        advs, rets = self.compute_gae(rews, vals, dones, last_state)
+        try:
+            # 1) rollout & GAE
+            obs, acts, rews, old_lps, vals, dones, last_state = self.collect_trajectories()
+            advs, rets = self.compute_gae(rews, vals, dones, last_state)
 
-        obs_t   = torch.as_tensor(obs,    dtype=torch.float32, device=self.device)
-        acts_t  = torch.as_tensor(acts,   dtype=torch.long,   device=self.device)
-        oldlp_t = torch.as_tensor(old_lps,dtype=torch.float32, device=self.device)
-        adv_t   = torch.as_tensor(advs,  dtype=torch.float32, device=self.device)
-        ret_t   = torch.as_tensor(rets,  dtype=torch.float32, device=self.device)
+            # Check for NaN/infinite values in collected data
+            if not np.all(np.isfinite(obs)):
+                logger.warning("NaN/infinite observations detected, skipping update")
+                return 0.0
+            
+            if not np.all(np.isfinite(rews)):
+                logger.warning("NaN/infinite rewards detected, skipping update")
+                return 0.0
+
+            obs_t   = torch.as_tensor(obs,    dtype=torch.float32, device=self.device)
+            acts_t  = torch.as_tensor(acts,   dtype=torch.long,   device=self.device)
+            oldlp_t = torch.as_tensor(old_lps,dtype=torch.float32, device=self.device)
+            adv_t   = advs  # Already on correct device from compute_gae
+            ret_t   = rets  # Already on correct device from compute_gae
 
         # Track action distribution for analysis
         action_counts = np.bincount(acts, minlength=self.env.action_space.n)
