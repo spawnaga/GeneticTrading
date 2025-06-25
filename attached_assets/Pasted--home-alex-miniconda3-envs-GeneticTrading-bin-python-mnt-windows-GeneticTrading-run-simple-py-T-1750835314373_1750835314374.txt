@@ -1,0 +1,61 @@
+/home/alex/miniconda3/envs/GeneticTrading/bin/python /mnt/windows/GeneticTrading/run_simple.py 
+🤖 Trading System Launcher
+==================================================
+✓ Created directory: ./models
+✓ Created directory: ./logs
+✓ Created directory: ./cached_data
+✓ Created directory: ./runs
+
+Available modes:
+  test - Quick test with minimal data (default)
+  dev  - Development mode with 10% data
+
+Usage: python run_simple.py [test|dev]
+
+Select mode (test/dev) [test]: dev
+🔧 Starting Development Mode...
+📊 Using 10% of data for development
+WARNING:root:Distributed training not available, running in single-process mode
+2025-06-25 00:08:12 [INFO    ] [Rank-8415] STARTUP             : ================================================================================
+2025-06-25 00:08:12 [INFO    ] [Rank-8415] STARTUP             : Training session started for rank 0
+2025-06-25 00:08:12 [INFO    ] [Rank-8415] STARTUP             : Log file: logs/training_rank_0.log
+2025-06-25 00:08:12 [INFO    ] [Rank-8415] STARTUP             : Process ID: 8415
+2025-06-25 00:08:12 [INFO    ] [Rank-8415] STARTUP             : Working directory: /mnt/windows/GeneticTrading
+2025-06-25 00:08:12 [INFO    ] [Rank-8415] STARTUP             : ================================================================================
+2025-06-25 00:08:12 [INFO    ] [Rank-8415] root                : NCCL_TIMEOUT = 1800000 ms
+2025-06-25 00:08:12 [INFO    ] [Rank-8415] root                : Using 10.0% of available data
+2025-06-25 00:08:12 [INFO    ] [Rank-8415] root                : Models will be saved to: ./models/dev
+2025-06-25 00:08:12 [INFO    ] [Rank-8415] root                : Rank 0/1 starting on cuda:0 (has_cudf=True)
+2025-06-25 00:08:12 [INFO    ] [Rank-8415] root                : Parquet cache found; skipping preprocessing.
+2025-06-25 00:08:12 [INFO    ] [Rank-8415] root                : Total data: 4311800 train, 1077950 test rows
+2025-06-25 00:08:12 [INFO    ] [Rank-8415] root                : Rank 0: Sampled 100000 train rows from 4311800 total
+2025-06-25 00:08:12 [INFO    ] [Rank-8415] root                : Rank 0: Sampled 20000 test rows from 1077950 total
+2025-06-25 00:08:12 [INFO    ] [Rank-8415] numba.cuda.cudadrv.driver: init
+2025-06-25 00:08:14 [INFO    ] [Rank-8415] adaptive_trainer    : Starting adaptive training
+2025-06-25 00:08:14 [INFO    ] [Rank-8415] adaptive_trainer    : 
+=== Adaptive Training Iteration 1/20 ===
+
+❌ Error during training: 'FuturesEnv' object has no attribute '_get_observation'
+Traceback (most recent call last):
+  File "/mnt/windows/GeneticTrading/run_simple.py", line 94, in main
+    run_development()
+  File "/mnt/windows/GeneticTrading/run_simple.py", line 73, in run_development
+    main()
+  File "/mnt/windows/GeneticTrading/main.py", line 445, in main
+    training_log = adaptive_trainer.adaptive_train(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/windows/GeneticTrading/adaptive_trainer.py", line 358, in adaptive_train
+    performance, entropy, metrics = self.evaluate_current_policy()
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/windows/GeneticTrading/adaptive_trainer.py", line 151, in evaluate_current_policy
+    profits, times = evaluate_agent_distributed(self.test_env, agent, self.local_rank)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/windows/GeneticTrading/utils.py", line 306, in evaluate_agent_distributed
+    step_result = env.step(action)
+                  ^^^^^^^^^^^^^^^^
+  File "/mnt/windows/GeneticTrading/futures_env.py", line 215, in step
+    obs = self._get_observation()
+          ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'FuturesEnv' object has no attribute '_get_observation'
+
+Process finished with exit code 0
