@@ -786,10 +786,4 @@ def feature_engineering(df, has_cudf):
         df = df.fillna(0.0)
 
     logging.info("NaN cleaning completed")
-    return df 0:
-        logging.warning(f"Still have {total_nans} NaN values after cleaning")
-        # Final aggressive cleaning
-        df = df.fillna(0.0)
-
-    logging.info("NaN cleaning completed")
     return df
