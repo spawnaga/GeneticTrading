@@ -2,6 +2,7 @@
 
 import math
 import json
+import logging
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -11,6 +12,8 @@ from gymnasium import spaces
 from uuid import uuid4
 
 from utils import round_to_nearest_increment, monotonicity, cleanup_old_logs
+
+logger = logging.getLogger(__name__)
 
 
 class TimeSeriesState:
@@ -173,56 +176,78 @@ class FuturesEnv(gym.Env):
         Take action in environment and return (obs, reward, done, info).
         """
         if self.done or self.current_index >= self.limit:
-            return self._get_observation(), 0.0, True, {}
+            obs = self._get_observation()
+            return obs, 0.0, True, self._get_info()
 
-        # Validate action
-        if not isinstance(action, (int, np.integer)) or action < 0 or action >= 3:
+        # Validate action more robustly
+        try:
+            action = int(action)
+            if action < 0 or action >= 3:
+                action = 0  # Default to hold for invalid actions
+        except (ValueError, TypeError):
             action = 0  # Default to hold for invalid actions
 
-        # Track state before action
-        prev_balance = self.balance
-        prev_total_reward = self.total_reward
-
-        # Process action
-        if action == 0:  # hold
-            pass
-        elif action == 1:  # buy/long
-            if self.current_position <= 0:
-                self._execute_trade(1)
-        elif action == 2:  # sell/short  
-            if self.current_position >= 0:
-                self._execute_trade(-1)
+        # Process action with error handling
+        try:
+            if action == 1:  # buy/long
+                if self.current_position <= 0:
+                    self._execute_trade(1)
+            elif action == 2:  # sell/short  
+                if self.current_position >= 0:
+                    self._execute_trade(-1)
+            # action == 0 (hold) requires no processing
+        except Exception as e:
+            logger.warning(f"Error executing trade: {e}")
+            # Continue without executing the trade
 
         # Move to next state
         self.current_index += 1
         if self.current_index >= self.limit:
             self.done = True
 
-        # Calculate reward with NaN protection
+        # Calculate reward with comprehensive error handling
+        reward = 0.0
         try:
-            reward = self._get_reward(
-                self.states[min(self.current_index - 1, self.limit - 1)]
-            )
-
-            # Ensure reward is finite
-            if not np.isfinite(reward):
-                reward = 0.0
-
+            if self.current_index > 0:
+                state_idx = min(self.current_index - 1, self.limit - 1)
+                if 0 <= state_idx < len(self.states):
+                    reward = self._get_reward(self.states[state_idx])
+                    
+                    # Validate reward
+                    if not np.isfinite(reward):
+                        reward = 0.0
+                    else:
+                        # Clamp reward to reasonable range
+                        reward = np.clip(float(reward), -1000.0, 1000.0)
         except Exception as e:
+            logger.warning(f"Error calculating reward: {e}")
             reward = 0.0
 
-        # Get updated observation and info with NaN protection
-        obs = self._get_observation()
-        info = self._get_info()
+        # Get updated observation with error handling
+        try:
+            obs = self._get_observation()
+            # Validate observation
+            if not np.all(np.isfinite(obs)):
+                logger.warning("Non-finite observation detected, using zeros")
+                obs = np.zeros(self.observation_space.shape, dtype=np.float32)
+        except Exception as e:
+            logger.warning(f"Error getting observation: {e}")
+            obs = np.zeros(self.observation_space.shape, dtype=np.float32)
 
-        # Final NaN check on all outputs
-        if not np.all(np.isfinite(obs)):
-            obs = np.zeros_like(obs)
+        # Get info with error handling
+        try:
+            info = self._get_info()
+        except Exception as e:
+            logger.warning(f"Error getting info: {e}")
+            info = {
+                'current_position': self.current_position,
+                'balance': self.balance,
+                'total_reward': self.total_reward,
+                'current_index': self.current_index,
+                'done': self.done
+            }
 
-        if not np.isfinite(reward):
-            reward = 0.0
-
-        return obs, reward, self.done, info
+        return obs, float(reward), self.done, info
 
     def _get_observation(self):
         """
@@ -234,17 +259,37 @@ class FuturesEnv(gym.Env):
 
         current_state = self.states[self.current_index]
 
-        # Handle cases where features might be None
-        if current_state.features is None:
-            base_features = np.zeros(len(self.states[0].features), dtype=np.float32)
+        # Handle cases where features might be None or invalid
+        if current_state.features is None or len(current_state.features) == 0:
+            # Get expected feature size from first valid state
+            expected_feature_size = 0
+            for state in self.states[:10]:  # Check first 10 states
+                if state.features is not None and len(state.features) > 0:
+                    expected_feature_size = len(state.features)
+                    break
+            
+            if expected_feature_size == 0:
+                expected_feature_size = 10  # Default fallback
+                
+            base_features = np.zeros(expected_feature_size, dtype=np.float32)
         else:
-            base_features = current_state.features.copy()
+            base_features = np.array(current_state.features, dtype=np.float32)
 
-        # Clean base features of NaN/infinite values with more conservative bounds
-        base_features = np.nan_to_num(base_features, nan=0.0, posinf=10.0, neginf=-10.0)
+        # More aggressive NaN/infinite cleaning
+        if not np.all(np.isfinite(base_features)):
+            # Replace any NaN/inf with zeros
+            base_features = np.where(np.isfinite(base_features), base_features, 0.0)
 
-        # Additional clipping to prevent extreme values
-        base_features = np.clip(base_features, -100.0, 100.0)
+        # Normalize to prevent extreme values using robust statistics
+        if len(base_features) > 0:
+            # Use percentile-based clipping to handle outliers
+            p95 = np.percentile(np.abs(base_features[np.isfinite(base_features)]), 95) if np.any(np.isfinite(base_features)) else 1.0
+            max_val = max(p95, 1.0)  # Ensure at least 1.0 to prevent division by zero
+            base_features = np.clip(base_features, -max_val, max_val)
+            
+            # Additional normalization to [-1, 1] range
+            if max_val > 0:
+                base_features = base_features / max_val
 
         # Add position information if required
         if self.add_current_position_to_state:
@@ -263,21 +308,27 @@ class FuturesEnv(gym.Env):
         # Ensure observation is the right shape and type
         obs = np.array(obs, dtype=np.float32)
 
-        # Final NaN check and cleaning with conservative bounds
-        obs = np.nan_to_num(obs, nan=0.0, posinf=10.0, neginf=-10.0)
-        obs = np.clip(obs, -100.0, 100.0)
-
-        if obs.shape != self.observation_space.shape:
-            # Pad or truncate to match expected shape
-            expected_size = self.observation_space.shape[0]
+        # Final shape validation and adjustment
+        expected_shape = self.observation_space.shape
+        if obs.shape != expected_shape:
+            expected_size = expected_shape[0]
             if len(obs) < expected_size:
-                obs = np.pad(obs, (0, expected_size - len(obs)), mode='constant')
+                # Pad with zeros
+                obs = np.pad(obs, (0, expected_size - len(obs)), mode='constant', constant_values=0)
             elif len(obs) > expected_size:
+                # Truncate
                 obs = obs[:expected_size]
 
-        # Final safety check - if still contains NaN/inf, replace with zeros
+        # Final safety checks
+        obs = np.array(obs, dtype=np.float32)
+        
+        # Ensure all values are finite and in reasonable range
         if not np.all(np.isfinite(obs)):
-            obs = np.zeros(self.observation_space.shape, dtype=np.float32)
+            logger.warning("Replacing non-finite values in observation with zeros")
+            obs = np.where(np.isfinite(obs), obs, 0.0)
+
+        # Final clipping to ensure values are in reasonable range
+        obs = np.clip(obs, -10.0, 10.0)
 
         return obs
 
