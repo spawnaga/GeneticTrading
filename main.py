@@ -36,8 +36,12 @@ if try_gpu:
         import cupy as cp
         has_cudf = True
         logging.info("cudf loaded successfully (CPU backend)")
-    except Exception as e:
-        warnings.warn(f"cudf import failed ({e}); falling back to pandas.")
+    except (ImportError, AttributeError, RuntimeError) as e:
+        # Handle various CUDA-related import errors
+        if "cuda" in str(e).lower() or "numba" in str(e).lower():
+            warnings.warn(f"cudf import failed due to CUDA/numba issues ({e}); falling back to pandas.")
+        else:
+            warnings.warn(f"cudf import failed ({e}); falling back to pandas.")
         has_cudf = False
 
 if not has_cudf:
@@ -48,7 +52,12 @@ if not has_cudf:
 # ─── OPTIONAL: load cuml.StandardScaler so scaler.transform() is type‐checked ──
 try:
     from cuml.preprocessing import StandardScaler as CuStandardScaler
-except ImportError:
+except (ImportError, AttributeError, RuntimeError) as e:
+    # Handle various CUDA-related import errors
+    if "cuda" in str(e).lower() or "numba" in str(e).lower():
+        warnings.warn(f"cuML import failed due to CUDA/numba issues ({e}); using CPU fallback.")
+    else:
+        warnings.warn(f"cuML import failed ({e}); using CPU fallback.")
     CuStandardScaler = None
 
 # ─── LOCAL IMPORTS ─────────────────────────────────────────────────────────────
