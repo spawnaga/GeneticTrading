@@ -742,4 +742,89 @@ class PPOTrainer:
 
             # periodic weight histograms
             if self.local_rank == 0 and (update + 1) % (self.eval_interval * 2) == 0:
-                real_model = self.model.module if isinstance
+                real_model = self.model.module if isinstance(self.model, DDP) else self.model
+
+    def _log_comprehensive_metrics(self, policy_losses, value_losses, entropies, kl_divergences, clip_fractions, action_probs, rews, vals, rets):
+        """Log detailed metrics to TensorBoard."""
+        self.tb_writer.add_scalar("Losses/PolicyLoss", np.mean(policy_losses), self.global_step)
+        self.tb_writer.add_scalar("Losses/ValueLoss", np.mean(value_losses), self.global_step)
+        self.tb_writer.add_scalar("Losses/Entropy", np.mean(entropies), self.global_step)
+        self.tb_writer.add_scalar("PPO/KL_Divergence", np.mean(kl_divergences), self.global_step)
+        self.tb_writer.add_scalar("PPO/Clip_Fraction", np.mean(clip_fractions), self.global_step)
+        self.tb_writer.add_scalar("PPO/LearningRate", self.optimizer.param_groups[0]["lr"], self.global_step)
+        self.tb_writer.add_scalar("PPO/EntropyCoefficient", self.entropy_coef, self.global_step)
+
+        # Distribution of actions
+        action_labels = [f"action_{i}" for i in range(len(action_probs))]
+        self.tb_writer.add_scalars("Actions/Distribution", dict(zip(action_labels, action_probs)), self.global_step)
+
+        # More detailed stats
+        self.tb_writer.add_scalar("Rewards/Mean", np.mean(rews), self.global_step)
+        self.tb_writer.add_scalar("Rewards/Std", np.std(rews), self.global_step)
+        self.tb_writer.add_scalar("Values/Mean", np.mean(vals), self.global_step)
+        self.tb_writer.add_scalar("Values/Std", np.std(vals), self.global_step)
+        self.tb_writer.add_scalar("Returns/Mean", np.mean(rets), self.global_step)
+        self.tb_writer.add_scalar("Returns/Std", np.std(rets), self.global_step)
+
+        # Value function accuracy
+        if self.value_accuracy:
+            self.tb_writer.add_scalar("Values/Accuracy", np.mean(self.value_accuracy), self.global_step)
+
+        # Gradient Norm
+        if self.gradient_norms:
+            self.tb_writer.add_scalar("Gradients/Norm", np.mean(self.gradient_norms), self.global_step)
+
+        # Policy Divergence
+        if self.policy_divergence:
+            self.tb_writer.add_scalar("PPO/PolicyDivergence", np.mean(self.policy_divergence), self.global_step)
+
+    def _create_advanced_visualizations(self):
+        """Create more complex plots and visualizations for deeper insights."""
+        # Reward Trend over Time
+        if self.reward_trends:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.lineplot(x=range(len(self.reward_trends)), y=self.reward_trends, ax=ax)
+            ax.set_title("Reward Trend Over Time")
+            ax.set_xlabel("Step")
+            ax.set_ylabel("Reward")
+            self.tb_writer.add_figure("Visualizations/RewardTrend", fig, self.global_step)
+            plt.close(fig)
+
+        # Loss Trend over Time
+        if self.loss_trends:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.lineplot(x=range(len(self.loss_trends)), y=self.loss_trends, ax=ax)
+            ax.set_title("Loss Trend Over Time")
+            ax.set_xlabel("Update Step")
+            ax.set_ylabel("Loss")
+            self.tb_writer.add_figure("Visualizations/LossTrend", fig, self.global_step)
+            plt.close(fig)
+
+        # Action Distribution Heatmap
+        if self.action_distribution_history:
+            action_matrix = np.vstack(self.action_distribution_history)
+            fig, ax = plt.subplots(figsize=(12, 8))
+            sns.heatmap(action_matrix, cmap="viridis", ax=ax, cbar_kws={'label': 'Probability'})
+            ax.set_title("Action Distribution Over Time")
+            ax.set_xlabel("Action")
+            ax.set_ylabel("Time Step")
+            self.tb_writer.add_figure("Visualizations/ActionDistribution", fig, self.global_step)
+            plt.close(fig)
+
+    def _analyze_trading_behavior(self, actions, rewards, observations):
+        """
+        Analyze trading-specific metrics such as position changes, profit per trade, and drawdown periods.
+        Args:
+            actions: array of actions taken
+            rewards: array of rewards received
+            observations: array of states observed
+        """
+        # This is a placeholder; trading behavior analysis is environment-specific
+        pass
+metrics = {
+            'avg_policy_loss': np.mean(policy_losses) if policy_losses else 0.0,
+            'avg_value_loss': np.mean(value_losses) if value_losses else 0.0,
+            'avg_entropy': np.mean([entropy.item() for entropy in entropies]) if entropies else 0.0,
+            'kl_div': np.mean(kl_divergences) if kl_divergences else 0.0
+        }
+        return metrics

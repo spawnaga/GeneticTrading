@@ -679,6 +679,18 @@ def _create_streaming_environment_data(
             pass
         raise
 
+
+def read_file_chunked_pandas(file_path):
+    """Pandas fallback for chunked file reading with proper column names."""
+    import pandas as pd
+    chunks = []
+    for chunk in pd.read_csv(
+        file_path, 
+        chunksize=10000,
+        names=["date_time", "Open", "High", "Low", "Close", "Volume"],
+        header=None
+    ):
+        # Convert datetime column directly since we set the name explicitly
         chunk["date_time"] = pd.to_datetime(chunk["date_time"], errors='coerce')
         chunk = chunk.dropna(subset=["date_time"])
         if len(chunk) > 0:

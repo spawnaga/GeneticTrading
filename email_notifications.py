@@ -1,426 +1,391 @@
 
-#!/usr/bin/env python
-"""
-Email Notification Service for Training Progress
-==============================================
-
-Sends periodic email updates about training progress and recommendations.
-"""
-
 import smtplib
-import json
+import logging
 import time
 import threading
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
-from pathlib import Path
+import os
+import json
 from typing import Dict, List, Optional
-import logging
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
-class EmailNotificationService:
-    """Service for sending training progress notifications via email."""
+class TrainingNotificationSystem:
+    """
+    Email notification system for training progress monitoring
+    """
     
     def __init__(self, 
-                 smtp_server: str = "smtp.gmail.com",
+                 recipient_email: str = "ali.aloraibi@outlook.com",
+                 phone_number: str = "+16233133816",
+                 notification_interval_hours: int = 6,
+                 smtp_server: str = "smtp-mail.outlook.com",
                  smtp_port: int = 587,
-                 sender_email: str = "",
-                 sender_password: str = "",
-                 recipient_emails: List[str] = None,
-                 log_dir: str = "./logs"):
+                 sender_email: Optional[str] = None,
+                 sender_password: Optional[str] = None):
         
+        self.recipient_email = recipient_email
+        self.phone_number = phone_number
+        self.notification_interval = notification_interval_hours * 3600  # Convert to seconds
         self.smtp_server = smtp_server
         self.smtp_port = smtp_port
-        self.sender_email = sender_email
-        self.sender_password = sender_password
-        self.recipient_emails = recipient_emails or []
-        self.log_dir = Path(log_dir)
         
-        # Notification settings
-        self.notification_interval = 6 * 3600  # 6 hours in seconds
-        self.last_notification = None
-        self.monitoring_active = False
-        self.monitor_thread = None
+        # Use environment variables for email credentials
+        self.sender_email = sender_email or os.getenv('NOTIFICATION_EMAIL')
+        self.sender_password = sender_password or os.getenv('NOTIFICATION_PASSWORD')
         
-        # Training state tracking
-        self.last_check_time = datetime.now()
-        self.performance_threshold = -0.1  # Stop if performance drops below this
-        self.stagnation_hours = 12  # Stop if no improvement for 12 hours
+        self.last_notification_time = 0
+        self.training_start_time = time.time()
+        self.training_metrics = []
+        self.is_running = False
+        self.monitoring_thread = None
         
-    def send_email(self, subject: str, body: str, is_html: bool = False):
-        """Send an email notification."""
-        if not self.sender_email or not self.sender_password or not self.recipient_emails:
-            logger.warning("Email credentials not configured. Skipping email notification.")
-            return False
-            
-        try:
-            # Create message
-            msg = MimeMultipart()
-            msg['From'] = self.sender_email
-            msg['To'] = ', '.join(self.recipient_emails)
-            msg['Subject'] = subject
-            
-            # Add body
-            msg.attach(MimeText(body, 'html' if is_html else 'plain'))
-            
-            # Send email
-            server = smtplib.SMTP(self.smtp_server, self.smtp_port)
-            server.starttls()
-            server.login(self.sender_email, self.sender_password)
-            text = msg.as_string()
-            server.sendmail(self.sender_email, self.recipient_emails, text)
-            server.quit()
-            
-            logger.info(f"Email notification sent successfully to {self.recipient_emails}")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to send email notification: {e}")
-            return False
-    
-    def generate_progress_email(self, training_data: Dict) -> tuple:
-        """Generate email subject and body from training data."""
-        if not training_data or 'performance_history' not in training_data:
-            subject = "🤖 Trading Training - No Data Available"
-            body = """
-            <h2>Training Progress Report</h2>
-            <p><strong>Status:</strong> No training data available</p>
-            <p>The training system may not be running or no metrics have been logged yet.</p>
-            """
-            return subject, body
-            
-        history = training_data['performance_history']
-        warnings = training_data.get('warning_flags', [])
+        # Thresholds for stopping training
+        self.min_improvement_threshold = 0.001  # 0.1% minimum improvement
+        self.stagnation_epochs = 50  # Stop if no improvement for 50 epochs
+        self.max_loss_threshold = 1000  # Stop if loss exceeds this
         
-        if not history:
-            subject = "🤖 Trading Training - Starting Up"
-            body = """
-            <h2>Training Progress Report</h2>
-            <p><strong>Status:</strong> Training initialization in progress</p>
-            """
-            return subject, body
-        
-        # Get latest metrics
-        latest = history[-1]
-        total_iterations = len(history)
-        current_performance = latest.get('performance', 0)
-        current_method = latest.get('method', 'Unknown')
-        metrics = latest.get('metrics', {})
-        
-        # Calculate progress indicators
-        best_performance = max([h.get('performance', 0) for h in history])
-        total_time = sum([h.get('training_time', 0) for h in history]) / 3600  # Convert to hours
-        avg_time_per_iteration = (total_time / total_iterations * 60) if total_iterations > 0 else 0  # Minutes
-        
-        # Determine status and recommendation
-        recommendation = self._get_recommendation(training_data)
-        status_emoji = self._get_status_emoji(recommendation)
-        
-        # Recent trend
-        if len(history) >= 3:
-            recent_performances = [h.get('performance', 0) for h in history[-3:]]
-            trend = "📈 Improving" if recent_performances[-1] > recent_performances[0] else "📉 Declining"
-        else:
-            trend = "📊 Establishing baseline"
-        
-        # Warning summary
-        warning_summary = ""
-        if warnings:
-            recent_warnings = warnings[-3:]  # Last 3 warnings
-            warning_summary = f"""
-            <h3>⚠️ Recent Warnings ({len(warnings)} total)</h3>
-            <ul>
-            {''.join([f"<li>{w}</li>" for w in recent_warnings])}
-            </ul>
-            """
-        
-        # Create subject
-        subject = f"{status_emoji} Trading Training - Iter {total_iterations} | Perf: {current_performance:.4f}"
-        
-        # Create HTML body
-        body = f"""
-        <html>
-        <body>
-        <h2>🤖 Trading AI Training Progress Report</h2>
-        <p><strong>Report Time:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-        
-        <h3>📊 Current Status</h3>
-        <table border="1" style="border-collapse: collapse; width: 100%;">
-            <tr><td><strong>Iterations Completed</strong></td><td>{total_iterations}</td></tr>
-            <tr><td><strong>Current Method</strong></td><td>{current_method}</td></tr>
-            <tr><td><strong>Current Performance</strong></td><td>{current_performance:.4f}</td></tr>
-            <tr><td><strong>Best Performance</strong></td><td>{best_performance:.4f}</td></tr>
-            <tr><td><strong>Performance Efficiency</strong></td><td>{(current_performance/best_performance*100) if best_performance > 0 else 0:.1f}%</td></tr>
-            <tr><td><strong>Recent Trend</strong></td><td>{trend}</td></tr>
-        </table>
-        
-        <h3>🎯 Trading Metrics</h3>
-        <table border="1" style="border-collapse: collapse; width: 100%;">
-            <tr><td><strong>CAGR</strong></td><td>{metrics.get('cagr', 0):.2f}%</td></tr>
-            <tr><td><strong>Sharpe Ratio</strong></td><td>{metrics.get('sharpe', 0):.2f}</td></tr>
-            <tr><td><strong>Max Drawdown</strong></td><td>{metrics.get('mdd', 0):.2f}%</td></tr>
-            <tr><td><strong>Total Profit</strong></td><td>${metrics.get('total_profit', 0):,.2f}</td></tr>
-            <tr><td><strong>Win Rate</strong></td><td>{metrics.get('win_rate', 0)*100:.1f}%</td></tr>
-        </table>
-        
-        <h3>⏱️ Time Statistics</h3>
-        <table border="1" style="border-collapse: collapse; width: 100%;">
-            <tr><td><strong>Total Training Time</strong></td><td>{total_time:.1f} hours</td></tr>
-            <tr><td><strong>Avg Time/Iteration</strong></td><td>{avg_time_per_iteration:.1f} minutes</td></tr>
-        </table>
-        
-        {warning_summary}
-        
-        <h3>🚨 Recommendation</h3>
-        <p><strong>Status:</strong> {recommendation}</p>
-        {self._get_recommendation_details(recommendation)}
-        
-        <h3>📈 Next Steps</h3>
-        {self._get_next_steps_html(recommendation)}
-        
-        <hr>
-        <p><em>This is an automated report from your Trading AI system. Next report in 6 hours.</em></p>
-        </body>
-        </html>
-        """
-        
-        return subject, body
-    
-    def _get_recommendation(self, training_data: Dict) -> str:
-        """Get training recommendation based on data."""
-        warnings = training_data.get('warning_flags', [])
-        history = training_data.get('performance_history', [])
-        
-        if not history:
-            return "STARTING"
-        
-        # Count severe warnings
-        severe_warnings = len([w for w in warnings if any(keyword in w for keyword in 
-                              ["STAGNATION", "PERFORMANCE_COLLAPSE", "EXCESSIVE_SWITCHING"])])
-        
-        if severe_warnings >= 3:
-            return "STOP_IMMEDIATELY"
-        elif severe_warnings >= 2:
-            return "CONSIDER_STOPPING"
-        elif len(warnings) >= 5:
-            return "REVIEW_HYPERPARAMETERS"
-        else:
-            return "CONTINUE"
-    
-    def _get_status_emoji(self, recommendation: str) -> str:
-        """Get status emoji based on recommendation."""
-        emoji_map = {
-            "CONTINUE": "✅",
-            "REVIEW_HYPERPARAMETERS": "⚠️",
-            "CONSIDER_STOPPING": "🚨",
-            "STOP_IMMEDIATELY": "🛑",
-            "STARTING": "🚀"
-        }
-        return emoji_map.get(recommendation, "📊")
-    
-    def _get_recommendation_details(self, recommendation: str) -> str:
-        """Get detailed recommendation explanation."""
-        details = {
-            "CONTINUE": "<p style='color: green;'>Training is progressing well. Continue monitoring.</p>",
-            "REVIEW_HYPERPARAMETERS": "<p style='color: orange;'>Multiple warnings detected. Consider reviewing learning rates, batch sizes, and switching thresholds.</p>",
-            "CONSIDER_STOPPING": "<p style='color: red;'>Serious issues detected. Training may not be productive. Consider stopping if no improvement in next few iterations.</p>",
-            "STOP_IMMEDIATELY": "<p style='color: red; font-weight: bold;'>Critical issues detected. Recommend stopping training immediately to save compute resources.</p>",
-            "STARTING": "<p style='color: blue;'>Training initialization in progress.</p>"
-        }
-        return details.get(recommendation, "")
-    
-    def _get_next_steps_html(self, recommendation: str) -> str:
-        """Get next steps recommendations in HTML format."""
-        steps = {
-            "CONTINUE": "<ul><li>Continue training - progress looks good</li><li>Monitor for sustained improvement</li></ul>",
-            "REVIEW_HYPERPARAMETERS": "<ul><li>Review learning rates, batch sizes, and other hyperparameters</li><li>Consider adjusting adaptive switching thresholds</li></ul>",
-            "CONSIDER_STOPPING": "<ul><li>Consider stopping if performance doesn't improve in next 2-3 iterations</li><li>Monitor closely for improvements</li></ul>",
-            "STOP_IMMEDIATELY": "<ul><li>Stop training immediately to save compute resources</li><li>Review hyperparameters and training setup</li></ul>",
-            "STARTING": "<ul><li>Monitor initial progress</li><li>Ensure data preprocessing completed successfully</li></ul>"
-        }
-        return steps.get(recommendation, "<ul><li>Continue monitoring</li></ul>")
-    
-    def check_and_send_notification(self):
-        """Check if notification should be sent and send it."""
-        try:
-            # Load training metrics
-            metrics_file = self.log_dir / "training_metrics.json"
-            
-            if not metrics_file.exists():
-                logger.info("No training metrics file found. Training may not have started yet.")
-                return
-            
-            with open(metrics_file, 'r') as f:
-                training_data = json.load(f)
-            
-            # Check if we should send notification
-            now = datetime.now()
-            if (self.last_notification is None or 
-                (now - self.last_notification).total_seconds() >= self.notification_interval):
-                
-                # Generate and send email
-                subject, body = self.generate_progress_email(training_data)
-                
-                if self.send_email(subject, body, is_html=True):
-                    self.last_notification = now
-                    logger.info("Periodic training notification sent")
-                
-                # Check if we should recommend stopping
-                recommendation = self._get_recommendation(training_data)
-                if recommendation in ["STOP_IMMEDIATELY", "CONSIDER_STOPPING"]:
-                    self.send_urgent_notification(recommendation, training_data)
-                    
-        except Exception as e:
-            logger.error(f"Error in notification check: {e}")
-    
-    def send_urgent_notification(self, recommendation: str, training_data: Dict):
-        """Send urgent notification for critical issues."""
-        subject = f"🚨 URGENT: Trading Training - {recommendation}"
-        
-        history = training_data.get('performance_history', [])
-        warnings = training_data.get('warning_flags', [])
-        
-        body = f"""
-        <html>
-        <body>
-        <h2>🚨 URGENT: Training Issue Detected</h2>
-        <p><strong>Time:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-        <p><strong>Recommendation:</strong> {recommendation}</p>
-        
-        <h3>⚠️ Warning Summary</h3>
-        <ul>
-        {''.join([f"<li>{w}</li>" for w in warnings[-5:]])}  
-        </ul>
-        
-        <h3>📊 Current Status</h3>
-        <p><strong>Iterations:</strong> {len(history)}</p>
-        {f"<p><strong>Latest Performance:</strong> {history[-1].get('performance', 0):.4f}</p>" if history else ""}
-        
-        <h3>🚨 Action Required</h3>
-        {self._get_recommendation_details(recommendation)}
-        
-        <p><em>This is an urgent automated alert. Please review your training setup.</em></p>
-        </body>
-        </html>
-        """
-        
-        self.send_email(subject, body, is_html=True)
-        logger.warning(f"Urgent notification sent: {recommendation}")
+        logger.info(f"Email notifications configured for {recipient_email}")
+        logger.info(f"Notifications will be sent every {notification_interval_hours} hours")
     
     def start_monitoring(self):
-        """Start the monitoring thread."""
-        if self.monitoring_active:
-            logger.warning("Monitoring already active")
-            return
-            
-        self.monitoring_active = True
-        self.monitor_thread = threading.Thread(target=self._monitor_loop, daemon=True)
-        self.monitor_thread.start()
-        logger.info("Email monitoring started - notifications every 6 hours")
+        """Start the monitoring thread"""
+        self.is_running = True
+        self.monitoring_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
+        self.monitoring_thread.start()
+        logger.info("Training monitoring started")
     
     def stop_monitoring(self):
-        """Stop the monitoring thread."""
-        self.monitoring_active = False
-        if self.monitor_thread:
-            self.monitor_thread.join(timeout=5)
-        logger.info("Email monitoring stopped")
+        """Stop the monitoring thread"""
+        self.is_running = False
+        if self.monitoring_thread:
+            self.monitoring_thread.join(timeout=5)
+        logger.info("Training monitoring stopped")
     
-    def _monitor_loop(self):
-        """Main monitoring loop that runs in background thread."""
-        while self.monitoring_active:
-            try:
-                self.check_and_send_notification()
-                # Check every 10 minutes for urgent issues, every 6 hours for regular updates
-                time.sleep(600)  # 10 minutes
-            except Exception as e:
-                logger.error(f"Error in monitoring loop: {e}")
-                time.sleep(300)  # 5 minutes on error
-
-# Integration class for easy setup
-class TrainingNotificationManager:
-    """Manages training notifications with easy configuration."""
+    def _monitoring_loop(self):
+        """Main monitoring loop"""
+        while self.is_running:
+            current_time = time.time()
+            if current_time - self.last_notification_time >= self.notification_interval:
+                try:
+                    self.send_progress_update()
+                    self.last_notification_time = current_time
+                except Exception as e:
+                    logger.error(f"Failed to send progress update: {e}")
+            
+            time.sleep(300)  # Check every 5 minutes
     
-    def __init__(self):
-        self.email_service = None
-        self.config_file = Path("./config/email_config.json")
-        
-    def setup_from_config(self, config_path: str = None):
-        """Setup email notifications from config file."""
-        config_path = Path(config_path) if config_path else self.config_file
-        
-        if not config_path.exists():
-            self.create_config_template(config_path)
-            logger.info(f"Created email config template at {config_path}")
-            logger.info("Please fill in your email credentials and run setup again")
-            return False
-            
-        try:
-            with open(config_path, 'r') as f:
-                config = json.load(f)
-            
-            self.email_service = EmailNotificationService(
-                smtp_server=config.get('smtp_server', 'smtp.gmail.com'),
-                smtp_port=config.get('smtp_port', 587),
-                sender_email=config.get('sender_email', ''),
-                sender_password=config.get('sender_password', ''),
-                recipient_emails=config.get('recipient_emails', [])
-            )
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to setup email notifications: {e}")
-            return False
-    
-    def create_config_template(self, config_path: Path):
-        """Create email configuration template."""
-        config_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        template = {
-            "smtp_server": "smtp.gmail.com",
-            "smtp_port": 587,
-            "sender_email": "your-email@gmail.com",
-            "sender_password": "your-app-password",
-            "recipient_emails": ["your-email@gmail.com"],
-            "notification_interval_hours": 6,
-            "instructions": {
-                "gmail": "Use Gmail App Password, not regular password",
-                "smtp_server": "Common servers: smtp.gmail.com, smtp.outlook.com, smtp.yahoo.com",
-                "recipient_emails": "List of emails to receive notifications"
-            }
+    def log_training_metrics(self, epoch: int, policy_loss: float, value_loss: float, 
+                           entropy: float, avg_reward: float = 0.0, additional_metrics: Dict = None):
+        """Log training metrics for analysis"""
+        metrics = {
+            'timestamp': time.time(),
+            'epoch': epoch,
+            'policy_loss': policy_loss,
+            'value_loss': value_loss,
+            'entropy': entropy,
+            'avg_reward': avg_reward,
+            'additional_metrics': additional_metrics or {}
         }
         
-        with open(config_path, 'w') as f:
-            json.dump(template, f, indent=2)
-    
-    def start_notifications(self):
-        """Start email notifications."""
-        if not self.email_service:
-            logger.error("Email service not configured. Run setup_from_config() first.")
-            return False
-            
-        self.email_service.start_monitoring()
-        return True
-    
-    def stop_notifications(self):
-        """Stop email notifications."""
-        if self.email_service:
-            self.email_service.stop_monitoring()
-    
-    def send_test_email(self):
-        """Send a test email to verify configuration."""
-        if not self.email_service:
-            logger.error("Email service not configured")
-            return False
-            
-        subject = "🤖 Trading AI - Test Notification"
-        body = """
-        <h2>Test Email from Trading AI System</h2>
-        <p>This is a test email to verify your notification setup is working correctly.</p>
-        <p><strong>Time:</strong> {}</p>
-        <p>If you receive this email, your notification system is configured properly!</p>
-        """.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        self.training_metrics.append(metrics)
         
-        return self.email_service.send_email(subject, body, is_html=True)
+        # Keep only last 1000 metrics to prevent memory issues
+        if len(self.training_metrics) > 1000:
+            self.training_metrics = self.training_metrics[-1000:]
+        
+        # Check if training should be stopped
+        if self._should_stop_training():
+            self.send_stop_training_alert()
+            return True
+        
+        return False
+    
+    def _should_stop_training(self) -> bool:
+        """Determine if training should be stopped based on metrics"""
+        if len(self.training_metrics) < self.stagnation_epochs:
+            return False
+        
+        recent_metrics = self.training_metrics[-self.stagnation_epochs:]
+        
+        # Check for loss explosion
+        latest_policy_loss = recent_metrics[-1]['policy_loss']
+        latest_value_loss = recent_metrics[-1]['value_loss']
+        
+        if abs(latest_policy_loss) > self.max_loss_threshold or abs(latest_value_loss) > self.max_loss_threshold:
+            logger.warning(f"Training stopped: Loss explosion detected (policy: {latest_policy_loss}, value: {latest_value_loss})")
+            return True
+        
+        # Check for stagnation
+        if len(recent_metrics) >= self.stagnation_epochs:
+            early_avg_loss = np.mean([m['value_loss'] for m in recent_metrics[:10]])
+            recent_avg_loss = np.mean([m['value_loss'] for m in recent_metrics[-10:]])
+            
+            improvement = (early_avg_loss - recent_avg_loss) / early_avg_loss
+            
+            if improvement < self.min_improvement_threshold:
+                logger.warning(f"Training stopped: Insufficient improvement ({improvement:.4f}) over {self.stagnation_epochs} epochs")
+                return True
+        
+        return False
+    
+    def _calculate_progress_stats(self) -> Dict:
+        """Calculate training progress statistics"""
+        if not self.training_metrics:
+            return {}
+        
+        recent_metrics = self.training_metrics[-100:] if len(self.training_metrics) >= 100 else self.training_metrics
+        latest_metrics = self.training_metrics[-1]
+        
+        # Calculate averages
+        avg_policy_loss = np.mean([m['policy_loss'] for m in recent_metrics])
+        avg_value_loss = np.mean([m['value_loss'] for m in recent_metrics])
+        avg_entropy = np.mean([m['entropy'] for m in recent_metrics])
+        avg_reward = np.mean([m['avg_reward'] for m in recent_metrics])
+        
+        # Calculate trends
+        if len(recent_metrics) >= 20:
+            early_loss = np.mean([m['value_loss'] for m in recent_metrics[:10]])
+            recent_loss = np.mean([m['value_loss'] for m in recent_metrics[-10:]])
+            loss_trend = "Improving" if recent_loss < early_loss else "Worsening"
+            improvement_rate = ((early_loss - recent_loss) / early_loss) * 100
+        else:
+            loss_trend = "Insufficient data"
+            improvement_rate = 0
+        
+        runtime_hours = (time.time() - self.training_start_time) / 3600
+        
+        return {
+            'current_epoch': latest_metrics['epoch'],
+            'total_epochs_completed': len(self.training_metrics),
+            'runtime_hours': runtime_hours,
+            'latest_policy_loss': latest_metrics['policy_loss'],
+            'latest_value_loss': latest_metrics['value_loss'],
+            'latest_entropy': latest_metrics['entropy'],
+            'avg_policy_loss': avg_policy_loss,
+            'avg_value_loss': avg_value_loss,
+            'avg_entropy': avg_entropy,
+            'avg_reward': avg_reward,
+            'loss_trend': loss_trend,
+            'improvement_rate': improvement_rate
+        }
+    
+    def send_progress_update(self):
+        """Send a progress update email"""
+        try:
+            stats = self._calculate_progress_stats()
+            
+            if not stats:
+                logger.info("No training metrics available for progress update")
+                return
+            
+            subject = f"Training Progress Update - Epoch {stats['current_epoch']}"
+            
+            # Create email body
+            body = f"""
+Training Progress Report
+========================
+
+Training Status: RUNNING
+Current Epoch: {stats['current_epoch']}
+Total Epochs Completed: {stats['total_epochs_completed']}
+Runtime: {stats['runtime_hours']:.2f} hours
+
+Latest Metrics:
+- Policy Loss: {stats['latest_policy_loss']:.4f}
+- Value Loss: {stats['latest_value_loss']:.4f}
+- Entropy: {stats['latest_entropy']:.4f}
+
+Recent Averages (last 100 epochs):
+- Avg Policy Loss: {stats['avg_policy_loss']:.4f}
+- Avg Value Loss: {stats['avg_value_loss']:.4f}
+- Avg Entropy: {stats['avg_entropy']:.4f}
+- Avg Reward: {stats['avg_reward']:.4f}
+
+Performance Analysis:
+- Loss Trend: {stats['loss_trend']}
+- Improvement Rate: {stats['improvement_rate']:.2f}%
+
+Training appears to be {"productive" if stats['improvement_rate'] > 0 else "struggling"}
+
+Next update in {self.notification_interval // 3600} hours.
+
+---
+Automated Training Monitor
+Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            """
+            
+            self._send_email(subject, body)
+            logger.info(f"Progress update sent to {self.recipient_email}")
+            
+        except Exception as e:
+            logger.error(f"Failed to send progress update: {e}")
+    
+    def send_stop_training_alert(self):
+        """Send alert when training should be stopped"""
+        try:
+            subject = "🚨 TRAINING ALERT: Stopping Recommended"
+            
+            stats = self._calculate_progress_stats()
+            
+            body = f"""
+TRAINING STOP ALERT
+==================
+
+⚠️ The training monitoring system recommends stopping the current training session.
+
+Reason: Training appears to have stagnated or is showing signs of instability.
+
+Current Status:
+- Epoch: {stats.get('current_epoch', 'Unknown')}
+- Runtime: {stats.get('runtime_hours', 0):.2f} hours
+- Latest Value Loss: {stats.get('latest_value_loss', 'Unknown')}
+- Recent Improvement: {stats.get('improvement_rate', 0):.4f}%
+
+Recommendation: Stop training and review hyperparameters or data quality.
+
+---
+Automated Training Monitor
+Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            """
+            
+            self._send_email(subject, body)
+            logger.warning(f"Stop training alert sent to {self.recipient_email}")
+            
+        except Exception as e:
+            logger.error(f"Failed to send stop training alert: {e}")
+    
+    def send_training_complete(self, final_stats: Dict = None):
+        """Send notification when training completes"""
+        try:
+            subject = "✅ Training Completed Successfully"
+            
+            stats = final_stats or self._calculate_progress_stats()
+            
+            body = f"""
+TRAINING COMPLETED
+==================
+
+🎉 Your trading model training has completed successfully!
+
+Final Results:
+- Total Epochs: {stats.get('total_epochs_completed', 'Unknown')}
+- Total Runtime: {stats.get('runtime_hours', 0):.2f} hours
+- Final Policy Loss: {stats.get('latest_policy_loss', 'Unknown')}
+- Final Value Loss: {stats.get('latest_value_loss', 'Unknown')}
+- Final Entropy: {stats.get('latest_entropy', 'Unknown')}
+
+Performance Summary:
+- Overall Improvement: {stats.get('improvement_rate', 0):.2f}%
+- Training Status: {"Successful" if stats.get('improvement_rate', 0) > 0 else "Completed with concerns"}
+
+Your trained model is ready for evaluation and deployment.
+
+---
+Automated Training Monitor
+Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            """
+            
+            self._send_email(subject, body)
+            logger.info(f"Training completion notification sent to {self.recipient_email}")
+            
+        except Exception as e:
+            logger.error(f"Failed to send completion notification: {e}")
+    
+    def send_error_alert(self, error_message: str, traceback_info: str = None):
+        """Send alert when training encounters an error"""
+        try:
+            subject = "🚨 TRAINING ERROR ALERT"
+            
+            body = f"""
+TRAINING ERROR ALERT
+===================
+
+❌ Your training session has encountered an error and may have stopped.
+
+Error Details:
+{error_message}
+
+{"Traceback:" if traceback_info else ""}
+{traceback_info or "No additional traceback information available."}
+
+Please check your training logs and restart if necessary.
+
+---
+Automated Training Monitor
+Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            """
+            
+            self._send_email(subject, body)
+            logger.error(f"Error alert sent to {self.recipient_email}")
+            
+        except Exception as e:
+            logger.error(f"Failed to send error alert: {e}")
+    
+    def _send_email(self, subject: str, body: str):
+        """Send email using SMTP"""
+        if not self.sender_email or not self.sender_password:
+            logger.warning("Email credentials not configured. Set NOTIFICATION_EMAIL and NOTIFICATION_PASSWORD environment variables.")
+            return
+        
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = self.sender_email
+            msg['To'] = self.recipient_email
+            msg['Subject'] = subject
+            
+            msg.attach(MIMEText(body, 'plain'))
+            
+            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                server.starttls()
+                server.login(self.sender_email, self.sender_password)
+                server.send_message(msg)
+            
+            logger.info(f"Email sent successfully to {self.recipient_email}")
+            
+        except Exception as e:
+            logger.error(f"Failed to send email: {e}")
+            raise
+
+# Global notification system instance
+notification_system = None
+
+def initialize_notifications(email: str = "ali.aloraibi@outlook.com", 
+                           phone: str = "+16233133816",
+                           interval_hours: int = 6):
+    """Initialize the global notification system"""
+    global notification_system
+    notification_system = TrainingNotificationSystem(
+        recipient_email=email,
+        phone_number=phone,
+        notification_interval_hours=interval_hours
+    )
+    notification_system.start_monitoring()
+    return notification_system
+
+def log_training_progress(epoch: int, policy_loss: float, value_loss: float, 
+                         entropy: float, avg_reward: float = 0.0, 
+                         additional_metrics: Dict = None) -> bool:
+    """Log training progress and check if training should stop"""
+    global notification_system
+    if notification_system:
+        return notification_system.log_training_metrics(
+            epoch, policy_loss, value_loss, entropy, avg_reward, additional_metrics
+        )
+    return False
+
+def send_completion_notification(final_stats: Dict = None):
+    """Send training completion notification"""
+    global notification_system
+    if notification_system:
+        notification_system.send_training_complete(final_stats)
+        notification_system.stop_monitoring()
+
+def send_error_notification(error_message: str, traceback_info: str = None):
+    """Send error notification"""
+    global notification_system
+    if notification_system:
+        notification_system.send_error_alert(error_message, traceback_info)
