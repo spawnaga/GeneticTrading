@@ -1,0 +1,61 @@
+/home/alex/miniconda3/envs/GeneticTrading/bin/python /mnt/windows/GeneticTrading/run_simple.py 
+🤖 Trading System Launcher
+==================================================
+✓ Created directory: ./models
+✓ Created directory: ./logs
+✓ Created directory: ./cached_data
+✓ Created directory: ./runs
+
+Available modes:
+  test - Quick test with minimal data (default)
+  dev  - Development mode with 10% data
+
+Usage: python run_simple.py [test|dev]
+
+Select mode (test/dev) [test]: dev
+🔧 Starting Development Mode...
+📊 Using 10% of data for development
+📈 Monitoring enabled - check ./logs/training_metrics.json for progress
+⚠️  Training will auto-stop if performance stagnates to save compute
+🔧 Starting Development Mode...
+📊 Using 10% of data for development
+WARNING:root:Distributed training not available, running in single-process mode
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] STARTUP             : ================================================================================
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] STARTUP             : Training session started for rank 0
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] STARTUP             : Log file: logs/training_rank_0.log
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] STARTUP             : Process ID: 27430
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] STARTUP             : Working directory: /mnt/windows/GeneticTrading
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] STARTUP             : ================================================================================
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] root                : NCCL_TIMEOUT = 1800000 ms
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] root                : Using 10.0% of available data
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] root                : Models will be saved to: ./models/dev
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] root                : Rank 0/1 starting on cuda:0 (has_cudf=True)
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] root                : Data loading parameters: max_rows=5000, data_percentage=0.1
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] root                : Adjusted max_rows to 500 based on data_percentage
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] root                : Processing data with max_rows=500, chunk_size=250
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] data_preprocessing  : Scanning 1 files for raw data (using chunked reading)...
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] data_preprocessing  : Processing file: NQ_full_1min_continuous_absolute_adjusted.txt
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] data_preprocessing  : Detected 6 columns in NQ_full_1min_continuous_absolute_adjusted.txt
+2025-06-25 02:08:45 [WARNING ] [Rank-27430] data_preprocessing  : cuDF datetime conversion failed: errors='coerce' is not implemented when arg is not scalar-like, trying alternative method
+2025-06-25 02:08:45 [WARNING ] [Rank-27430] data_preprocessing  : Error reading ./data_txt/NQ_full_1min_continuous_absolute_adjusted.txt with auto-detection: errors='coerce' is not implemented when arg is not scalar-like
+
+❌ Error during training: No valid data found in input files
+2025-06-25 02:08:45 [ERROR   ] [Rank-27430] data_preprocessing  : Fallback reading also failed for ./data_txt/NQ_full_1min_continuous_absolute_adjusted.txt: errors='coerce' is not implemented when arg is not scalar-like
+2025-06-25 02:08:45 [INFO    ] [Rank-27430] data_preprocessing  : Combining all file chunks...
+2025-06-25 02:08:45 [ERROR   ] [Rank-27430] data_preprocessing  : No valid data chunks found!
+Traceback (most recent call last):
+  File "/mnt/windows/GeneticTrading/run_simple.py", line 102, in main
+    run_development()
+  File "/mnt/windows/GeneticTrading/run_simple.py", line 72, in run_development
+    main()
+  File "/mnt/windows/GeneticTrading/main.py", line 355, in main
+    train_df, test_df, sc, seg = create_environment_data(
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/windows/GeneticTrading/data_preprocessing.py", line 469, in create_environment_data
+    df = load_and_cache_data(data_folder, cache_folder)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/windows/GeneticTrading/data_preprocessing.py", line 229, in load_and_cache_data
+    raise ValueError("No valid data found in input files")
+ValueError: No valid data found in input files
+
+Process finished with exit code 0
