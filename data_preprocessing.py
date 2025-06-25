@@ -123,6 +123,27 @@ def load_and_cache_data(
                     names=["date_time", "Open", "High", "Low", "Close", "Volume"],
                     header=None,
                 )
+                # Ensure consistent datetime column name - handle different possible column names
+                datetime_columns = ['date_time', 'datetime', 'timestamp', 'time', 'Date', 'DateTime']
+                datetime_col = None
+
+                for col in datetime_columns:
+                    if col in file_df.columns:
+                        datetime_col = col
+                        break
+
+                if datetime_col is None:
+                    # If no datetime column found, try the first column if it looks like a date
+                    first_col = file_df.columns[0]
+                    if any(keyword in first_col.lower() for keyword in ['date', 'time']):
+                        datetime_col = first_col
+                    else:
+                        raise ValueError(f"No datetime column found. Available columns: {list(file_df.columns)}")
+
+                # Rename to standard name and convert to datetime
+                if datetime_col != "date_time":
+                    file_df = file_df.rename(columns={datetime_col: "date_time"})
+
                 file_df["date_time"] = cudf.to_datetime(file_df["date_time"], errors='coerce')
             else:
                 # Use pandas chunked reading for large files
@@ -135,6 +156,26 @@ def load_and_cache_data(
 
                 file_chunks = []
                 for chunk in chunk_reader:
+                    # Ensure consistent datetime column name - handle different possible column names
+                    datetime_columns = ['date_time', 'datetime', 'timestamp', 'time', 'Date', 'DateTime']
+                    datetime_col = None
+
+                    for col in datetime_columns:
+                        if col in chunk.columns:
+                            datetime_col = col
+                            break
+
+                    if datetime_col is None:
+                        # If no datetime column found, try the first column if it looks like a date
+                        first_col = chunk.columns[0]
+                        if any(keyword in first_col.lower() for keyword in ['date', 'time']):
+                            datetime_col = first_col
+                        else:
+                            raise ValueError(f"No datetime column found. Available columns: {list(chunk.columns)}")
+
+                    # Rename to standard name and convert to datetime
+                    if datetime_col != "date_time":
+                        chunk = chunk.rename(columns={datetime_col: "date_time"})
                     chunk["date_time"] = pd.to_datetime(chunk["date_time"], errors='coerce')
                     chunk = chunk.dropna(subset=["date_time"])
                     if len(chunk) > 0:
@@ -180,6 +221,27 @@ def load_and_cache_data(
             else:
                 pandas_chunks.append(chunk)
         df = pd.concat(pandas_chunks, ignore_index=True)
+
+    # Ensure consistent datetime column name - handle different possible column names
+    datetime_columns = ['date_time', 'datetime', 'timestamp', 'time', 'Date', 'DateTime']
+    datetime_col = None
+
+    for col in datetime_columns:
+        if col in df.columns:
+            datetime_col = col
+            break
+
+    if datetime_col is None:
+        # If no datetime column found, try the first column if it looks like a date
+        first_col = df.columns[0]
+        if any(keyword in first_col.lower() for keyword in ['date', 'time']):
+            datetime_col = first_col
+        else:
+            raise ValueError(f"No datetime column found. Available columns: {list(df.columns)}")
+
+    # Rename to standard name and convert to datetime
+    if datetime_col != "date_time":
+        df = df.rename(columns={datetime_col: "date_time"})
 
     # Ensure date_time column is properly typed before sorting
     if HAS_CUDF:
@@ -423,11 +485,11 @@ def feature_engineering(df, has_cudf):
     delta = df["close"].diff()
     gain = (delta.where(delta > 0, 0)).rolling(window=14, min_periods=1).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(window=14, min_periods=1).mean()
-    
+
     # Prevent division by zero
     rs = gain / (loss + 1e-10)
     df["rsi"] = 100 - (100 / (1 + rs))
-    
+
     # Fill any remaining NaN values in RSI
     df["rsi"] = df["rsi"].fillna(50.0)  # Neutral RSI value
 
