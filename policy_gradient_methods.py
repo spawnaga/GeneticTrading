@@ -338,9 +338,18 @@ class PPOTrainer:
             if self.local_rank == 0 and hasattr(trajectory_pbar, 'set_postfix') and step % 50 == 0:
                 avg_reward = np.mean(rew_buf[-50:]) if len(rew_buf) >= 50 else np.mean(rew_buf) if rew_buf else 0.0
                 episodes = sum(done_buf[-50:]) if len(done_buf) >= 50 else sum(done_buf) if done_buf else 0
+                
+                # Get recent loss values for display
+                recent_policy_losses = getattr(self, '_recent_policy_losses', [0.0])
+                recent_value_losses = getattr(self, '_recent_value_losses', [0.0])
+                avg_policy_loss = sum(recent_policy_losses[-10:]) / len(recent_policy_losses[-10:]) if recent_policy_losses else 0.0
+                avg_value_loss = sum(recent_value_losses[-10:]) / len(recent_value_losses[-10:]) if recent_value_losses else 0.0
+                
                 trajectory_pbar.set_postfix({
                     'reward': f"{avg_reward:.1f}",
                     'eps': episodes,
+                    'p_loss': f"{avg_policy_loss:.3f}",
+                    'v_loss': f"{avg_value_loss:.3f}",
                     'progress': f"{((step+1)/self.rollout_steps)*100:.0f}%"
                 })
                 # Force refresh to ensure proper display
@@ -778,12 +787,15 @@ class PPOTrainer:
                 avg_policy_loss = sum(recent_policy_losses[-10:]) / len(recent_policy_losses[-10:]) if recent_policy_losses else 0.0
                 avg_value_loss = sum(recent_value_losses[-10:]) / len(recent_value_losses[-10:]) if recent_value_losses else 0.0
                 
+                # Calculate iterations per second based on elapsed time
+                elapsed_time = time.time() - start_time
+                iter_per_sec = (update - start_update + 1) / elapsed_time if elapsed_time > 0 else 0.0
+                
                 pbar.set_postfix({
                     'reward': f"{mean_reward:.1f}",
                     'p_loss': f"{avg_policy_loss:.3f}",
                     'v_loss': f"{avg_value_loss:.3f}",
-                    'lr': f"{lr:.1e}",
-                    'entropy': f"{entropy_coef:.3f}",
+                    'iter/s': f"{iter_per_sec:.2f}",
                     'progress': f"{update+1}/{n_updates}"
                 })
                 
