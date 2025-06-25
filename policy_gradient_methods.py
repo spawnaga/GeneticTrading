@@ -394,8 +394,8 @@ class PPOTrainer:
             adv_t   = advs  # Already on correct device from compute_gae
             ret_t   = rets  # Already on correct device from compute_gae
 
-        # Track action distribution for analysis
-        action_counts = np.bincount(acts, minlength=self.env.action_space.n)
+            # Track action distribution for analysis
+            action_counts = np.bincount(acts, minlength=self.env.action_space.n)
         action_probs = action_counts / len(acts)
         self.action_distribution_history.append(action_probs)
 
@@ -566,7 +566,11 @@ class PPOTrainer:
         self.entropy_coef = max(0.001, self.entropy_coef * 0.9995)  # Slower decay with minimum
 
         # rollout reward: total sum of step rewards
-        total_reward = float(rews.sum())
+            total_reward = float(rews.sum())
+
+        except Exception as e:
+            logger.error(f"Error in train_step: {e}")
+            return 0.0
 
         # checkpoint with backup (save much less frequently to reduce log spam)
         if self.local_rank == 0 and getattr(self, "current_update", 0) % 200 == 0 and getattr(self, "current_update", 0) > 0:
