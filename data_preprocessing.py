@@ -300,6 +300,9 @@ def feature_engineering_gpu(
 
     # Always use CPU for trigonometric operations to avoid CUDA driver issues
     try:
+        # Import numpy explicitly for this operation
+        import numpy as np
+        
         # Convert cuDF/pandas series to numpy arrays for consistent CPU processing
         if HAS_CUDF and hasattr(minutes, 'to_pandas'):
             minutes_np = minutes.to_pandas().values
@@ -308,11 +311,21 @@ def feature_engineering_gpu(
             minutes_np = minutes.values if hasattr(minutes, 'values') else np.array(minutes)
             weekday_np = weekday.values if hasattr(weekday, 'values') else np.array(weekday)
 
+        # Ensure arrays are valid
+        minutes_np = np.nan_to_num(minutes_np, nan=0.0)
+        weekday_np = np.nan_to_num(weekday_np, nan=0.0)
+
         # Perform trigonometric operations on CPU
         sin_time_vals = np.sin(2 * np.pi * (minutes_np / SECONDS_IN_DAY))
         cos_time_vals = np.cos(2 * np.pi * (minutes_np / SECONDS_IN_DAY))
         sin_weekday_vals = np.sin(2 * np.pi * (weekday_np / WEEKDAYS))
         cos_weekday_vals = np.cos(2 * np.pi * (weekday_np / WEEKDAYS))
+
+        # Ensure no NaN values in trigonometric results
+        sin_time_vals = np.nan_to_num(sin_time_vals, nan=0.0)
+        cos_time_vals = np.nan_to_num(cos_time_vals, nan=1.0)
+        sin_weekday_vals = np.nan_to_num(sin_weekday_vals, nan=0.0)
+        cos_weekday_vals = np.nan_to_num(cos_weekday_vals, nan=1.0)
 
         # Assign back to dataframe
         df["sin_time"] = sin_time_vals
@@ -322,7 +335,7 @@ def feature_engineering_gpu(
 
     except Exception as e:
         logger.warning(f"Trigonometric operations failed: {e}, using fallback")
-        # Final fallback with basic numpy
+        # Final fallback with basic values
         df["sin_time"] = 0.0
         df["cos_time"] = 1.0
         df["sin_weekday"] = 0.0
@@ -767,4 +780,10 @@ def feature_engineering(df, has_cudf):
         nan_counts = df.isna().sum()
 
     total_nans = nan_counts.sum()
-    if total_nans >
+    if total_nans > 0:
+        logging.warning(f"Still have {total_nans} NaN values after cleaning")
+        # Final aggressive cleaning
+        df = df.fillna(0.0)
+
+    logging.info("NaN cleaning completed")
+    return df

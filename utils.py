@@ -215,22 +215,30 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
     # Maximum drawdown calculation from cumulative profits
     cumulative_profits = np.cumsum(profits)
     if len(cumulative_profits) > 0:
-        # Calculate drawdown from peak
-        running_max = np.maximum.accumulate(cumulative_profits)
-        drawdowns = running_max - cumulative_profits
+        # Start with an initial capital base for realistic drawdown calculation
+        initial_capital = 100000.0  # Assume $100k starting capital
+        equity_curve = initial_capital + cumulative_profits
         
-        # Calculate percentage drawdown relative to the peak value
-        max_drawdown_amount = np.max(drawdowns)
-        peak_value = np.max(running_max)
+        # Calculate running maximum (peak equity)
+        running_max = np.maximum.accumulate(equity_curve)
         
-        if peak_value > 0:
-            mdd = (max_drawdown_amount / peak_value) * 100
-        else:
-            # If no positive peak, calculate based on initial value
-            if len(cumulative_profits) > 0:
-                initial_value = max(cumulative_profits[0], 1.0)  # Avoid division by zero
-                min_value = np.min(cumulative_profits)
-                mdd = max(0, (initial_value - min_value) / initial_value * 100)
+        # Calculate drawdowns as percentage from peak
+        drawdowns = (running_max - equity_curve) / running_max * 100
+        
+        # Maximum drawdown is the largest percentage drop from peak
+        mdd = np.max(drawdowns) if len(drawdowns) > 0 else 0.0
+        
+        # Handle edge cases
+        if np.isnan(mdd) or np.isinf(mdd):
+            # Fallback calculation using profit volatility
+            if len(profits) > 1:
+                profit_std = np.std(profits)
+                profit_mean = np.mean(profits)
+                if profit_std > 0:
+                    # Estimate drawdown as multiple of volatility
+                    mdd = min(abs(profit_mean - 2 * profit_std) / initial_capital * 100, 100.0)
+                else:
+                    mdd = 0.0
             else:
                 mdd = 0.0
                 
