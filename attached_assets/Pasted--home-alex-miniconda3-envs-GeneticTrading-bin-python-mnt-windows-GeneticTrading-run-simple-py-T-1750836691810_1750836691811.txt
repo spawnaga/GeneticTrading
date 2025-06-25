@@ -1,0 +1,160 @@
+/home/alex/miniconda3/envs/GeneticTrading/bin/python /mnt/windows/GeneticTrading/run_simple.py 
+🤖 Trading System Launcher
+==================================================
+✓ Created directory: ./models
+✓ Created directory: ./logs
+✓ Created directory: ./cached_data
+✓ Created directory: ./runs
+
+Available modes:
+  test - Quick test with minimal data (default)
+  dev  - Development mode with 10% data
+
+Usage: python run_simple.py [test|dev]
+
+Select mode (test/dev) [test]: dev
+🔧 Starting Development Mode...
+📊 Using 10% of data for development
+WARNING:root:Distributed training not available, running in single-process mode
+2025-06-25 00:31:11 [INFO    ] [Rank-12056] STARTUP             : ================================================================================
+2025-06-25 00:31:11 [INFO    ] [Rank-12056] STARTUP             : Training session started for rank 0
+2025-06-25 00:31:11 [INFO    ] [Rank-12056] STARTUP             : Log file: logs/training_rank_0.log
+2025-06-25 00:31:11 [INFO    ] [Rank-12056] STARTUP             : Process ID: 12056
+2025-06-25 00:31:11 [INFO    ] [Rank-12056] STARTUP             : Working directory: /mnt/windows/GeneticTrading
+2025-06-25 00:31:11 [INFO    ] [Rank-12056] STARTUP             : ================================================================================
+2025-06-25 00:31:11 [INFO    ] [Rank-12056] root                : NCCL_TIMEOUT = 1800000 ms
+2025-06-25 00:31:11 [INFO    ] [Rank-12056] root                : Using 10.0% of available data
+2025-06-25 00:31:11 [INFO    ] [Rank-12056] root                : Models will be saved to: ./models/dev
+2025-06-25 00:31:11 [INFO    ] [Rank-12056] root                : Rank 0/1 starting on cuda:0 (has_cudf=True)
+2025-06-25 00:31:11 [INFO    ] [Rank-12056] root                : Parquet cache found; skipping preprocessing.
+2025-06-25 00:31:11 [INFO    ] [Rank-12056] root                : Total data: 4311800 train, 1077950 test rows
+2025-06-25 00:31:11 [INFO    ] [Rank-12056] root                : Rank 0: Sampled 100000 train rows from 4311800 total
+2025-06-25 00:31:11 [INFO    ] [Rank-12056] root                : Rank 0: Sampled 20000 test rows from 1077950 total
+2025-06-25 00:31:11 [INFO    ] [Rank-12056] numba.cuda.cudadrv.driver: init
+2025-06-25 00:31:13 [INFO    ] [Rank-12056] adaptive_trainer    : Starting adaptive training
+2025-06-25 00:31:13 [INFO    ] [Rank-12056] adaptive_trainer    : 
+=== Adaptive Training Iteration 1/20 ===
+2025-06-25 00:31:13 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:13 [ERROR   ] [Rank-12056] adaptive_trainer    : Error during policy evaluation: Expected all tensors to be on the same device, but found at least two devices, cpu and cuda:0! (when checking argument for argument mat1 in method wrapper_CUDA_addmm)
+2025-06-25 00:31:13 [INFO    ] [Rank-12056] adaptive_trainer    : Current performance: 0.0000 (best: 0.0000)
+2025-06-25 00:31:13 [INFO    ] [Rank-12056] adaptive_trainer    : Stagnation: 0, Poor performance: 0
+2025-06-25 00:31:13 [INFO    ] [Rank-12056] adaptive_trainer    : Method: GA, Entropy: 0.0000
+2025-06-25 00:31:13 [INFO    ] [Rank-12056] adaptive_trainer    : Switching to PPO due to: ga_solution_refinement
+2025-06-25 00:31:13 [INFO    ] [Rank-12056] adaptive_trainer    : Switching from GA to PPO
+2025-06-25 00:31:13 [INFO    ] [Rank-12056] adaptive_trainer    : Starting PPO phase: 150 updates
+2025-06-25 00:31:13 [INFO    ] [Rank-12056] policy_gradient_methods: Loaded model from models/dev/ppo_models/adaptive_ppo_model.pth
+I0625 00:31:13.859000 12056 site-packages/torch/distributed/nn/jit/instantiator.py:24] Created a temporary directory at /tmp/tmp6hhli3dn
+I0625 00:31:13.859000 12056 site-packages/torch/distributed/nn/jit/instantiator.py:75] Writing /tmp/tmp6hhli3dn/_remote_module_non_scriptable.py
+Removed old TensorBoard run: ./runs/ppo_rank_0
+2025-06-25 00:31:14 [INFO    ] [Rank-12056] policy_gradient_methods: Loaded model from models/dev/ppo_models/adaptive_ppo_model.pth
+2025-06-25 00:31:14 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:14 [ERROR   ] [Rank-12056] adaptive_trainer    : Error during policy evaluation: Expected all tensors to be on the same device, but found at least two devices, cpu and cuda:0! (when checking argument for argument mat1 in method wrapper_CUDA_addmm)
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:14 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+Collecting trajectories:  67%|██████▋   | 681/1024 [00:00<00:00, 1623.08it/s, avg_reward=0.7023, episode_done=0] 2025-06-25 00:31:14 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:14 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:14 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:15 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:15 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:15 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:15 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:16 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:16 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:16 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:16 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:17 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:17 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:17 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:17 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:18 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:18 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:18 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:18 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:19 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:19 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:19 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:19 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:20 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:20 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:20 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:20 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:21 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:21 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+Collecting trajectories:  17%|█▋        | 175/1024 [00:00<00:00, 1745.81it/s, avg_reward=1.0970, episode_done=0] 2025-06-25 00:31:21 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:21 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:21 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
+2025-06-25 00:31:22 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite observations detected, skipping update
+PPO Update Epochs:   0%|          | 0/4 [00:00<?, ?it/s]
+Epoch 1 Batches:   0%|          | 0/16 [00:00<?, ?it/s]
+Epoch 1 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.1354, value_loss=24.2404, entropy=1.0917]
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=0.1354, value_loss=24.2404, entropy=1.0917]
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=0.0118, value_loss=18.6018, entropy=1.0925]
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=-0.0529, value_loss=19.7553, entropy=1.0918]
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=0.1957, value_loss=26.0313, entropy=1.0927] 
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=-0.1238, value_loss=21.1915, entropy=1.0921]
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=0.1067, value_loss=21.5556, entropy=1.0926] 
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=-0.2280, value_loss=25.7493, entropy=1.0926]
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=0.1356, value_loss=27.4681, entropy=1.0933] 
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=0.0191, value_loss=24.0126, entropy=1.0926]
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=0.0168, value_loss=24.4290, entropy=1.0932]
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=-0.0487, value_loss=26.7246, entropy=1.0933]
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=-0.0756, value_loss=25.2063, entropy=1.0943]
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=-0.1465, value_loss=25.3868, entropy=1.0930]
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=0.1630, value_loss=24.2323, entropy=1.0940] 
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=0.0871, value_loss=20.6585, entropy=1.0942]
+Epoch 1 Batches:   6%|▋         | 1/16 [00:00<00:01,  7.83it/s, policy_loss=-0.1534, value_loss=19.4279, entropy=1.0940]
+PPO Update Epochs:  25%|██▌       | 1/4 [00:00<00:00,  5.83it/s, avg_policy_loss=0.0026, avg_value_loss=23.4170, kl_div=0.0031]
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s]
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.1015, value_loss=27.3917, entropy=1.0941]
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0999, value_loss=26.7253, entropy=1.0936]
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0312, value_loss=14.7647, entropy=1.0942]
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.3708, value_loss=25.9875, entropy=1.0934] 
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0802, value_loss=16.6020, entropy=1.0928]
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.1003, value_loss=23.4681, entropy=1.0915]
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.1121, value_loss=12.1091, entropy=1.0912]
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.1495, value_loss=26.0189, entropy=1.0920] 
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0816, value_loss=28.9471, entropy=1.0910]
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.0376, value_loss=20.5227, entropy=1.0913] 
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.1015, value_loss=24.4259, entropy=1.0920]
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0959, value_loss=21.7478, entropy=1.0919]
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.0515, value_loss=27.1599, entropy=1.0918] 
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.2004, value_loss=28.7521, entropy=1.0924]
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.1928, value_loss=30.6048, entropy=1.0932] 
+Epoch 2 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0287, value_loss=20.2996, entropy=1.0936]
+PPO Update Epochs:  25%|██▌       | 1/4 [00:00<00:00,  5.83it/s, avg_policy_loss=-0.0018, avg_value_loss=23.4705, kl_div=-0.0013]
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s]
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0296, value_loss=21.5241, entropy=1.0925]
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.2389, value_loss=26.0101, entropy=1.0934]
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.1393, value_loss=21.5090, entropy=1.0950] 
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0078, value_loss=24.6710, entropy=1.0944]
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0702, value_loss=22.4554, entropy=1.0955]
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0791, value_loss=31.8026, entropy=1.0955]
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0556, value_loss=18.9852, entropy=1.0957]
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.0574, value_loss=25.7897, entropy=1.0962] 
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0493, value_loss=26.5131, entropy=1.0956]
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.1415, value_loss=23.8775, entropy=1.0957] 
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.0811, value_loss=29.4361, entropy=1.0959]
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.0012, value_loss=17.7958, entropy=1.0962]
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.1723, value_loss=19.7451, entropy=1.0960]
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.0958, value_loss=21.7254, entropy=1.0965]
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.0055, value_loss=20.8409, entropy=1.0964]
+Epoch 3 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.1983, value_loss=21.0538, entropy=1.0964]
+PPO Update Epochs:  25%|██▌       | 1/4 [00:00<00:00,  5.83it/s, avg_policy_loss=-0.0022, avg_value_loss=23.3584, kl_div=0.0003] 
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s]
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0902, value_loss=25.2855, entropy=1.0964]
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.0205, value_loss=17.6898, entropy=1.0967] 
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.1589, value_loss=28.7317, entropy=1.0964]
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0593, value_loss=25.0339, entropy=1.0964]
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.1589, value_loss=27.2718, entropy=1.0959] 
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0144, value_loss=25.6007, entropy=1.0960]
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.1057, value_loss=26.8109, entropy=1.0958] 
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.0877, value_loss=16.5307, entropy=1.0950]
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.0688, value_loss=16.5499, entropy=1.0955] 
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.1555, value_loss=29.6700, entropy=1.0952]
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.0704, value_loss=20.0961, entropy=1.0944] 
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.0945, value_loss=26.8866, entropy=1.0956]
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.2024, value_loss=22.5395, entropy=1.0957]
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.0045, value_loss=27.6227, entropy=1.0946] 
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=-0.1733, value_loss=19.9470, entropy=1.0947]
+Epoch 4 Batches:   0%|          | 0/16 [00:00<?, ?it/s, policy_loss=0.0560, value_loss=17.4105, entropy=1.0953] 
+2025-06-25 00:31:23 [ERROR   ] [Rank-12056] policy_gradient_methods: Error in train_step: can't convert cuda:0 device type tensor to numpy. Use Tensor.cpu() to copy the tensor to host memory first.
+Collecting trajectories:   0%|          | 0/1024 [00:00<?, ?it/s]2025-06-25 00:31:23 [WARNING ] [Rank-12056] policy_gradient_methods: NaN/infinite input detected, replacing with zeros
