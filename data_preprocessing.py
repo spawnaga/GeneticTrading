@@ -20,15 +20,21 @@ import logging
 import warnings
 
 try:
-    import cudf
-    import cupy as cp
-    HAS_CUDF = True
-except ImportError:
+    import torch
+    if torch.cuda.is_available() and torch.cuda.device_count() > 0:
+        import cudf
+        import cupy as cp
+        HAS_CUDF = True
+        logger.info(f"GPU processing enabled with {torch.cuda.device_count()} GPUs")
+    else:
+        raise ImportError("No GPUs available")
+except (ImportError, AttributeError, RuntimeError):
     import pandas as pd
     import numpy as np
     cudf = pd
     cp = np
     HAS_CUDF = False
+    logger.info("Using CPU fallback for data processing")
 
 # Handle cuML imports separately with better error handling
 try:
@@ -243,12 +249,21 @@ def feature_engineering_gpu(
     minutes  = (dt.dt.hour * 60 + dt.dt.minute).astype("int32")
     weekday  = dt.dt.weekday.astype("int32")
 
-    if HAS_CUDF:
-        df["sin_time"]     = cp.sin(2 * cp.pi * (minutes / SECONDS_IN_DAY))
-        df["cos_time"]     = cp.cos(2 * cp.pi * (minutes / SECONDS_IN_DAY))
-        df["sin_weekday"]  = cp.sin(2 * cp.pi * (weekday / WEEKDAYS))
-        df["cos_weekday"]  = cp.cos(2 * cp.pi * (weekday / WEEKDAYS))
-    else:
+    try:
+        if HAS_CUDF:
+            # Ensure we're using GPU 0 for cupy operations
+            with cp.cuda.Device(0):
+                df["sin_time"]     = cp.sin(2 * cp.pi * (minutes / SECONDS_IN_DAY))
+                df["cos_time"]     = cp.cos(2 * cp.pi * (minutes / SECONDS_IN_DAY))
+                df["sin_weekday"]  = cp.sin(2 * cp.pi * (weekday / WEEKDAYS))
+                df["cos_weekday"]  = cp.cos(2 * cp.pi * (weekday / WEEKDAYS))
+        else:
+            df["sin_time"]     = np.sin(2 * np.pi * (minutes / SECONDS_IN_DAY))
+            df["cos_time"]     = np.cos(2 * np.pi * (minutes / SECONDS_IN_DAY))
+            df["sin_weekday"]  = np.sin(2 * np.pi * (weekday / WEEKDAYS))
+            df["cos_weekday"]  = np.cos(2 * np.pi * (weekday / WEEKDAYS))
+    except Exception as e:
+        logger.warning(f"GPU trigonometric operations failed: {e}, falling back to CPU")
         df["sin_time"]     = np.sin(2 * np.pi * (minutes / SECONDS_IN_DAY))
         df["cos_time"]     = np.cos(2 * np.pi * (minutes / SECONDS_IN_DAY))
         df["sin_weekday"]  = np.sin(2 * np.pi * (weekday / WEEKDAYS))

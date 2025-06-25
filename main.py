@@ -24,18 +24,14 @@ has_cudf = False
 cudf = None
 
 # Check if we should even try GPU libraries
-try_gpu = os.environ.get("CUDA_VISIBLE_DEVICES", "") != "" and torch.cuda.is_available()
+try_gpu = torch.cuda.is_available() and torch.cuda.device_count() > 0
 
 if try_gpu:
     try:
-        # Force CPU backend for RAPIDS to avoid GPU memory issues
-        os.environ["CUDF_BACKEND"] = "cpu"
-        os.environ["RAPIDS_NO_INITIALIZE"] = "1"
-        
         import cudf
         import cupy as cp
         has_cudf = True
-        logging.info("cudf loaded successfully (CPU backend)")
+        logging.info(f"cudf loaded successfully with {torch.cuda.device_count()} GPUs available")
     except (ImportError, AttributeError, RuntimeError) as e:
         # Handle various CUDA-related import errors
         if "cuda" in str(e).lower() or "numba" in str(e).lower():
@@ -266,12 +262,14 @@ def main():
     # torchrun / torch.distributed sets LOCAL_RANK
     local_rank = int(os.environ.get("LOCAL_RANK", "0"))
 
-    # Only set CUDA device if CUDA is available
-    if torch.cuda.is_available():
+    # Only set CUDA device if CUDA is available and we have GPUs
+    if torch.cuda.is_available() and torch.cuda.device_count() > 0:
         torch.cuda.set_device(local_rank)
         backend = "nccl"
+        logging.info(f"Using NCCL backend for GPU {local_rank}/{torch.cuda.device_count()}")
     else:
         backend = "gloo"
+        logging.info("Using Gloo backend for CPU training")
 
     # init process group with matching timeout
     try:
