@@ -293,10 +293,10 @@ class FuturesEnv(gym.Env):
     def _simulate_fill(
         self,
         price: float,
-        trade_type: int,
         high_price: float | None = None,
         low_price: float | None = None,
         volume: float | None = None,
+        size: int = 1
     ) -> float:
         """
         Simulate execution price with slippage and spread adjustments.
@@ -328,12 +328,12 @@ class FuturesEnv(gym.Env):
             return price
 
         # 2) Apply liquidity-based price adjustment
-        price = self._adjust_for_liquidity(price, volume, trade_type)
+        price = self._adjust_for_liquidity(price, volume, size)
 
         # 3) Sample slippage if custom distributions are provided
         slippage = 0.0
         if self.can_random:
-            if trade_type == 1:
+            if size == 1:
                 slippage = np.random.choice(self.long_values, p=self.long_probabilities)
             else:
                 slippage = np.random.choice(self.short_values, p=self.short_probabilities)
@@ -350,7 +350,7 @@ class FuturesEnv(gym.Env):
             dynamic_spread = max(dynamic_spread, high_price - low_price)
 
         # Apply half the spread in the direction of the trade
-        spread_adj = (dynamic_spread / 2.0) * (1 if trade_type == 1 else -1)
+        spread_adj = (dynamic_spread / 2.0) * (1 if size == 1 else -1)
 
         # 4) Volume-based scaling of slippage
         volume_scale = 1.0
@@ -576,10 +576,10 @@ class FuturesEnv(gym.Env):
         trade_size = target_position - self.current_position
         fill_price = self._simulate_fill(
             price=current_state.close_price,
-            size=trade_size,
             high_price=getattr(current_state, 'high_price', None),
             low_price=getattr(current_state, 'low_price', None),
-            volume=getattr(current_state, 'volume', None)
+            volume=getattr(current_state, 'volume', None),
+            size=trade_size
         )
 
         # Validate fill price
