@@ -71,7 +71,7 @@ class ActorCriticNet(nn.Module):
         for module in self.modules():
             if isinstance(module, nn.Linear):
                 # More conservative initialization to prevent NaN propagation
-                nn.init.xavier_uniform_(module.weight, gain=0.01)  # Very small gain
+                nn.init.orthogonal_(module.weight, gain=0.01)  # Orthogonal initialization
                 if module.bias is not None:
                     nn.init.constant_(module.bias, 0.0)
 
@@ -218,9 +218,9 @@ class PPOTrainer:
         self.model = ActorCriticNet(input_dim, hidden_dim, action_dim, device=device)
         self.model.load_model(self.model_save_path)
 
-        # Optimizer & LR scheduler: decay once per update_step
-        self.optimizer = optim.Adam(self.model.parameters(), lr=lr, eps=1e-5)
-        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=50, gamma=0.95)
+        # Optimizer & LR scheduler: decay once per update_step - reduced LR for stability
+        self.optimizer = optim.Adam(self.model.parameters(), lr=lr*0.3, eps=1e-5)  # Reduce LR by 70%
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=100, gamma=0.98)  # More gradual decay
 
         # Entropy coefficient for exploration: decay once per update_step
         self.entropy_coef = 0.05  # Higher initial exploration for better learning
@@ -355,9 +355,13 @@ class PPOTrainer:
           adv_t: torch.Tensor [T] on self.device
           ret_t: torch.Tensor [T] on self.device
         """
-        # Ensure inputs are finite
+        # Ensure inputs are finite and scale rewards to reasonable range
         rewards = np.nan_to_num(rewards, nan=0.0, posinf=1.0, neginf=-1.0)
+        rewards = np.clip(rewards, -10.0, 10.0)  # Clip rewards to prevent explosion
+        
         values = np.nan_to_num(values, nan=0.0, posinf=1.0, neginf=-1.0)
+        values = np.clip(values, -100.0, 100.0)  # Allow larger range for values
+        
         last_state = np.nan_to_num(last_state, nan=0.0, posinf=1.0, neginf=-1.0)
 
         rewards_t = torch.tensor(rewards, dtype=torch.float32, device=self.device)
@@ -370,7 +374,7 @@ class PPOTrainer:
             last_val_t = last_val_t.squeeze()
 
             # Clamp last value to prevent extreme values
-            last_val_t = torch.clamp(last_val_t, -10.0, 10.0)
+            last_val_t = torch.clamp(last_val_t, -100.0, 100.0)
 
         values_t = torch.cat([values_t, last_val_t[None]], dim=0)
 
@@ -383,11 +387,14 @@ class PPOTrainer:
             delta = rewards_t[t] + self.gamma * values_t[t + 1] * mask - values_t[t]
             gae = delta + self.gamma * self.gae_lambda * mask * gae
 
-            # Clamp GAE to prevent explosion
-            gae = torch.clamp(gae, -10.0, 10.0)
+            # Clamp GAE to prevent explosion but allow larger range
+            gae = torch.clamp(gae, -50.0, 50.0)
             advantages[t] = gae
 
         returns = advantages + values_t[:-1]
+        
+        # Clamp returns to reasonable range
+        returns = torch.clamp(returns, -100.0, 100.0)
 
         # More robust advantage normalization
         adv_mean = advantages.mean()
@@ -397,7 +404,7 @@ class PPOTrainer:
             advantages = (advantages - adv_mean) / (adv_std + 1e-8)
         else:
             # Fallback normalization
-            advantages = torch.clamp(advantages, -1.0, 1.0)
+            advantages = torch.clamp(advantages, -5.0, 5.0)
 
         return advantages, returns
 
@@ -493,18 +500,34 @@ class PPOTrainer:
                     clipped = torch.clamp(ratio, 1 - self.clip_epsilon, 1 + self.clip_epsilon)
                     policy_loss = -torch.min(ratio * b_adv, clipped * b_adv).mean()
 
-                    # value loss (clipped and weighted)
+                    # value loss (clipped and weighted) - with better scaling
                     value_pred = value_pred.squeeze()
                     with torch.no_grad():
                         old_vals = torch.tensor(vals, dtype=torch.float32, device=self.device)[idx]
+                    
+                    # Clamp predictions to reasonable range
+                    value_pred = torch.clamp(value_pred, -100.0, 100.0)
+                    old_vals = torch.clamp(old_vals, -100.0, 100.0)
+                    
                     v_clipped = old_vals + torch.clamp(
                         value_pred - old_vals,
                         -self.clip_epsilon, self.clip_epsilon
                     )
-                    value_loss = torch.max(
-                        (value_pred - b_ret) ** 2,
-                        (v_clipped - b_ret) ** 2
-                    ).mean()
+                    
+                    # Use Huber loss instead of MSE for more stable training
+                    def huber_loss(pred, target, delta=1.0):
+                        residual = torch.abs(pred - target)
+                        condition = residual <= delta
+                        small_res = 0.5 * residual ** 2
+                        large_res = delta * residual - 0.5 * delta ** 2
+                        return torch.where(condition, small_res, large_res)
+                    
+                    value_loss1 = huber_loss(value_pred, b_ret, delta=10.0)
+                    value_loss2 = huber_loss(v_clipped, b_ret, delta=10.0)
+                    value_loss = torch.max(value_loss1, value_loss2).mean()
+                    
+                    # Scale down value loss to be comparable to policy loss
+                    value_loss = value_loss * 0.5
 
                     loss = policy_loss + value_loss - self.entropy_coef * entropy
 
