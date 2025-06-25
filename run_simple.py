@@ -89,10 +89,17 @@ def main():
         mode = input("\nSelect mode (test/dev) [test]: ").lower() or 'test'
 
     try:
-        if mode == 'dev':
-            run_development()
-        else:
+        if mode == 'test':
+            print("🧪 Starting Test Mode...")
+            print("📊 Using minimal data for quick testing")
+            print("📈 Monitoring enabled - check ./logs/training_metrics.json for progress")
             run_quick_test()
+        elif mode == 'dev':
+            print("🔧 Starting Development Mode...")
+            print("📊 Using 10% of data for development")
+            print("📈 Monitoring enabled - check ./logs/training_metrics.json for progress")
+            print("⚠️  Training will auto-stop if performance stagnates to save compute")
+            run_development()
 
         print("\n✅ Training completed successfully!")
 
