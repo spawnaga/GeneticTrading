@@ -1,0 +1,95 @@
+It looks like you’re running into two related classes of errors:
+
+Device mismatch („Expected all tensors to be on the same device… cpu and cuda:0”)
+
+Tensor→NumPy conversion on GPU tensors („can’t convert cuda:0 device type tensor to numpy. Use Tensor.cpu()…”)
+
+Below are the minimal patches you need:
+
+1. Make sure every tensor lives on your target device
+Anywhere you create a raw tensor (e.g. via torch.tensor(...) or torch.from_numpy(...)), immediately call .to(self.device) (or .cuda()) so it doesn’t default to CPU. In your PPOTrainer:
+
+diff
+Copy
+Edit
+--- a/policy_gradient_methods.py
++++ b/policy_gradient_methods.py
+@@ class PPOTrainer:
+     def collect_trajectories(self):
+         …
+-        state = _unpack_reset(self.env.reset())
++        # always keep state on CPU as numpy; we’ll move it below
++        state = _unpack_reset(self.env.reset())
+
+         for step in trajectory_pbar:
+-            state_t = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
++            # make sure the input is on the same device as your model
++            state_t = torch.from_numpy(state).float().unsqueeze(0).to(self.device)
+             logits, value = self.model(state_t)
+             …
+-            next_state, reward, done, info = _unpack_step(self.env.step(action.item()))
++            next_state, reward, done, info = _unpack_step(self.env.step(action.item()))
+             …
+             if done:
+-                state = _unpack_reset(self.env.reset())
++                state = _unpack_reset(self.env.reset())
+And in compute_gae, any time you do
+
+python
+Copy
+Edit
+old_vals = torch.tensor(vals, dtype=torch.float32, device=self.device)[idx]
+you’re good, but if you ever see just torch.tensor(vals) or torch.from_numpy(obs) without .to(self.device), that’s a CPU tensor sneaking in.
+
+2. Always copy GPU tensors to CPU before calling .numpy()
+Search your entire repo for occurrences of .numpy( and change them like this:
+
+diff
+Copy
+Edit
+-   some_gpu_tensor.numpy()
++   some_gpu_tensor.detach().cpu().numpy()
+In particular you have things like:
+
+python
+Copy
+Edit
+rets.numpy()
+inside your trainer—replace with:
+
+python
+Copy
+Edit
+rets.detach().cpu().numpy()
+And if you’re doing
+
+python
+Copy
+Edit
+state = tensor.numpy()
+you must instead do
+
+python
+Copy
+Edit
+state = tensor.detach().cpu().numpy()
+Quick patch summary
+You can do a project-wide search-and-replace:
+
+bash
+Copy
+Edit
+# 1) Device‐annotated tensor creation:
+#    - replace `torch.tensor(` → `torch.tensor(..., device=self.device)`
+#    - replace `torch.from_numpy(` → `torch.from_numpy(...).to(self.device)`
+
+# 2) NumPy conversion on GPU:
+grep -R ".numpy()" -n policy_gradient_methods.py | cut -d: -f1 | uniq \
+  | xargs -I{} sed -i "s/\.numpy(/.detach().cpu().numpy(/g" {}
+After those changes:
+
+All of your model’s inputs, parameters and intermediate tensors will live on cuda:0.
+
+Any time you need a NumPy array, you’ll explicitly copy it back to CPU first, avoiding the “can’t convert cuda:0 tensor” crash.
+
+Give that a try, and let me know if you still hit any device‐mismatch or .numpy() errors!
