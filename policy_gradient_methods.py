@@ -938,6 +938,57 @@ class PPOTrainer:
         }
         return metrics
 
+    def update_trading_metrics(self, episode_profit, current_account_value):
+        """Update trading metrics for the current episode."""
+        self.trading_days += 1
+        
+        # Calculate daily profit/loss
+        daily_pnl = current_account_value - self.last_account_value
+        if daily_pnl > 0:
+            self.daily_profits.append(daily_pnl)
+            self.daily_losses.append(0)
+        else:
+            self.daily_profits.append(0)
+            self.daily_losses.append(abs(daily_pnl))
+        
+        # Update account value tracking
+        self.account_values.append(current_account_value)
+        self.last_account_value = current_account_value
+        
+        # Update peak and drawdown
+        if current_account_value > self.peak_account_value:
+            self.peak_account_value = current_account_value
+        
+        current_drawdown = (self.peak_account_value - current_account_value) / self.peak_account_value * 100
+        self.drawdown_history.append(current_drawdown)
+        
+        # Calculate cumulative profits
+        self.cumulative_profits.append(episode_profit)
+        
+        # Calculate daily returns for Sharpe ratio
+        if len(self.account_values) > 1:
+            daily_return = (current_account_value - self.account_values[-2]) / self.account_values[-2]
+            self.daily_returns.append(daily_return)
+            
+            # Calculate rolling Sharpe ratio (last 30 days)
+            if len(self.daily_returns) >= 30:
+                recent_returns = self.daily_returns[-30:]
+                avg_return = np.mean(recent_returns)
+                std_return = np.std(recent_returns)
+                if std_return > 0:
+                    sharpe = (avg_return / std_return) * np.sqrt(252)  # Annualized
+                    self.sharpe_history.append(sharpe)
+                
+                # Calculate CAGR (annualized)
+                if len(self.account_values) >= 252:  # At least 1 year of data
+                    start_value = self.account_values[-252]
+                    end_value = current_account_value
+                    cagr = ((end_value / start_value) ** (252/252) - 1) * 100
+                    self.cagr_history.append(cagr)
+        
+        # Log trading metrics to TensorBoard
+        self._log_trading_performance_metrics()
+
     def _log_trading_performance_metrics(self):
         """Log trading performance metrics to TensorBoard."""
         if not self.account_values:
