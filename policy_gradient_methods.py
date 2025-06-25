@@ -262,13 +262,17 @@ class PPOTrainer:
 
         state = _unpack_reset(self.env.reset())
 
-        # Add progress bar for trajectory collection
-        trajectory_pbar = tqdm(range(self.rollout_steps), 
-                              desc="Collecting trajectories", 
-                              leave=False, 
-                              disable=(self.local_rank != 0))
+        # Add progress bar for trajectory collection (only for rank 0, less verbose)
+        if self.local_rank == 0:
+            trajectory_pbar = tqdm(range(self.rollout_steps), 
+                                  desc="Collecting trajectories", 
+                                  leave=False, 
+                                  position=0,
+                                  ncols=80)
+        else:
+            trajectory_pbar = range(self.rollout_steps)
 
-        for step in trajectory_pbar:
+        for step in (trajectory_pbar if self.local_rank == 0 else range(self.rollout_steps)):
             # Ensure state is not empty and has proper shape
             if len(state) == 0:
                 # Create a dummy observation if state is empty
@@ -326,14 +330,15 @@ class PPOTrainer:
                 if len(state) == 0:
                     state = np.zeros(self.env.observation_space.shape, dtype=np.float32)
 
-            # Update progress bar with current metrics
-            if step % 100 == 0:
+            # Update progress bar with current metrics (less frequently)
+            if self.local_rank == 0 and step % 200 == 0 and isinstance(trajectory_pbar, tqdm):
                 trajectory_pbar.set_postfix({
-                    'avg_reward': f"{np.mean(rew_buf[-100:]):.4f}" if rew_buf else "0.0000",
-                    'episode_done': sum(done_buf[-100:]) if done_buf else 0
+                    'avg_rew': f"{np.mean(rew_buf[-100:]):.3f}" if rew_buf else "0.000",
+                    'episodes': sum(done_buf[-100:]) if done_buf else 0
                 })
 
-        trajectory_pbar.close()
+        if self.local_rank == 0 and isinstance(trajectory_pbar, tqdm):
+            trajectory_pbar.close()
         return (
             np.array(obs_buf, dtype=np.float32),
             np.array(act_buf, dtype=np.int64),
@@ -397,19 +402,18 @@ class PPOTrainer:
         # Clamp returns to reasonable range
         returns = torch.clamp(returns, -100.0, 100.0)
 
-        # More robust advantage normalization with outlier handling
+        # More conservative advantage normalization
+        advantages = torch.clamp(advantages, -10.0, 10.0)  # First clamp raw advantages
+        
         adv_mean = advantages.mean()
         adv_std = advantages.std(unbiased=False)
-
-        # Remove outliers before normalization
-        advantages = torch.clamp(advantages, -20.0, 20.0)
         
-        if torch.isfinite(adv_mean) and torch.isfinite(adv_std) and adv_std > 1e-6:
-            advantages = (advantages - adv_mean) / (adv_std + 1e-6)
-            # Clamp normalized advantages to prevent extreme values
-            advantages = torch.clamp(advantages, -2.0, 2.0)
+        if torch.isfinite(adv_mean) and torch.isfinite(adv_std) and adv_std > 1e-8:
+            advantages = (advantages - adv_mean) / (adv_std + 1e-8)
+            # Much more conservative clamping after normalization
+            advantages = torch.clamp(advantages, -3.0, 3.0)
         else:
-            # Fallback: just clamp to reasonable range
+            # Fallback: very conservative range
             advantages = torch.clamp(advantages, -1.0, 1.0)
 
         return advantages, returns
@@ -467,23 +471,23 @@ class PPOTrainer:
 
             dataset_size = len(obs)
 
-            # Progress bar for PPO update epochs
-            epoch_pbar = tqdm(range(self.update_epochs), 
-                             desc="PPO Update Epochs", 
-                             leave=False, 
-                             disable=(self.local_rank != 0))
+            # Simplified progress bar for PPO update epochs (only show epoch progress)
+            if self.local_rank == 0:
+                epoch_pbar = tqdm(range(self.update_epochs), 
+                                 desc="PPO Epochs", 
+                                 leave=False, 
+                                 position=1,
+                                 ncols=80)
+            else:
+                epoch_pbar = range(self.update_epochs)
 
-            for epoch in epoch_pbar:
+            for epoch in (epoch_pbar if self.local_rank == 0 else range(self.update_epochs)):
                 perm = torch.randperm(dataset_size, device=self.device)
 
-                # Progress bar for batch processing within each epoch
+                # Process batches without individual progress bars to reduce clutter
                 batch_starts = list(range(0, dataset_size, self.batch_size))
-                batch_pbar = tqdm(batch_starts, 
-                                 desc=f"Epoch {epoch+1} Batches", 
-                                 leave=False, 
-                                 disable=(self.local_rank != 0))
 
-                for start in batch_pbar:
+                for batch_idx, start in enumerate(batch_starts):
                     idx = perm[start:start + self.batch_size]
                     b_obs, b_acts = obs_t[idx], acts_t[idx]
                     b_oldlp, b_adv = oldlp_t[idx], adv_t[idx]
@@ -506,30 +510,30 @@ class PPOTrainer:
                     clipped = torch.clamp(ratio, 1 - self.clip_epsilon, 1 + self.clip_epsilon)
                     policy_loss = -torch.min(ratio * b_adv, clipped * b_adv).mean()
 
-                    # value loss (clipped and weighted) - with proper scaling
+                    # value loss (clipped and weighted) - with better scaling
                     value_pred = value_pred.squeeze()
                     with torch.no_grad():
                         old_vals = torch.tensor(vals, dtype=torch.float32, device=self.device)[idx]
                     
-                    # Normalize returns for better value learning
-                    b_ret_normalized = (b_ret - b_ret.mean()) / (b_ret.std() + 1e-8)
+                    # Use raw returns but scale them appropriately
+                    returns_scaled = b_ret * 0.1  # Scale down returns to reasonable range
                     
                     # Clamp predictions to reasonable range
-                    value_pred = torch.clamp(value_pred, -10.0, 10.0)
-                    old_vals = torch.clamp(old_vals, -10.0, 10.0)
+                    value_pred = torch.clamp(value_pred, -5.0, 5.0)
+                    old_vals = torch.clamp(old_vals, -5.0, 5.0)
                     
                     v_clipped = old_vals + torch.clamp(
                         value_pred - old_vals,
                         -self.clip_epsilon, self.clip_epsilon
                     )
                     
-                    # Use MSE loss with proper scaling
-                    value_loss1 = F.mse_loss(value_pred, b_ret_normalized)
-                    value_loss2 = F.mse_loss(v_clipped, b_ret_normalized)
+                    # Use MSE loss with much better scaling
+                    value_loss1 = F.mse_loss(value_pred, returns_scaled)
+                    value_loss2 = F.mse_loss(v_clipped, returns_scaled)
                     value_loss = torch.max(value_loss1, value_loss2)
                     
-                    # Scale down value loss significantly to be comparable to policy loss
-                    value_loss = value_loss * 0.1
+                    # Scale value loss to be comparable to policy loss (much smaller coefficient)
+                    value_loss = value_loss * 0.01
 
                     loss = policy_loss + value_loss - self.entropy_coef * entropy
 
@@ -591,23 +595,20 @@ class PPOTrainer:
                     value_losses.append(value_loss.item())
                     entropies.append(entropy.item())
 
-                    # Update batch progress bar
-                    batch_pbar.set_postfix({
-                        'policy_loss': f"{policy_loss.item():.4f}",
-                        'value_loss': f"{value_loss.item():.4f}",
-                        'entropy': f"{entropy.item():.4f}"
+                # Update epoch progress bar with summary metrics
+                if self.local_rank == 0 and isinstance(epoch_pbar, tqdm):
+                    recent_policy_loss = np.mean(policy_losses[-len(batch_starts):]) if policy_losses else 0.0
+                    recent_value_loss = np.mean(value_losses[-len(batch_starts):]) if value_losses else 0.0
+                    recent_kl = np.mean(kl_divergences[-len(batch_starts):]) if kl_divergences else 0.0
+                    
+                    epoch_pbar.set_postfix({
+                        'p_loss': f"{recent_policy_loss:.3f}",
+                        'v_loss': f"{recent_value_loss:.3f}",
+                        'kl': f"{recent_kl:.4f}"
                     })
 
-                batch_pbar.close()
-
-                # Update epoch progress bar
-                epoch_pbar.set_postfix({
-                    'avg_policy_loss': f"{np.mean(policy_losses[-len(batch_starts):]):.4f}",
-                    'avg_value_loss': f"{np.mean(value_losses[-len(batch_starts):]):.4f}",
-                    'kl_div': f"{np.mean(kl_divergences[-len(batch_starts):]):.4f}"
-                })
-
-            epoch_pbar.close()
+            if self.local_rank == 0 and isinstance(epoch_pbar, tqdm):
+                epoch_pbar.close()
 
             # Store loss trends
             self.loss_trends.extend(policy_losses)
