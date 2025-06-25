@@ -161,7 +161,7 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
     if len(cumulative_profits) > 0:
         # Use a more reasonable starting capital estimation
         profit_magnitude = np.percentile(np.abs(profits), 95)  # 95th percentile for outlier resistance
-        
+
         # Estimate starting capital based on profit scale and typical risk management
         if profit_magnitude > 10000:
             starting_capital = 1000000.0  # Large institutional scale
@@ -173,10 +173,10 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
             starting_capital = 10000.0    # Very small account
         else:
             starting_capital = 5000.0     # Micro account
-        
+
         total_pnl = cumulative_profits[-1]
         ending_capital = starting_capital + total_pnl
-        
+
         # Only calculate CAGR if we have sufficient time period and positive ending capital
         if years >= (30/365.25) and ending_capital > 0:  # At least 30 days of data
             total_return = ending_capital / starting_capital
@@ -201,28 +201,28 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
     if len(profits) > 5:
         # Clean profits of any remaining invalid values
         valid_profits = profits[np.isfinite(profits)]
-        
+
         if len(valid_profits) >= 5:
             mean_profit = np.mean(valid_profits)
             std_profit = np.std(valid_profits, ddof=1)
-            
+
             if std_profit > 0:
                 # Estimate periods per year more accurately
                 periods_per_year = len(valid_profits) / max(years, 1/252)  # Minimum 1 trading day
-                
+
                 # Apply risk-free rate (approximate 2% annually for recent years)
                 risk_free_rate_annual = 0.02
                 risk_free_per_period = risk_free_rate_annual / periods_per_year
-                
+
                 # Calculate excess return
                 excess_return = mean_profit - risk_free_per_period
-                
+
                 # Period Sharpe ratio
                 sharpe_period = excess_return / std_profit
-                
+
                 # Annualize using square root of time rule
                 sharpe = sharpe_period * np.sqrt(periods_per_year)
-                
+
                 # Apply realistic bounds for trading Sharpe ratios
                 # Professional traders rarely exceed 3.0, and -2.0 is quite poor
                 sharpe = np.clip(sharpe, -3.0, 4.0)
@@ -246,21 +246,21 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
             initial_capital = 50000.0
         else:
             initial_capital = 10000.0
-            
+
         equity_curve = initial_capital + cumulative_profits
-        
+
         # Calculate running maximum (peak equity)
         running_max = np.maximum.accumulate(equity_curve)
-        
+
         # Calculate drawdowns as absolute dollar amounts
         dollar_drawdowns = running_max - equity_curve
-        
+
         # Convert to percentage drawdowns
         drawdowns = np.where(running_max > 0, (dollar_drawdowns / running_max) * 100, 0)
-        
+
         # Maximum drawdown is the largest percentage drop from peak
         mdd = np.max(drawdowns) if len(drawdowns) > 0 else 0.0
-        
+
         # Additional check: if there are losses, ensure MDD is not zero
         if mdd == 0.0 and np.any(profits < 0):
             # Calculate MDD from consecutive losses
@@ -275,11 +275,11 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
                     current_loss = 0
             if current_loss < 0:
                 consecutive_losses.append(abs(current_loss))
-                
+
             if consecutive_losses:
                 max_loss = max(consecutive_losses)
                 mdd = min((max_loss / initial_capital) * 100, 100.0)
-        
+
         # Handle edge cases
         if np.isnan(mdd) or np.isinf(mdd) or mdd == 0.0:
             # Ensure MDD reflects actual risk
@@ -295,7 +295,7 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
                     mdd = min((profit_volatility * 2 / initial_capital) * 100, 5.0)
             else:
                 mdd = 0.0
-                
+
         mdd = np.clip(mdd, 0.0, 100.0)
     else:
         mdd = 0.0
@@ -794,3 +794,60 @@ def process_live_row(bar: dict, history: dict, scaler, segment_dict: dict) -> "c
     numeric_cols = ["Open","High","Low","Close","Volume","return","ma_10"]
     df_live[numeric_cols] = scaler.transform(df_live[numeric_cols])
     return df_live
+
+def hash_files(file_paths):
+    """Create a hash of file paths and their modification times for caching."""
+    hasher = hashlib.sha256()
+    for fp in sorted(file_paths):
+        hasher.update(fp.encode())
+        if os.path.exists(fp):
+            hasher.update(str(os.path.getmtime(fp)).encode())
+    return hasher.hexdigest()
+
+
+def validate_data_integrity(df, logger=None):
+    """
+    Comprehensive data validation to ensure no null, infinite, or invalid values.
+    """
+    if logger is None:
+        import logging
+        logger = logging.getLogger(__name__)
+
+    logger.info("Starting comprehensive data integrity validation...")
+
+    # Check for null values
+    if hasattr(df, 'isnull'):
+        null_counts = df.isnull().sum()
+    else:
+        null_counts = df.isna().sum()
+
+    total_nulls = null_counts.sum()
+    if total_nulls > 0:
+        logger.error(f"Found {total_nulls} null values in data!")
+        logger.error("Null counts by column:")
+        for col, count in null_counts.items():
+            if count > 0:
+                logger.error(f"  {col}: {count} nulls")
+        return False
+
+    # Check for infinite values
+    import numpy as np
+    for col in df.select_dtypes(include=[np.number]).columns:
+        if hasattr(df[col], 'to_pandas'):
+            # cuDF case
+            col_data = df[col].to_pandas()
+        else:
+            col_data = df[col]
+
+        inf_count = np.isinf(col_data).sum()
+        if inf_count > 0:
+            logger.error(f"Found {inf_count} infinite values in column {col}")
+            return False
+
+    # Check for empty data
+    if len(df) == 0:
+        logger.error("DataFrame is empty!")
+        return False
+
+    logger.info(f"Data integrity validation passed: {len(df)} rows, {len(df.columns)} columns")
+    return True
