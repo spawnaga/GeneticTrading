@@ -27,6 +27,7 @@ from tqdm import trange, tqdm
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Categorical
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -218,12 +219,12 @@ class PPOTrainer:
         self.model = ActorCriticNet(input_dim, hidden_dim, action_dim, device=device)
         self.model.load_model(self.model_save_path)
 
-        # Optimizer & LR scheduler: decay once per update_step - reduced LR for stability
-        self.optimizer = optim.Adam(self.model.parameters(), lr=lr*0.3, eps=1e-5)  # Reduce LR by 70%
-        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=100, gamma=0.98)  # More gradual decay
+        # Optimizer & LR scheduler: much more conservative for stability
+        self.optimizer = optim.Adam(self.model.parameters(), lr=lr*0.1, eps=1e-8)  # Reduce LR by 90%
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=200, gamma=0.995)  # Very gradual decay
 
-        # Entropy coefficient for exploration: decay once per update_step
-        self.entropy_coef = 0.05  # Higher initial exploration for better learning
+        # Entropy coefficient for exploration: more conservative
+        self.entropy_coef = 0.02  # Lower initial exploration for more stable learning
 
         # Enhanced tracking for visualization
         self.action_distribution_history = deque(maxlen=100)
@@ -396,15 +397,20 @@ class PPOTrainer:
         # Clamp returns to reasonable range
         returns = torch.clamp(returns, -100.0, 100.0)
 
-        # More robust advantage normalization
+        # More robust advantage normalization with outlier handling
         adv_mean = advantages.mean()
         adv_std = advantages.std(unbiased=False)
 
-        if torch.isfinite(adv_mean) and torch.isfinite(adv_std) and adv_std > 1e-8:
-            advantages = (advantages - adv_mean) / (adv_std + 1e-8)
+        # Remove outliers before normalization
+        advantages = torch.clamp(advantages, -20.0, 20.0)
+        
+        if torch.isfinite(adv_mean) and torch.isfinite(adv_std) and adv_std > 1e-6:
+            advantages = (advantages - adv_mean) / (adv_std + 1e-6)
+            # Clamp normalized advantages to prevent extreme values
+            advantages = torch.clamp(advantages, -2.0, 2.0)
         else:
-            # Fallback normalization
-            advantages = torch.clamp(advantages, -5.0, 5.0)
+            # Fallback: just clamp to reasonable range
+            advantages = torch.clamp(advantages, -1.0, 1.0)
 
         return advantages, returns
 
@@ -500,34 +506,30 @@ class PPOTrainer:
                     clipped = torch.clamp(ratio, 1 - self.clip_epsilon, 1 + self.clip_epsilon)
                     policy_loss = -torch.min(ratio * b_adv, clipped * b_adv).mean()
 
-                    # value loss (clipped and weighted) - with better scaling
+                    # value loss (clipped and weighted) - with proper scaling
                     value_pred = value_pred.squeeze()
                     with torch.no_grad():
                         old_vals = torch.tensor(vals, dtype=torch.float32, device=self.device)[idx]
                     
+                    # Normalize returns for better value learning
+                    b_ret_normalized = (b_ret - b_ret.mean()) / (b_ret.std() + 1e-8)
+                    
                     # Clamp predictions to reasonable range
-                    value_pred = torch.clamp(value_pred, -100.0, 100.0)
-                    old_vals = torch.clamp(old_vals, -100.0, 100.0)
+                    value_pred = torch.clamp(value_pred, -10.0, 10.0)
+                    old_vals = torch.clamp(old_vals, -10.0, 10.0)
                     
                     v_clipped = old_vals + torch.clamp(
                         value_pred - old_vals,
                         -self.clip_epsilon, self.clip_epsilon
                     )
                     
-                    # Use Huber loss instead of MSE for more stable training
-                    def huber_loss(pred, target, delta=1.0):
-                        residual = torch.abs(pred - target)
-                        condition = residual <= delta
-                        small_res = 0.5 * residual ** 2
-                        large_res = delta * residual - 0.5 * delta ** 2
-                        return torch.where(condition, small_res, large_res)
+                    # Use MSE loss with proper scaling
+                    value_loss1 = F.mse_loss(value_pred, b_ret_normalized)
+                    value_loss2 = F.mse_loss(v_clipped, b_ret_normalized)
+                    value_loss = torch.max(value_loss1, value_loss2)
                     
-                    value_loss1 = huber_loss(value_pred, b_ret, delta=10.0)
-                    value_loss2 = huber_loss(v_clipped, b_ret, delta=10.0)
-                    value_loss = torch.max(value_loss1, value_loss2).mean()
-                    
-                    # Scale down value loss to be comparable to policy loss
-                    value_loss = value_loss * 0.5
+                    # Scale down value loss significantly to be comparable to policy loss
+                    value_loss = value_loss * 0.1
 
                     loss = policy_loss + value_loss - self.entropy_coef * entropy
 
@@ -544,8 +546,8 @@ class PPOTrainer:
                     self.optimizer.zero_grad()
                     loss.backward()
 
-                    # Calculate gradient norm with better clipping
-                    grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.5)
+                    # Calculate gradient norm with more conservative clipping
+                    grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.2)
 
                     # Check for NaN gradients
                     has_nan_grad = False
@@ -650,9 +652,9 @@ class PPOTrainer:
                 self._create_advanced_visualizations()
 
             # decay LR & entropy once per train_step
-            if getattr(self, "current_update", 0) % 50 == 0:
+            if getattr(self, "current_update", 0) % 100 == 0:
                 self.scheduler.step()
-            self.entropy_coef = max(0.001, self.entropy_coef * 0.9995)  # Slower decay with minimum
+            self.entropy_coef = max(0.005, self.entropy_coef * 0.9998)  # Much slower decay with higher minimum
 
             # rollout reward: total sum of step rewards
             total_reward = float(rews.sum())
