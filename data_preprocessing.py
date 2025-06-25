@@ -426,12 +426,29 @@ def create_environment_data(
 
             # Fit scaler on first chunk, transform on subsequent chunks
             if scaler is None:
-                _, _, scaler = scale_and_split_gpu(chunk, test_size=0, random_state=42)
+                # Just fit the scaler without splitting (we'll split later)
                 numeric_cols = ["Open","High","Low","Close","Volume","return","ma_10"]
-                chunk[numeric_cols] = scaler.transform(chunk[numeric_cols])
+                chunk = chunk.dropna(subset=numeric_cols).reset_index(drop=True)
+                
+                raw_cols = ["Open", "High", "Low", "Close", "Volume"]
+                for col in raw_cols:
+                    chunk[f"{col}_raw"] = chunk[col].astype("float64")
+                
+                X = chunk[numeric_cols]
+                scaler = CuStandardScaler()
+                X_scaled = scaler.fit_transform(X)
+                chunk[numeric_cols] = X_scaled
             else:
                 numeric_cols = ["Open","High","Low","Close","Volume","return","ma_10"]
-                chunk[numeric_cols] = scaler.transform(chunk[numeric_cols])
+                chunk = chunk.dropna(subset=numeric_cols).reset_index(drop=True)
+                
+                raw_cols = ["Open", "High", "Low", "Close", "Volume"]
+                for col in raw_cols:
+                    chunk[f"{col}_raw"] = chunk[col].astype("float64")
+                
+                X = chunk[numeric_cols]
+                X_scaled = scaler.transform(X)
+                chunk[numeric_cols] = X_scaled
 
             processed_chunks.append(chunk)
 
