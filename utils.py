@@ -163,14 +163,16 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
         profit_magnitude = np.percentile(np.abs(profits), 95)  # 95th percentile for outlier resistance
         
         # Estimate starting capital based on profit scale and typical risk management
-        if profit_magnitude > 500:
-            starting_capital = 100000.0  # Large institutional scale
-        elif profit_magnitude > 50:
-            starting_capital = 50000.0   # Professional trader scale
-        elif profit_magnitude > 5:
-            starting_capital = 10000.0   # Small account scale
+        if profit_magnitude > 10000:
+            starting_capital = 1000000.0  # Large institutional scale
+        elif profit_magnitude > 1000:
+            starting_capital = 100000.0   # Professional trader scale  
+        elif profit_magnitude > 100:
+            starting_capital = 50000.0    # Small account scale
+        elif profit_magnitude > 10:
+            starting_capital = 10000.0    # Very small account
         else:
-            starting_capital = 5000.0    # Very small account
+            starting_capital = 5000.0     # Micro account
         
         total_pnl = cumulative_profits[-1]
         ending_capital = starting_capital + total_pnl
@@ -234,30 +236,63 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
     # Maximum drawdown calculation from cumulative profits
     cumulative_profits = np.cumsum(profits)
     if len(cumulative_profits) > 0:
-        # Start with an initial capital base for realistic drawdown calculation
-        initial_capital = 100000.0  # Assume $100k starting capital
+        # Use realistic starting capital based on profit scale
+        profit_scale = np.max(np.abs(cumulative_profits))
+        if profit_scale > 50000:
+            initial_capital = 500000.0
+        elif profit_scale > 10000:
+            initial_capital = 100000.0
+        elif profit_scale > 1000:
+            initial_capital = 50000.0
+        else:
+            initial_capital = 10000.0
+            
         equity_curve = initial_capital + cumulative_profits
         
         # Calculate running maximum (peak equity)
         running_max = np.maximum.accumulate(equity_curve)
         
-        # Calculate drawdowns as percentage from peak
-        drawdowns = (running_max - equity_curve) / running_max * 100
+        # Calculate drawdowns as absolute dollar amounts
+        dollar_drawdowns = running_max - equity_curve
+        
+        # Convert to percentage drawdowns
+        drawdowns = np.where(running_max > 0, (dollar_drawdowns / running_max) * 100, 0)
         
         # Maximum drawdown is the largest percentage drop from peak
         mdd = np.max(drawdowns) if len(drawdowns) > 0 else 0.0
         
-        # Handle edge cases
-        if np.isnan(mdd) or np.isinf(mdd):
-            # Fallback calculation using profit volatility
-            if len(profits) > 1:
-                profit_std = np.std(profits)
-                profit_mean = np.mean(profits)
-                if profit_std > 0:
-                    # Estimate drawdown as multiple of volatility
-                    mdd = min(abs(profit_mean - 2 * profit_std) / initial_capital * 100, 100.0)
+        # Additional check: if there are losses, ensure MDD is not zero
+        if mdd == 0.0 and np.any(profits < 0):
+            # Calculate MDD from consecutive losses
+            consecutive_losses = []
+            current_loss = 0
+            for profit in profits:
+                if profit < 0:
+                    current_loss += profit
                 else:
-                    mdd = 0.0
+                    if current_loss < 0:
+                        consecutive_losses.append(abs(current_loss))
+                    current_loss = 0
+            if current_loss < 0:
+                consecutive_losses.append(abs(current_loss))
+                
+            if consecutive_losses:
+                max_loss = max(consecutive_losses)
+                mdd = min((max_loss / initial_capital) * 100, 100.0)
+        
+        # Handle edge cases
+        if np.isnan(mdd) or np.isinf(mdd) or mdd == 0.0:
+            # Ensure MDD reflects actual risk
+            if len(profits) > 1:
+                negative_profits = profits[profits < 0]
+                if len(negative_profits) > 0:
+                    # Use worst single loss as baseline MDD
+                    worst_loss = abs(np.min(negative_profits))
+                    mdd = min((worst_loss / initial_capital) * 100, 50.0)
+                else:
+                    # Even with all profits, assume some risk
+                    profit_volatility = np.std(profits)
+                    mdd = min((profit_volatility * 2 / initial_capital) * 100, 5.0)
             else:
                 mdd = 0.0
                 

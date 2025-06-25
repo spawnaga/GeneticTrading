@@ -326,8 +326,14 @@ def main():
 
     # Handle large dataset optimization
     max_rows = args.max_rows if args.max_rows > 0 else None
-    if max_rows and args.data_percentage < 1.0:
+    
+    # Log actual parameters being used
+    logging.info(f"Data loading parameters: max_rows={max_rows}, data_percentage={args.data_percentage}")
+    
+    # Only apply percentage if max_rows is set
+    if max_rows and max_rows > 0 and args.data_percentage < 1.0:
         max_rows = int(max_rows * args.data_percentage)
+        logging.info(f"Adjusted max_rows to {max_rows} based on data_percentage")
     
     # Intelligent chunk sizing based on data size
     if max_rows:
