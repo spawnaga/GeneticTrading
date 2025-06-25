@@ -262,15 +262,7 @@ class PPOTrainer:
 
         state = _unpack_reset(self.env.reset())
 
-        # Simplified trajectory collection - only show progress every 100 steps
-        if self.local_rank == 0:
-            trajectory_pbar = tqdm(range(self.rollout_steps), 
-                                  desc="Collecting trajectories", 
-                                  leave=False, 
-                                  position=0,
-                                  ncols=100,
-                                  disable=False)
-        
+        # Simple trajectory collection without frequent progress updates
         for step in range(self.rollout_steps):
             # Ensure state is not empty and has proper shape
             if len(state) == 0:
@@ -329,19 +321,11 @@ class PPOTrainer:
                 if len(state) == 0:
                     state = np.zeros(self.env.observation_space.shape, dtype=np.float32)
 
-            # Update progress bar less frequently to reduce output clutter
-            if self.local_rank == 0 and step % 200 == 0:
-                trajectory_pbar.set_postfix({
-                    'avg_rew': f"{np.mean(rew_buf[-100:]):.3f}" if rew_buf else "0.000",
-                    'episodes': sum(done_buf[-100:]) if done_buf else 0
-                })
-            
-            # Update progress bar
-            if self.local_rank == 0:
-                trajectory_pbar.update(1)
-
-        if self.local_rank == 0:
-            trajectory_pbar.close()
+            # Log progress occasionally without progress bar
+            if self.local_rank == 0 and step > 0 and step % 500 == 0:
+                avg_reward = np.mean(rew_buf[-100:]) if len(rew_buf) >= 100 else np.mean(rew_buf) if rew_buf else 0.0
+                episodes = sum(done_buf[-100:]) if len(done_buf) >= 100 else sum(done_buf) if done_buf else 0
+                logger.info(f"Trajectory collection: {step}/{self.rollout_steps} steps, avg_reward={avg_reward:.3f}, episodes={episodes}")
         return (
             np.array(obs_buf, dtype=np.float32),
             np.array(act_buf, dtype=np.int64),
@@ -474,16 +458,8 @@ class PPOTrainer:
 
             dataset_size = len(obs)
 
-            # Single progress bar for all epochs combined to prevent clutter
+            # Track progress without frequent updates
             total_batches = self.update_epochs * len(list(range(0, dataset_size, self.batch_size)))
-            if self.local_rank == 0:
-                ppo_pbar = tqdm(total=total_batches, 
-                               desc="PPO Training", 
-                               leave=False, 
-                               position=0,
-                               ncols=100,
-                               unit="batch")
-            
             batch_counter = 0
             for epoch in range(self.update_epochs):
                 perm = torch.randperm(dataset_size, device=self.device)
@@ -599,24 +575,16 @@ class PPOTrainer:
                     value_losses.append(value_loss.item())
                     entropies.append(entropy.item())
 
-                    # Update single progress bar for each batch
-                    if self.local_rank == 0:
-                        batch_counter += 1
+                    batch_counter += 1
+                    
+                    # Log progress occasionally
+                    if self.local_rank == 0 and batch_counter % 50 == 0:
                         recent_policy_loss = np.mean(policy_losses[-10:]) if len(policy_losses) >= 10 else np.mean(policy_losses) if policy_losses else 0.0
                         recent_value_loss = np.mean(value_losses[-10:]) if len(value_losses) >= 10 else np.mean(value_losses) if value_losses else 0.0
                         recent_kl = np.mean(kl_divergences[-10:]) if len(kl_divergences) >= 10 else np.mean(kl_divergences) if kl_divergences else 0.0
                         
-                        ppo_pbar.set_postfix({
-                            'epoch': f"{epoch+1}/{self.update_epochs}",
-                            'p_loss': f"{recent_policy_loss:.3f}",
-                            'v_loss': f"{recent_value_loss:.3f}",
-                            'kl': f"{recent_kl:.4f}"
-                        })
-                        ppo_pbar.update(1)
-
-            # Close progress bar after all epochs
-            if self.local_rank == 0:
-                ppo_pbar.close()
+                        logger.info(f"PPO training: epoch {epoch+1}/{self.update_epochs}, batch {batch_counter}/{total_batches}, "
+                                   f"p_loss={recent_policy_loss:.3f}, v_loss={recent_value_loss:.3f}, kl={recent_kl:.4f}")
 
             # Store loss trends
             self.loss_trends.extend(policy_losses)
@@ -740,7 +708,8 @@ class PPOTrainer:
             logger.warning("No evaluation environment provided; skipping eval logs")
 
         if self.local_rank == 0:
-            pbar = trange(start_update, n_updates, desc="PPO updates")
+            pbar = trange(start_update, n_updates, desc="PPO Training Iterations", 
+                         ncols=120, leave=True, position=0)
         else:
             pbar = range(start_update, n_updates)
 
@@ -749,7 +718,16 @@ class PPOTrainer:
             mean_reward = self.train_step()
 
             if self.local_rank == 0:
-                pbar.set_postfix(total_reward=f"{mean_reward:.4f}")
+                # Calculate additional metrics for better progress display
+                lr = self.optimizer.param_groups[0]["lr"]
+                entropy_coef = getattr(self, 'entropy_coef', 0.0)
+                
+                pbar.set_postfix({
+                    'reward': f"{mean_reward:.3f}",
+                    'lr': f"{lr:.2e}",
+                    'entropy': f"{entropy_coef:.3f}",
+                    'step': f"{update+1}/{n_updates}"
+                })
 
             elapsed = time.time() - start_time
             self.tb_writer.add_scalar("PPO/ElapsedSeconds", elapsed, update)
