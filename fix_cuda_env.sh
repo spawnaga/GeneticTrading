@@ -11,12 +11,18 @@ fi
 # Check NVIDIA driver
 echo "📋 Checking NVIDIA driver..."
 if command -v nvidia-smi &> /dev/null; then
-    nvidia-smi
-    echo "✅ NVIDIA driver found"
+    echo "Running nvidia-smi..."
+    if nvidia-smi &> /dev/null; then
+        nvidia-smi
+        echo "✅ NVIDIA driver found and working"
+    else
+        echo "❌ NVIDIA driver found but not working properly"
+        echo "This might be due to permission issues or driver problems"
+    fi
 else
-    echo "❌ NVIDIA driver not found or not working"
-    echo "Please install NVIDIA drivers first"
-    exit 1
+    echo "❌ nvidia-smi command not found"
+    echo "NVIDIA drivers may not be installed or not in PATH"
+    echo "Continuing with CPU-only setup..."
 fi
 
 # Find CUDA libraries
@@ -71,11 +77,33 @@ EOF
 
 chmod +x setup_cuda_env.sh
 
+# Create CPU-only setup script as well
+echo "📝 Creating CPU-only environment setup script..."
+cat > setup_cpu_env.sh << EOF
+#!/bin/bash
+# CPU-Only Environment Setup Script
+# Run this for CPU-only training: source setup_cpu_env.sh
+
+export CUDA_VISIBLE_DEVICES=""
+export CUDF_BACKEND="cpu"
+export RAPIDS_NO_INITIALIZE="1"
+export OMP_NUM_THREADS=4
+export MKL_NUM_THREADS=4
+
+echo "✅ CPU-only environment configured"
+echo "CUDA disabled for CPU-only training"
+EOF
+
+chmod +x setup_cpu_env.sh
+
 echo "✅ Created setup_cuda_env.sh"
+echo "✅ Created setup_cpu_env.sh"
 echo ""
 echo "🚀 Next steps:"
+echo "For GPU training:"
 echo "1. Run: source setup_cuda_env.sh"
 echo "2. Run: python run_4gpu_1000rows.py"
 echo ""
-echo "If you still get CUDA errors, try running in CPU mode by setting:"
-echo "export CUDA_VISIBLE_DEVICES=\"\""
+echo "For CPU-only training:"
+echo "1. Run: source setup_cpu_env.sh"  
+echo "2. Run: python run_4gpu_1000rows.py"

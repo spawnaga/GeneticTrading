@@ -15,19 +15,51 @@ from pathlib import Path
 
 
 def check_cuda_environment():
-    """Check CUDA environment and return status."""
+    """Check CUDA environment and return comprehensive status."""
     import subprocess
+    
+    # Check nvidia-smi
     try:
-        # Check if nvidia-smi works
-        result = subprocess.run(["nvidia-smi"], capture_output=True, text=True)
+        result = subprocess.run(["nvidia-smi"], capture_output=True, text=True, timeout=10)
         if result.returncode == 0:
             print("✅ NVIDIA driver detected")
-            return True
         else:
             print("❌ NVIDIA driver not working")
             return False
-    except FileNotFoundError:
-        print("❌ nvidia-smi not found")
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        print("❌ nvidia-smi not found or not responding")
+        return False
+    
+    # Check for CUDA libraries
+    cuda_lib_paths = [
+        "/usr/local/cuda/lib64/libcuda.so.1",
+        "/usr/lib/x86_64-linux-gnu/libcuda.so.1",
+        "/usr/lib64/libcuda.so.1",
+        "/opt/cuda/lib64/libcuda.so.1"
+    ]
+    
+    cuda_lib_found = False
+    for path in cuda_lib_paths:
+        if os.path.exists(path):
+            print(f"✅ Found CUDA library at: {path}")
+            cuda_lib_found = True
+            break
+    
+    if not cuda_lib_found:
+        print("❌ CUDA library (libcuda.so.1) not found in standard locations")
+        return False
+    
+    # Test if PyTorch can see CUDA
+    try:
+        import torch
+        if torch.cuda.is_available():
+            print(f"✅ PyTorch CUDA available: {torch.cuda.device_count()} GPUs")
+            return True
+        else:
+            print("❌ PyTorch cannot access CUDA")
+            return False
+    except Exception as e:
+        print(f"❌ PyTorch CUDA check failed: {e}")
         return False
 
 def setup_4gpu_environment():
@@ -41,7 +73,7 @@ def setup_4gpu_environment():
         # GPU Configuration
         env["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
         env["NCCL_TIMEOUT"] = "3600000"  # 1 hour timeout
-        env["NCCL_DEBUG"] = "INFO"
+        env["NCCL_DEBUG"] = "WARN"  # Reduce verbosity
         
         # NVLink optimization
         env["NCCL_P2P_DISABLE"] = "0"  # Enable P2P for NVLink
@@ -49,19 +81,41 @@ def setup_4gpu_environment():
         env["NCCL_TREE_THRESHOLD"] = "0"  # Use ring algorithm for small data
         
         # Memory optimization for small datasets
-        env["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:64"
+        env["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:32,expandable_segments:True"
         
-        # Fix CUDA library path issues
-        if "LD_LIBRARY_PATH" in env:
-            env["LD_LIBRARY_PATH"] = f"/usr/local/cuda/lib64:{env['LD_LIBRARY_PATH']}"
+        # CUDA library paths
+        cuda_paths = [
+            "/usr/local/cuda/lib64",
+            "/usr/lib/x86_64-linux-gnu",
+            "/usr/lib64",
+            "/opt/cuda/lib64"
+        ]
+        
+        # Build LD_LIBRARY_PATH
+        existing_ld_path = env.get("LD_LIBRARY_PATH", "")
+        new_ld_path = ":".join(cuda_paths)
+        if existing_ld_path:
+            env["LD_LIBRARY_PATH"] = f"{new_ld_path}:{existing_ld_path}"
         else:
-            env["LD_LIBRARY_PATH"] = "/usr/local/cuda/lib64"
+            env["LD_LIBRARY_PATH"] = new_ld_path
         
-        # Set NUMBA CUDA driver path
-        env["NUMBA_CUDA_DRIVER"] = "/usr/lib/x86_64-linux-gnu/libcuda.so.1"
+        # Find and set NUMBA CUDA driver path
+        for path in cuda_paths:
+            cuda_lib = os.path.join(path, "libcuda.so.1")
+            if os.path.exists(cuda_lib):
+                env["NUMBA_CUDA_DRIVER"] = cuda_lib
+                print(f"✅ Set NUMBA_CUDA_DRIVER to: {cuda_lib}")
+                break
+        
+        # Force CPU-only for cudf to avoid GPU memory issues
+        env["CUDF_BACKEND"] = "cpu"
+        env["RAPIDS_NO_INITIALIZE"] = "1"
+        
     else:
         print("⚠️  Running in CPU-only mode")
         env["CUDA_VISIBLE_DEVICES"] = ""
+        env["CUDF_BACKEND"] = "cpu"
+        env["RAPIDS_NO_INITIALIZE"] = "1"
     
     return env, cuda_available
 

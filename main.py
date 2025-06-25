@@ -20,16 +20,30 @@ logging.getLogger("torch.distributed").setLevel(logging.WARNING)
 logging.getLogger("torch.distributed").setLevel(logging.INFO)
 
 # ─── TRY GPU DATAFRAME SUPPORT ─────────────────────────────────────────────────
-try:
-    import cudf
-    import cupy as cp
-    has_cudf = True
-except Exception as e:
-    warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+has_cudf = False
+cudf = None
+
+# Check if we should even try GPU libraries
+try_gpu = os.environ.get("CUDA_VISIBLE_DEVICES", "") != "" and torch.cuda.is_available()
+
+if try_gpu:
+    try:
+        # Force CPU backend for RAPIDS to avoid GPU memory issues
+        os.environ["CUDF_BACKEND"] = "cpu"
+        os.environ["RAPIDS_NO_INITIALIZE"] = "1"
+        
+        import cudf
+        import cupy as cp
+        has_cudf = True
+        logging.info("cudf loaded successfully (CPU backend)")
+    except Exception as e:
+        warnings.warn(f"cudf import failed ({e}); falling back to pandas.")
+        has_cudf = False
+
+if not has_cudf:
     import pandas as pd
     sys.modules['cudf'] = pd
     cudf = pd
-    has_cudf = False
 
 # ─── OPTIONAL: load cuml.StandardScaler so scaler.transform() is type‐checked ──
 try:

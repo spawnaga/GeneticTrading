@@ -77,7 +77,14 @@ def load_and_cache_data(
 
     if os.path.exists(cache_file):
         logger.info("Loading cached dataset from %s", cache_file)
-        return cudf.read_parquet(cache_file)
+        try:
+            if HAS_CUDF:
+                return cudf.read_parquet(cache_file)
+            else:
+                return pd.read_parquet(cache_file)
+        except Exception as e:
+            logging.warning(f"Failed to load cached data with GPU backend: {e}, falling back to pandas")
+            return pd.read_parquet(cache_file)
 
     logger.info("Scanning %d files for raw data (using chunked reading)...", len(files))
 
@@ -125,17 +132,34 @@ def load_and_cache_data(
 
         except Exception as e:
             logger.warning(f"Failed to read {fp}: {e}")
-            continue
+            # Try with pandas as fallback
+            try:
+                logging.info(f"Trying pandas fallback for {os.path.basename(fp)}")
+                fallback_chunks = read_file_chunked_pandas(fp)
+                all_chunks.extend(fallback_chunks)
+            except Exception as e2:
+                logger.error(f"Pandas fallback also failed for {fp}: {e2}")
+                continue
 
     logger.info("Combining all file chunks...")
     if not all_chunks:
         logger.error("No valid data chunks found!")
         raise ValueError("No valid data found in input files")
 
-    if HAS_CUDF:
-        df = cudf.concat(all_chunks, ignore_index=True)
-    else:
-        df = pd.concat(all_chunks, ignore_index=True)
+    try:
+        if HAS_CUDF and len(all_chunks) > 0:
+            df = cudf.concat(all_chunks, ignore_index=True)
+        else:
+            df = pd.concat(all_chunks, ignore_index=True)
+    except Exception as e:
+        logging.warning(f"Failed to combine chunks with GPU backend: {e}, using pandas")
+        pandas_chunks = []
+        for chunk in all_chunks:
+            if hasattr(chunk, 'to_pandas'):
+                pandas_chunks.append(chunk.to_pandas())
+            else:
+                pandas_chunks.append(chunk)
+        df = pd.concat(pandas_chunks, ignore_index=True)
 
     # Ensure date_time column is properly typed before sorting
     if HAS_CUDF:
@@ -169,7 +193,10 @@ def load_and_cache_data(
         raise ValueError("No valid data remaining after numeric conversion")
 
     logger.info("Caching combined data...")
-    df.to_parquet(cache_file)
+    try:
+        df.to_parquet(cache_file)
+    except Exception as e:
+        logging.warning(f"Failed to cache data: {e}")
     logger.info("Cached combined data to %s", cache_file)
     return df
 
@@ -332,3 +359,22 @@ def create_environment_data(
         train_df, test_df, scaler = scale_and_split_gpu(df, test_size=test_size)
 
     return train_df, test_df, scaler, segment_dict
+# Add dummy implementations for read_file_chunked and read_file_chunked_pandas
+def read_file_chunked(file_path):
+    """Dummy function to simulate chunked file reading."""
+    import pandas as pd
+    import cudf
+    try:
+        df = cudf.read_csv(file_path)
+        return [df]
+    except:
+        df = pd.read_csv(file_path)
+        return [cudf.DataFrame.from_pandas(df)]
+
+def read_file_chunked_pandas(file_path):
+    """Dummy function to simulate chunked file reading with pandas."""
+    import pandas as pd
+    chunks = []
+    for chunk in pd.read_csv(file_path, chunksize=10000):
+        chunks.append(chunk)
+    return chunks
