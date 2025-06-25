@@ -262,13 +262,17 @@ class PPOTrainer:
 
         state = _unpack_reset(self.env.reset())
 
-        # Trajectory collection with progress bar
+        # Trajectory collection with progress bar - only show for rank 0 and use better positioning
         if self.local_rank == 0:
             trajectory_pbar = tqdm(range(self.rollout_steps), 
-                                 desc="Collecting Trajectories", 
+                                 desc="🎯 Collecting Trajectories", 
                                  leave=False, 
-                                 ncols=100,
-                                 position=1)
+                                 ncols=120,
+                                 position=0,
+                                 dynamic_ncols=True,
+                                 miniters=10,  # Update less frequently
+                                 ascii=False,
+                                 bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]')
         else:
             trajectory_pbar = range(self.rollout_steps)
 
@@ -330,15 +334,17 @@ class PPOTrainer:
                 if len(state) == 0:
                     state = np.zeros(self.env.observation_space.shape, dtype=np.float32)
 
-            # Update trajectory progress bar
-            if self.local_rank == 0 and hasattr(trajectory_pbar, 'set_postfix') and step % 100 == 0:
-                avg_reward = np.mean(rew_buf[-100:]) if len(rew_buf) >= 100 else np.mean(rew_buf) if rew_buf else 0.0
-                episodes = sum(done_buf[-100:]) if len(done_buf) >= 100 else sum(done_buf) if done_buf else 0
+            # Update trajectory progress bar less frequently to avoid conflicts
+            if self.local_rank == 0 and hasattr(trajectory_pbar, 'set_postfix') and step % 50 == 0:
+                avg_reward = np.mean(rew_buf[-50:]) if len(rew_buf) >= 50 else np.mean(rew_buf) if rew_buf else 0.0
+                episodes = sum(done_buf[-50:]) if len(done_buf) >= 50 else sum(done_buf) if done_buf else 0
                 trajectory_pbar.set_postfix({
-                    'avg_reward': f"{avg_reward:.1f}",
-                    'episodes': episodes,
-                    'step': f"{step+1}/{self.rollout_steps}"
+                    'reward': f"{avg_reward:.1f}",
+                    'eps': episodes,
+                    'progress': f"{((step+1)/self.rollout_steps)*100:.0f}%"
                 })
+                # Force refresh to ensure proper display
+                trajectory_pbar.refresh()
 
         # Close trajectory progress bar
         if self.local_rank == 0 and hasattr(trajectory_pbar, 'close'):
@@ -607,14 +613,19 @@ class PPOTrainer:
 
                     batch_counter += 1
                     
-                    # Log progress occasionally
-                    if self.local_rank == 0 and batch_counter % 50 == 0:
+                    # Log progress much less frequently to avoid interfering with tqdm
+                    if self.local_rank == 0 and batch_counter % 200 == 0:
                         recent_policy_loss = np.mean(policy_losses[-10:]) if len(policy_losses) >= 10 else np.mean(policy_losses) if policy_losses else 0.0
                         recent_value_loss = np.mean(value_losses[-10:]) if len(value_losses) >= 10 else np.mean(value_losses) if value_losses else 0.0
                         recent_kl = np.mean(kl_divergences[-10:]) if len(kl_divergences) >= 10 else np.mean(kl_divergences) if kl_divergences else 0.0
                         
-                        logger.info(f"PPO training: epoch {epoch+1}/{self.update_epochs}, batch {batch_counter}/{total_batches}, "
-                                   f"p_loss={recent_policy_loss:.3f}, v_loss={recent_value_loss:.3f}, kl={recent_kl:.4f}")
+                        # Use tqdm.write to avoid interfering with progress bars
+                        if hasattr(tqdm, 'write'):
+                            tqdm.write(f"📊 PPO: epoch {epoch+1}/{self.update_epochs}, batch {batch_counter}/{total_batches}, "
+                                     f"p_loss={recent_policy_loss:.3f}, v_loss={recent_value_loss:.3f}, kl={recent_kl:.4f}")
+                        else:
+                            logger.info(f"PPO training: epoch {epoch+1}/{self.update_epochs}, batch {batch_counter}/{total_batches}, "
+                                       f"p_loss={recent_policy_loss:.3f}, v_loss={recent_value_loss:.3f}, kl={recent_kl:.4f}")
 
             # Store loss trends
             self.loss_trends.extend(policy_losses)
@@ -740,12 +751,14 @@ class PPOTrainer:
         # Always show progress bar for rank 0, but make it more informative
         if self.local_rank == 0:
             pbar = tqdm(range(start_update, n_updates), 
-                       desc="PPO Training Progress", 
+                       desc="🚀 PPO Training", 
                        ncols=140, 
                        leave=True, 
-                       position=0,
+                       position=1,  # Position below trajectory collection bar
                        dynamic_ncols=True,
-                       unit="update")
+                       unit="update",
+                       ascii=False,
+                       bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]')
         else:
             pbar = range(start_update, n_updates)
 
