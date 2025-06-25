@@ -1,0 +1,431 @@
+/home/alex/miniconda3/envs/GeneticTrading/bin/python /mnt/windows/GeneticTrading/run_simple.py 
+🤖 Trading System Launcher
+==================================================
+✓ Created directory: ./models
+✓ Created directory: ./logs
+✓ Created directory: ./cached_data
+✓ Created directory: ./runs
+
+Available modes:
+  test - Quick test with minimal data (default)
+  dev  - Development mode with 10% data
+
+Usage: python run_simple.py [test|dev]
+
+Select mode (test/dev) [test]: dev
+🔧 Starting Development Mode...
+📊 Using 10% of data for development
+📈 Monitoring enabled - check ./logs/training_metrics.json for progress
+⚠️  Training will auto-stop if performance stagnates to save compute
+🔧 Starting Development Mode...
+📊 Using 10% of data for development
+WARNING:root:Distributed training not available, running in single-process mode
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] STARTUP             : ================================================================================
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] STARTUP             : Training session started for rank 0
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] STARTUP             : Log file: logs/training_rank_0.log
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] STARTUP             : Process ID: 21217
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] STARTUP             : Working directory: /mnt/windows/GeneticTrading
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] STARTUP             : ================================================================================
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] root                : NCCL_TIMEOUT = 1800000 ms
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] root                : Using 10.0% of available data
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] root                : Models will be saved to: ./models/dev
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] root                : Rank 0/1 starting on cuda:0 (has_cudf=True)
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] root                : Parquet cache found; skipping preprocessing.
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] root                : Total data: 400 train, 100 test rows
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] numba.cuda.cudadrv.driver: init
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] email_notifications : Email notifications configured for ali.aloraibi@outlook.com
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] email_notifications : Notifications will be sent every 6 hours
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] email_notifications : No training metrics available for progress update
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] email_notifications : Training monitoring started
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] root                : Email notifications enabled - reports every 6 hours
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] adaptive_trainer    : Removed old TensorBoard run: ./runs/ga_experiment
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] adaptive_trainer    : Starting adaptive training
+2025-06-25 01:35:58 [INFO    ] [Rank-21217] adaptive_trainer    : 
+=== Adaptive Training Iteration 1/20 ===
+2025-06-25 01:35:59 [INFO    ] [Rank-21217] adaptive_trainer    : Evaluation results: 13 profits, total=0.0000
+2025-06-25 01:35:59 [INFO    ] [Rank-21217] adaptive_trainer    : Metrics: CAGR=0.0000, Sharpe=0.0000, MDD=100.0000
+2025-06-25 01:35:59 [INFO    ] [Rank-21217] adaptive_trainer    : Current performance: -0.2000 (best: -0.2000)
+2025-06-25 01:35:59 [INFO    ] [Rank-21217] adaptive_trainer    : Stagnation: 0, Poor performance: 0
+2025-06-25 01:35:59 [INFO    ] [Rank-21217] adaptive_trainer    : Method: GA, Entropy: 1.0986
+2025-06-25 01:35:59 [INFO    ] [Rank-21217] adaptive_trainer    : Switching to PPO due to: ga_solution_refinement
+2025-06-25 01:35:59 [INFO    ] [Rank-21217] adaptive_trainer    : Switching from GA to PPO
+2025-06-25 01:35:59 [INFO    ] [Rank-21217] adaptive_trainer    : Starting PPO phase: 150 updates
+2025-06-25 01:35:59 [INFO    ] [Rank-21217] policy_gradient_methods: Loaded model from models/dev/ppo_models/adaptive_ppo_model.pth
+I0625 01:35:59.353000 21217 site-packages/torch/distributed/nn/jit/instantiator.py:24] Created a temporary directory at /tmp/tmpmwtbph1j
+I0625 01:35:59.353000 21217 site-packages/torch/distributed/nn/jit/instantiator.py:75] Writing /tmp/tmpmwtbph1j/_remote_module_non_scriptable.py
+Removed old TensorBoard run: ./runs/ppo_rank_0
+2025-06-25 01:35:59 [INFO    ] [Rank-21217] policy_gradient_methods: Loaded model from models/dev/ppo_models/adaptive_ppo_model.pth
+2025-06-25 01:35:59 [INFO    ] [Rank-21217] adaptive_trainer    : Evaluation results: 4 profits, total=0.0000
+2025-06-25 01:35:59 [INFO    ] [Rank-21217] adaptive_trainer    : Metrics: CAGR=0.0000, Sharpe=0.0000, MDD=0.0000
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.112, kl=-0.0001]
+PPO Epochs:  25%|▎| 1/4 [00:00<00:00,  6.60it/s, p_loss=0.000, v_loss=0.112, kl=
+PPO Epochs:  25%|▎| 1/4 [00:00<00:00,  6.60it/s, p_loss=0.000, v_loss=0.111, kl=
+PPO Epochs:  25%|▎| 1/4 [00:00<00:00,  6.60it/s, p_loss=0.000, v_loss=0.110, kl=
+PPO Epochs:  25%|▎| 1/4 [00:00<00:00,  6.60it/s, p_loss=0.000, v_loss=0.109, kl=
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.099, kl=-0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.098, kl=-0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.098, kl=-0.0002]
+PPO Epochs:  75%|▊| 3/4 [00:00<00:00, 28.95it/s, p_loss=0.000, v_loss=0.098, kl=
+PPO Epochs:  75%|▊| 3/4 [00:00<00:00, 28.95it/s, p_loss=0.000, v_loss=0.097, kl=
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%|  | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.090, kl=0.0001]
+PPO Epochs:   0%|  | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.088, kl=0.0003]
+PPO Epochs:   0%|  | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.087, kl=0.0004]
+PPO Epochs:   0%|  | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.087, kl=0.0005]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 25.60it/s, p_loss=0.000, v_loss=0.087, kl=
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.100, kl=-0.0000]
+PPO Epochs:   0%|  | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.099, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.099, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.098, kl=0.0002]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 26.91it/s, p_loss=-0.000, v_loss=0.098, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.094, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.093, kl=-0.0002
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.092, kl=-0.0004
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.092, kl=-0.0006
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 32.13it/s, p_loss=-0.001, v_loss=0.092, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.086, kl=-0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.085, kl=-0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.084, kl=-0.0004
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.084, kl=-0.0006
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 31.69it/s, p_loss=-0.000, v_loss=0.084, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.084, kl=-0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.083, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.082, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.082, kl=0.0004]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 32.24it/s, p_loss=-0.000, v_loss=0.082, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.074, kl=-0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.073, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.073, kl=0.0002]
+PPO Epochs:  75%|▊| 3/4 [00:00<00:00, 27.83it/s, p_loss=-0.000, v_loss=0.073, kl
+PPO Epochs:  75%|▊| 3/4 [00:00<00:00, 27.83it/s, p_loss=-0.001, v_loss=0.073, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.080, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.079, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.079, kl=0.0003]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.079, kl=0.0006]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 27.18it/s, p_loss=-0.001, v_loss=0.079, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.068, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.067, kl=0.0003]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.067, kl=0.0005]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.067, kl=0.0007]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 27.63it/s, p_loss=-0.000, v_loss=0.067, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%|  | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.096, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.096, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.096, kl=0.0003]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.096, kl=0.0004]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 31.16it/s, p_loss=-0.001, v_loss=0.096, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.087, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.087, kl=-0.0001
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.087, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.087, kl=0.0000]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 28.01it/s, p_loss=-0.001, v_loss=0.087, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.073, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.073, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.073, kl=-0.0002
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.073, kl=-0.0002
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 27.65it/s, p_loss=-0.001, v_loss=0.073, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.072, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.072, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.002, v_loss=0.071, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.003, v_loss=0.071, kl=0.0001]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 27.40it/s, p_loss=-0.003, v_loss=0.071, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.089, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.089, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.089, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.089, kl=0.0004]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 31.03it/s, p_loss=-0.001, v_loss=0.089, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.069, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.069, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.068, kl=0.0000]
+PPO Epochs:  75%|▊| 3/4 [00:00<00:00, 29.01it/s, p_loss=-0.001, v_loss=0.068, kl
+PPO Epochs:  75%|▊| 3/4 [00:00<00:00, 29.01it/s, p_loss=-0.001, v_loss=0.068, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%|  | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.076, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.076, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.076, kl=0.0004]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.002, v_loss=0.076, kl=0.0007]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 30.91it/s, p_loss=-0.002, v_loss=0.076, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.071, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.071, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.071, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.071, kl=0.0001]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 27.94it/s, p_loss=-0.001, v_loss=0.071, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.069, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.069, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.069, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.002, v_loss=0.069, kl=-0.0000
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 28.03it/s, p_loss=-0.002, v_loss=0.069, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.094, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.094, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.003, v_loss=0.094, kl=0.0003]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.004, v_loss=0.094, kl=0.0005]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 31.47it/s, p_loss=-0.004, v_loss=0.094, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.070, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.070, kl=0.0003]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.070, kl=0.0004]
+PPO Epochs:  75%|▊| 3/4 [00:00<00:00, 29.75it/s, p_loss=-0.000, v_loss=0.070, kl
+PPO Epochs:  75%|▊| 3/4 [00:00<00:00, 29.75it/s, p_loss=-0.001, v_loss=0.070, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.061, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.061, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.061, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.060, kl=0.0002]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 30.94it/s, p_loss=-0.001, v_loss=0.060, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%|  | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.084, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.084, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.084, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.084, kl=0.0002]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 27.60it/s, p_loss=-0.000, v_loss=0.084, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.022, v_loss=0.051, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.023, v_loss=0.051, kl=-0.0002
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.024, v_loss=0.051, kl=-0.0001
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.025, v_loss=0.050, kl=0.0000]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 32.39it/s, p_loss=-0.025, v_loss=0.050, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.074, kl=-0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.074, kl=-0.0001
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.074, kl=-0.0001
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.074, kl=-0.0001
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 30.95it/s, p_loss=-0.001, v_loss=0.074, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%|  | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.061, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.061, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.061, kl=0.0003]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.061, kl=0.0004]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 30.23it/s, p_loss=-0.001, v_loss=0.061, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.064, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.064, kl=-0.0001
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.064, kl=-0.0002
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.064, kl=-0.0004
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 28.89it/s, p_loss=-0.001, v_loss=0.064, kl
+
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%|  | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.089, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.089, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.089, kl=-0.0001
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.089, kl=-0.0000
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 31.45it/s, p_loss=-0.001, v_loss=0.089, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.065, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.065, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.065, kl=0.0001]
+PPO Epochs:  75%|▊| 3/4 [00:00<00:00, 29.57it/s, p_loss=-0.001, v_loss=0.065, kl
+PPO Epochs:  75%|▊| 3/4 [00:00<00:00, 29.57it/s, p_loss=-0.001, v_loss=0.065, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.079, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.079, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.079, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.079, kl=0.0002]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 31.00it/s, p_loss=-0.000, v_loss=0.079, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.084, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.084, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.084, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.002, v_loss=0.084, kl=0.0002]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 27.32it/s, p_loss=-0.002, v_loss=0.084, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.080, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.002, v_loss=0.080, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.003, v_loss=0.080, kl=0.0006]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.004, v_loss=0.080, kl=0.0010]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 27.21it/s, p_loss=-0.004, v_loss=0.080, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.091, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.091, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.090, kl=0.0003]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.090, kl=0.0002]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 30.96it/s, p_loss=-0.001, v_loss=0.090, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.084, kl=-0.0001
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.084, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.084, kl=0.0003]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.084, kl=0.0006]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 30.22it/s, p_loss=-0.001, v_loss=0.084, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%|  | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.073, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.073, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.072, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.072, kl=0.0002]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 30.80it/s, p_loss=-0.000, v_loss=0.072, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.008, v_loss=0.061, kl=-0.0001
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.008, v_loss=0.060, kl=-0.0001
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.009, v_loss=0.060, kl=-0.0003
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.009, v_loss=0.059, kl=-0.0004
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 26.60it/s, p_loss=-0.009, v_loss=0.059, kl
+
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.059, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.058, kl=-0.0001
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.058, kl=-0.0003
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.058, kl=-0.0002
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 31.27it/s, p_loss=-0.000, v_loss=0.058, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.092, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.092, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.092, kl=0.0004]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.002, v_loss=0.092, kl=0.0006]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 30.23it/s, p_loss=-0.002, v_loss=0.092, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.063, kl=-0.0001
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.063, kl=-0.0002
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.063, kl=-0.0002
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.002, v_loss=0.063, kl=-0.0002
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 30.80it/s, p_loss=-0.002, v_loss=0.063, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%|  | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.074, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.074, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.074, kl=-0.0002
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.074, kl=-0.0002
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 26.88it/s, p_loss=-0.001, v_loss=0.074, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.073, kl=-0.0001
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.073, kl=-0.0005
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.002, v_loss=0.074, kl=-0.0008
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.003, v_loss=0.074, kl=-0.0012
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 30.48it/s, p_loss=-0.003, v_loss=0.074, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.071, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.071, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.070, kl=0.0003]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.070, kl=0.0005]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 30.56it/s, p_loss=-0.001, v_loss=0.070, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.068, kl=-0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.068, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.068, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.068, kl=0.0001]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 30.60it/s, p_loss=-0.000, v_loss=0.068, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.070, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.069, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.069, kl=0.0005]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.069, kl=0.0006]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 31.34it/s, p_loss=-0.001, v_loss=0.069, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%|  | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.058, kl=0.0000]
+PPO Epochs:   0%|  | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.058, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.057, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.057, kl=0.0004]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 28.68it/s, p_loss=-0.000, v_loss=0.057, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.011, v_loss=0.055, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.011, v_loss=0.055, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.011, v_loss=0.054, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.011, v_loss=0.054, kl=0.0001]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 27.29it/s, p_loss=-0.011, v_loss=0.054, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.060, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.060, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.060, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.060, kl=0.0004]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 32.01it/s, p_loss=-0.001, v_loss=0.060, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.058, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.058, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.058, kl=0.0002]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.058, kl=0.0002]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 31.16it/s, p_loss=-0.001, v_loss=0.058, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=0.000, v_loss=0.065, kl=-0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.065, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.065, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.065, kl=-0.0001
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 30.31it/s, p_loss=-0.001, v_loss=0.065, kl
+                                                                                
+PPO Epochs:   0%|                                         | 0/4 [00:00<?, ?it/s]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.060, kl=-0.0000
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.000, v_loss=0.060, kl=0.0000]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.060, kl=0.0001]
+PPO Epochs:   0%| | 0/4 [00:00<?, ?it/s, p_loss=-0.001, v_loss=0.060, kl=0.0001]
+PPO Epochs: 100%|█| 4/4 [00:00<00:00, 31.44it/s, p_loss=-0.001, v_loss=0.060, kl
+                                                                                2025-06-25 01:36:43 [INFO    ] [Rank-21217] adaptive_trainer    : Evaluation results: 86 profits, total=0.0000
+2025-06-25 01:36:43 [INFO    ] [Rank-21217] adaptive_trainer    : Metrics: CAGR=0.0000, Sharpe=0.0000, MDD=100.0000
+2025-06-25 01:36:43 [INFO    ] [Rank-21217] adaptive_trainer    : PPO Update 50: Performance=-0.2000, Entropy=1.0986
+2025-06-25 01:36:43 [WARNING ] [Rank-21217] adaptive_trainer    : PPO early stopping due to lack of improvement (patience: 3)
+2025-06-25 01:36:43 [INFO    ] [Rank-21217] policy_gradient_methods: Saved model to models/dev/ppo_models/adaptive_ppo_model.pth at 2025-06-25 01:36:43.422924
+2025-06-25 01:36:43 [INFO    ] [Rank-21217] adaptive_trainer    : Evaluation results: 36 profits, total=0.0000
+2025-06-25 01:36:43 [INFO    ] [Rank-21217] adaptive_trainer    : Metrics: CAGR=0.0000, Sharpe=0.0000, MDD=100.0000
+2025-06-25 01:36:43 [INFO    ] [Rank-21217] adaptive_trainer    : PPO phase completed with performance: -0.2000
+2025-06-25 01:36:43 [INFO    ] [Rank-21217] adaptive_trainer    : 
+=== Adaptive Training Iteration 2/20 ===
+2025-06-25 01:36:43 [INFO    ] [Rank-21217] adaptive_trainer    : Evaluation results: 68 profits, total=0.0000
+2025-06-25 01:36:43 [INFO    ] [Rank-21217] adaptive_trainer    : Metrics: CAGR=0.0000, Sharpe=0.0000, MDD=100.0000
+2025-06-25 01:36:43 [INFO    ] [Rank-21217] adaptive_trainer    : Current performance: -0.2000 (best: -0.2000)
+2025-06-25 01:36:43 [INFO    ] [Rank-21217] adaptive_trainer    : Stagnation: 1, Poor performance: 1
+2025-06-25 01:36:43 [INFO    ] [Rank-21217] adaptive_trainer    : Method: PPO, Entropy: 1.0971
+2025-06-25 01:36:43 [INFO    ] [Rank-21217] adaptive_trainer    : Switching to GA due to: exploration_phase
+2025-06-25 01:36:43 [INFO    ] [Rank-21217] adaptive_trainer    : Switching from PPO to GA
+2025-06-25 01:36:43 [INFO    ] [Rank-21217] adaptive_trainer    : Starting GA phase: 30 generations, population 30
+[GA] Loaded GA model from models/dev/ga_models/adaptive_ga_model.pth
+[GA] Loaded GA model from models/dev/ga_models/adaptive_ga_model.pth
+[GA] Saved GA model to models/dev/ga_models/adaptive_ga_model.pth
+[GA gens] avg=10122.6, max=51744.8, stg=1:  30%|████████████▎                            | 3/10 [00:11<00:25,  3.59s/it]
