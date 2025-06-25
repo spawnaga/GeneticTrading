@@ -294,7 +294,13 @@ class FuturesEnv(gym.Env):
             self._close_short(state)
             self.last_action_was_close = True
         elif self.current_position == 0:
-            filled_price = self._simulate_fill(state.open_price, 1)
+            filled_price = self._simulate_fill(
+                price=state.open_price,
+                high_price=getattr(state, 'high_price', None),
+                low_price=getattr(state, 'low_price', None),
+                volume=getattr(state, 'volume', None),
+                size=1
+            )
             self.entry_time = state.ts
             self.entry_price = filled_price
             self.entry_cost = self.execution_cost_per_order * self.contracts_per_trade
@@ -311,7 +317,13 @@ class FuturesEnv(gym.Env):
             self._close_long(state)
             self.last_action_was_close = True
         elif self.current_position == 0:
-            filled_price = self._simulate_fill(state.open_price, -1)
+            filled_price = self._simulate_fill(
+                price=state.open_price,
+                high_price=getattr(state, 'high_price', None),
+                low_price=getattr(state, 'low_price', None),
+                volume=getattr(state, 'volume', None),
+                size=-1
+            )
             self.entry_time = state.ts
             self.entry_price = filled_price
             self.entry_cost = self.execution_cost_per_order * self.contracts_per_trade
@@ -355,7 +367,8 @@ class FuturesEnv(gym.Env):
         price: float,
         high_price: float | None = None,
         low_price: float | None = None,
-        volume: float | None = None
+        volume: float | None = None,
+        size: int = 1
     ) -> float:
         """
         Simulate execution price with slippage and spread adjustments.
@@ -391,7 +404,6 @@ class FuturesEnv(gym.Env):
 
         # 3) Sample slippage if custom distributions are provided
         slippage = 0.0
-        size = 1  # Default size for fills
         if self.can_random:
             if size == 1:
                 slippage = np.random.choice(self.long_values, p=self.long_probabilities)
@@ -501,7 +513,13 @@ class FuturesEnv(gym.Env):
         Close an existing long position.
         """
         self.exit_time = state.ts
-        self.exit_price = self._simulate_fill(state.open_price, -1)
+        self.exit_price = self._simulate_fill(
+            price=state.open_price,
+            high_price=getattr(state, 'high_price', None),
+            low_price=getattr(state, 'low_price', None),
+            volume=getattr(state, 'volume', None),
+            size=-1
+        )
         price_diff = self.exit_price - self.entry_price
         ticks = price_diff / self.tick_size
         pnl = ticks * self.value_per_tick * self.contracts_per_trade
@@ -518,7 +536,13 @@ class FuturesEnv(gym.Env):
         Close an existing short position.
         """
         self.exit_time = state.ts
-        self.exit_price = self._simulate_fill(state.open_price, 1)
+        self.exit_price = self._simulate_fill(
+            price=state.open_price,
+            high_price=getattr(state, 'high_price', None),
+            low_price=getattr(state, 'low_price', None),
+            volume=getattr(state, 'volume', None),
+            size=1
+        )
         price_diff = self.entry_price - self.exit_price
         ticks = price_diff / self.tick_size
         pnl = ticks * self.value_per_tick * self.contracts_per_trade
@@ -638,7 +662,8 @@ class FuturesEnv(gym.Env):
             price=current_state.close_price,
             high_price=getattr(current_state, 'high_price', None),
             low_price=getattr(current_state, 'low_price', None),
-            volume=getattr(current_state, 'volume', None)
+            volume=getattr(current_state, 'volume', None),
+            size=trade_size
         )
 
         # Validate fill price
