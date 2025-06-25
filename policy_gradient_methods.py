@@ -69,14 +69,14 @@ class ActorCriticNet(nn.Module):
         """Initialize network weights for stability"""
         for module in self.modules():
             if isinstance(module, nn.Linear):
-                # Xavier initialization for better gradient flow
-                nn.init.xavier_uniform_(module.weight, gain=0.1)  # Small gain for stability
+                # More conservative initialization to prevent NaN propagation
+                nn.init.xavier_uniform_(module.weight, gain=0.01)  # Very small gain
                 if module.bias is not None:
                     nn.init.constant_(module.bias, 0.0)
 
     def forward(self, x: torch.Tensor):
         """
-        Forward pass.
+        Forward pass with NaN protection.
         Args:
             x: tensor of shape [batch, input_dim] or higher dimensions
         Returns:
@@ -84,10 +84,38 @@ class ActorCriticNet(nn.Module):
             value: [batch, 1]
         """
         x = x.to(self.device)
+        
+        # Check for NaN/infinite input
+        if not torch.all(torch.isfinite(x)):
+            logger.warning("NaN/infinite input detected, replacing with zeros")
+            x = torch.where(torch.isfinite(x), x, torch.zeros_like(x))
+        
         if x.ndim > 2:
             x = x.view(x.size(0), -1)
+            
         hidden = self.base(x)
-        return self.policy_head(hidden), self.value_head(hidden)
+        
+        # Check for NaN in hidden layer
+        if not torch.all(torch.isfinite(hidden)):
+            logger.warning("NaN/infinite hidden values detected, clipping")
+            hidden = torch.clamp(hidden, -10.0, 10.0)
+            hidden = torch.where(torch.isfinite(hidden), hidden, torch.zeros_like(hidden))
+        
+        policy_logits = self.policy_head(hidden)
+        value = self.value_head(hidden)
+        
+        # Final NaN check and clipping
+        if not torch.all(torch.isfinite(policy_logits)):
+            logger.warning("NaN/infinite policy logits detected, clipping")
+            policy_logits = torch.clamp(policy_logits, -10.0, 10.0)
+            policy_logits = torch.where(torch.isfinite(policy_logits), policy_logits, torch.zeros_like(policy_logits))
+        
+        if not torch.all(torch.isfinite(value)):
+            logger.warning("NaN/infinite value detected, clipping")
+            value = torch.clamp(value, -10.0, 10.0)
+            value = torch.where(torch.isfinite(value), value, torch.zeros_like(value))
+        
+        return policy_logits, value
 
     def act(self, state):
         """
@@ -407,6 +435,16 @@ class PPOTrainer:
 
                 loss = policy_loss + value_loss - self.entropy_coef * entropy
 
+                # Check for NaN/infinite values in loss before backward pass
+                if not torch.isfinite(loss):
+                    logger.warning(f"NaN/infinite loss detected: {loss.item()}, skipping update")
+                    continue
+                
+                # Check for NaN/infinite values in logits
+                if not torch.all(torch.isfinite(logits)):
+                    logger.warning("NaN/infinite logits detected, skipping update")
+                    continue
+                
                 self.optimizer.zero_grad()
                 loss.backward()
 
@@ -425,22 +463,31 @@ class PPOTrainer:
                     self.optimizer.zero_grad()
                     continue
                 
-                if torch.isfinite(grad_norm):
-                    self.gradient_norms.append(grad_norm.item())
-                else:
-                    logger.warning("NaN gradient norm detected")
+                if not torch.isfinite(grad_norm):
+                    logger.warning("NaN gradient norm detected, skipping optimizer step")
                     self.optimizer.zero_grad()
                     continue
 
                 self.optimizer.step()
                 
                 # Verify model parameters are still valid after update
+                has_nan_params = False
                 for name, param in self.model.named_parameters():
                     if not torch.all(torch.isfinite(param)):
                         logger.error(f"NaN/infinite parameters detected in {name}, reinitializing layer")
-                        # Reinitialize the problematic layer
+                        has_nan_params = True
+                        # Reinitialize the problematic layer with more conservative values
                         if hasattr(param, 'data'):
-                            param.data.normal_(0, 0.01)
+                            param.data.normal_(0, 0.001)  # Much smaller initialization
+                
+                # If we had NaN parameters, also reset optimizer state
+                if has_nan_params:
+                    logger.info("Resetting optimizer state due to NaN parameters")
+                    self.optimizer.state = {}
+                
+                # Store valid gradient norm
+                if torch.isfinite(grad_norm):
+                    self.gradient_norms.append(grad_norm.item())
 
                 policy_losses.append(policy_loss.item())
                 value_losses.append(value_loss.item())

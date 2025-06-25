@@ -311,9 +311,19 @@ class AdaptiveTrainer:
         for update in range(total_updates):
             try:
                 reward = self.ppo_trainer.train_step()
+                
+                # Check if reward is valid
+                if not np.isfinite(reward):
+                    logger.warning(f"Invalid reward at update {update}: {reward}")
+                    reward = 0.0
+                    
             except Exception as e:
                 logger.warning(f"PPO training step failed at update {update}: {e}")
-                break
+                # Try to recover by reinitializing the model
+                logger.info("Attempting to recover by reinitializing PPO model")
+                self.ppo_trainer.model._initialize_weights()
+                self.ppo_trainer.optimizer.state = {}  # Reset optimizer state
+                continue
 
             # Periodic evaluation with improved early stopping
             if (update + 1) % 10 == 0:
