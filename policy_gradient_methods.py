@@ -821,7 +821,10 @@ class PPOTrainer:
         """
         # This is a placeholder; trading behavior analysis is environment-specific
         pass
-metrics = {
+
+    def get_training_metrics(self, policy_losses, value_losses, entropies, kl_divergences):
+        """Get training metrics dictionary"""
+        metrics = {
             'avg_policy_loss': np.mean(policy_losses) if policy_losses else 0.0,
             'avg_value_loss': np.mean(value_losses) if value_losses else 0.0,
             'avg_entropy': np.mean([entropy.item() for entropy in entropies]) if entropies else 0.0,
