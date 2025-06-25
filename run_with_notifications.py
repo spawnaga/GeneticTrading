@@ -12,7 +12,7 @@ import sys
 import time
 import logging
 from pathlib import Path
-from email_notifications import TrainingNotificationManager
+from email_notifications import TrainingNotificationSystem
 
 def setup_logging():
     """Setup logging for the runner."""
@@ -33,7 +33,7 @@ def main():
     print("=" * 50)
     
     # Setup email notifications
-    email_manager = TrainingNotificationManager()
+    email_manager = TrainingNotificationSystem()
     
     if not email_manager.setup_from_config():
         print("⚠️  Email notifications not configured.")

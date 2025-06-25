@@ -459,14 +459,16 @@ def main():
     
     if local_rank == 0:
         from adaptive_trainer import AdaptiveTrainer
-        from email_notifications import TrainingNotificationManager
+        from email_notifications import TrainingNotificationSystem
         
         # Setup email notifications
-        email_manager = TrainingNotificationManager()
-        email_configured = email_manager.setup_from_config()
-        if email_configured:
-            email_manager.start_notifications()
+        email_manager = TrainingNotificationSystem()
+        try:
+            email_manager.start_monitoring()
             logging.info("Email notifications enabled - reports every 6 hours")
+        except Exception as e:
+            logging.warning(f"Failed to setup email notifications: {e}")
+            email_manager = None
         
         # Initialize adaptive trainer
         adaptive_trainer = AdaptiveTrainer(

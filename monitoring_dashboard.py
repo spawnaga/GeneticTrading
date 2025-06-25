@@ -20,7 +20,7 @@ import matplotlib.dates as mdates
 from matplotlib.animation import FuncAnimation
 import pandas as pd
 import numpy as np
-from email_notifications import TrainingNotificationManager
+from email_notifications import TrainingNotificationSystem
 
 class TrainingMonitor:
     """Real-time training monitor with early stopping recommendations."""
@@ -45,8 +45,8 @@ class TrainingMonitor:
         # Email notification setup
         self.email_manager = None
         if enable_email:
-            self.email_manager = TrainingNotificationManager()
-            if self.email_manager.setup_from_config():
+            self.email_manager = TrainingNotificationSystem()
+            if hasattr(self.email_manager, 'setup_from_config') and self.email_manager.setup_from_config():
                 self.email_manager.start_notifications()
                 logging.info("Email notifications enabled - reports every 6 hours")
             else:
