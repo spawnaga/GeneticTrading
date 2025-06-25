@@ -132,14 +132,14 @@ def load_and_cache_data(
                 sample_df = pd.read_csv(fp, nrows=5, header=None)
                 num_cols = len(sample_df.columns)
                 logger.info(f"Detected {num_cols} columns in {os.path.basename(fp)}")
-                
+
                 # Create column names - first 6 are OHLCV data, rest are features
                 column_names = ["date_time", "Open", "High", "Low", "Close", "Volume"]
                 if num_cols > 6:
                     # Add feature column names for the additional columns
                     feature_cols = [f"feature_{i}" for i in range(6, num_cols)]
                     column_names.extend(feature_cols)
-                
+
                 if HAS_CUDF:
                     # cuDF reading with proper null handling
                     file_df = cudf.read_csv(
@@ -184,7 +184,7 @@ def load_and_cache_data(
                 else:
                     logger.warning(f"Missing required columns in {fp}, skipping file")
                     continue
-                    
+
             except Exception as e:
                 logger.warning(f"Error reading {fp} with auto-detection: {e}")
                 # Fallback to basic 6-column reading
@@ -282,41 +282,41 @@ def load_and_cache_data(
 
     # Additional null checking and cleaning
     logger.info("Performing comprehensive null data cleaning...")
-    
+
     # Replace any remaining infinite values
     if HAS_CUDF:
         import cupy as cp
         df = df.replace([cp.inf, -cp.inf], None)
     else:
         df = df.replace([np.inf, -np.inf], np.nan)
-    
+
     # Fill any remaining nulls with appropriate defaults
     for col in numeric_columns:
         if col == "Volume":
             df[col] = df[col].fillna(1000)  # Default volume
         else:
             df[col] = df[col].fillna(method='ffill').fillna(method='bfill').fillna(0)
-    
+
     # Final null check
     if HAS_CUDF:
         null_counts = df.isnull().sum()
     else:
         null_counts = df.isna().sum()
-    
+
     total_nulls = null_counts.sum()
     if total_nulls > 0:
         logger.warning(f"Found {total_nulls} null values, performing final cleaning")
         df = df.fillna(0)
-    
+
     # Validate final data
     df = df.dropna()
-    
+
     if len(df) == 0:
         logger.error("No valid data remaining after comprehensive cleaning!")
         raise ValueError("No valid data remaining after comprehensive cleaning")
 
     logger.info(f"Final clean data: {len(df)} rows with no null values")
-    
+
     logger.info("Caching combined data...")
     try:
         df.to_parquet(cache_file)
@@ -345,10 +345,10 @@ def feature_engineering_gpu(
     """
     # Comprehensive null and infinite value cleaning
     logger.info("Starting comprehensive data validation and cleaning...")
-    
+
     # First, handle all numeric columns comprehensively
     numeric_base_cols = ["Open", "High", "Low", "Close", "Volume"]
-    
+
     for col in numeric_base_cols:
         if col in df.columns:
             # Replace infinites with NaN
@@ -356,7 +356,7 @@ def feature_engineering_gpu(
                 df[col] = df[col].replace([float('inf'), float('-inf')], None)
             else:
                 df[col] = df[col].replace([np.inf, -np.inf], np.nan)
-            
+
             # Forward fill, then backward fill, then use median
             if HAS_CUDF:
                 df[col] = df[col].ffill().bfill()
@@ -371,7 +371,7 @@ def feature_engineering_gpu(
                     else:
                         median_val = 100.0  # Default price
                 df[col] = df[col].fillna(median_val)
-    
+
     # Ensure Close prices are specifically validated
     if HAS_CUDF:
         df["Close"] = df["Close"].ffill().bfill()
@@ -379,7 +379,7 @@ def feature_engineering_gpu(
     else:
         df["Close"] = df["Close"].fillna(method='ffill').fillna(method='bfill')
         df["Close"] = df["Close"].replace([np.inf, -np.inf], np.nan).fillna(df["Close"].median())
-    
+
     # Final check for Close column
     if df["Close"].isna().any():
         logger.warning("Close column still has NaN values, using default price")
@@ -419,7 +419,7 @@ def feature_engineering_gpu(
     try:
         # Import numpy explicitly for this operation
         import numpy as np
-        
+
         # Convert cuDF/pandas series to numpy arrays for consistent CPU processing
         if HAS_CUDF and hasattr(minutes, 'to_pandas'):
             minutes_np = minutes.to_pandas().values
@@ -471,20 +471,20 @@ def feature_engineering_gpu(
         ohe_wd = pd.get_dummies(weekday, prefix="wd")
         ohe_tb = pd.get_dummies(time_bin, prefix="tb")
         df = pd.concat([df, ohe_wd, ohe_tb], axis=1)
-    
+
     # Final comprehensive null check and cleaning
     logger.info("Performing final null validation...")
-    
+
     # Check for any remaining null values
     if HAS_CUDF:
         null_counts = df.isnull().sum()
     else:
         null_counts = df.isna().sum()
-    
+
     total_nulls = null_counts.sum()
     if total_nulls > 0:
         logger.warning(f"Found {total_nulls} null values after feature engineering, cleaning...")
-        
+
         # Fill remaining nulls with appropriate defaults
         for col in df.columns:
             if df[col].dtype in ['float64', 'float32', 'int64', 'int32']:
@@ -501,12 +501,12 @@ def feature_engineering_gpu(
                         df[col] = df[col].fillna(1.0)
                 else:
                     df[col] = df[col].fillna(0.0)
-    
+
     # Drop any rows that still have nulls
     df = df.dropna()
-    
+
     logger.info(f"Feature engineering completed: {len(df)} rows, no null values")
-    
+
     return df, segment_dict
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -527,15 +527,15 @@ def scale_and_split_gpu(
         numeric_cols = ["Open","High","Low","Close","Volume","return","ma_10"]
 
     logger.info("Starting scaling with null validation...")
-    
+
     # Comprehensive null checking before scaling
     initial_count = len(df)
     df = df.dropna(subset=numeric_cols).reset_index(drop=True)
     logger.info(f"Removed {initial_count - len(df)} rows with nulls in numeric columns")
-    
+
     if len(df) == 0:
         raise ValueError("No data remaining after null removal")
-    
+
     # Additional validation for infinite values
     for col in numeric_cols:
         if col in df.columns:
@@ -543,7 +543,7 @@ def scale_and_split_gpu(
                 df[col] = df[col].replace([float('inf'), float('-inf')], None).dropna()
             else:
                 df[col] = df[col].replace([np.inf, -np.inf], np.nan).dropna()
-    
+
     # Final null check
     df = df.dropna().reset_index(drop=True)
     logger.info(f"Final scaling dataset: {len(df)} rows")
