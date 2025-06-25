@@ -149,13 +149,21 @@ def load_and_cache_data(
                         na_values=['', ' ', 'null', 'NULL', 'nan', 'NaN'],
                         keep_default_na=True
                     )
-                    # Convert datetime column
+                    # Convert datetime column with cuDF-compatible method
                     try:
-                        file_df["date_time"] = cudf.to_datetime(file_df["date_time"], errors='coerce')
+                        # First convert to pandas for datetime parsing, then back to cuDF
+                        if HAS_CUDF and hasattr(file_df, 'to_pandas'):
+                            temp_df = file_df.to_pandas()
+                            temp_df["date_time"] = pd.to_datetime(temp_df["date_time"], errors='coerce')
+                            file_df = cudf.DataFrame.from_pandas(temp_df)
+                        else:
+                            file_df["date_time"] = cudf.to_datetime(file_df["date_time"])
                     except Exception as e:
-                        logger.warning(f"cuDF datetime conversion failed: {e}, trying alternative method")
-                        file_df["date_time"] = file_df["date_time"].astype(str)
-                        file_df["date_time"] = cudf.to_datetime(file_df["date_time"], format='mixed', utc=False, errors='coerce')
+                        logger.warning(f"cuDF datetime conversion failed: {e}, using pandas fallback")
+                        # Complete fallback to pandas
+                        if hasattr(file_df, 'to_pandas'):
+                            file_df = file_df.to_pandas()
+                        file_df["date_time"] = pd.to_datetime(file_df["date_time"], errors='coerce')
                 else:
                     # Use pandas with better null handling
                     file_df = pd.read_csv(
@@ -189,7 +197,7 @@ def load_and_cache_data(
                             usecols=[0,1,2,3,4,5],  # Use only first 6 columns
                             na_values=['', ' ', 'null', 'NULL', 'nan', 'NaN']
                         )
-                        file_df["date_time"] = cudf.to_datetime(file_df["date_time"], errors='coerce')
+                        file_df["date_time"] = cudf.to_datetime(file_df["date_time"])
                     else:
                         file_df = pd.read_csv(
                             fp,
