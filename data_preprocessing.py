@@ -767,10 +767,4 @@ def feature_engineering(df, has_cudf):
         nan_counts = df.isna().sum()
 
     total_nans = nan_counts.sum()
-    if total_nans > 0:
-        logging.warning(f"Still have {total_nans} NaN values after cleaning")
-        # Final aggressive cleaning
-        df = df.fillna(0.0)
-
-    logging.info("NaN cleaning completed")
-    return df
+    if total_nans >
