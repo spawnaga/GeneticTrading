@@ -250,6 +250,26 @@ class PPOTrainer:
         )
         self.global_step = 0
 
+        # Performance tracking
+        self.episode_rewards = []
+        self.episode_lengths = []
+        self.action_distribution_history = []
+        self.reward_trends = []
+        self.loss_trends = []
+
+        # Trading performance tracking
+        self.account_values = []
+        self.daily_profits = []
+        self.daily_losses = []
+        self.cumulative_profits = []
+        self.drawdown_history = []
+        self.sharpe_history = []
+        self.cagr_history = []
+        self.trading_days = 0
+        self.last_account_value = 100000.0  # Starting capital
+        self.peak_account_value = 100000.0
+        self.daily_returns = []
+
     def collect_trajectories(self):
         """
         Run `rollout_steps` steps in env to collect:
@@ -338,13 +358,13 @@ class PPOTrainer:
             if self.local_rank == 0 and hasattr(trajectory_pbar, 'set_postfix') and step % 50 == 0:
                 avg_reward = np.mean(rew_buf[-50:]) if len(rew_buf) >= 50 else np.mean(rew_buf) if rew_buf else 0.0
                 episodes = sum(done_buf[-50:]) if len(done_buf) >= 50 else sum(done_buf) if done_buf else 0
-                
+
                 # Get recent loss values for display
                 recent_policy_losses = getattr(self, '_recent_policy_losses', [0.0])
                 recent_value_losses = getattr(self, '_recent_value_losses', [0.0])
                 avg_policy_loss = sum(recent_policy_losses[-10:]) / len(recent_policy_losses[-10:]) if recent_policy_losses else 0.0
                 avg_value_loss = sum(recent_value_losses[-10:]) / len(recent_value_losses[-10:]) if recent_value_losses else 0.0
-                
+
                 trajectory_pbar.set_postfix({
                     'reward': f"{avg_reward:.1f}",
                     'eps': episodes,
@@ -383,10 +403,10 @@ class PPOTrainer:
         # Ensure inputs are finite and scale rewards to reasonable range
         rewards = np.nan_to_num(rewards, nan=0.0, posinf=1.0, neginf=-1.0)
         rewards = np.clip(rewards, -10.0, 10.0)  # Clip rewards to prevent explosion
-        
+
         values = np.nan_to_num(values, nan=0.0, posinf=1.0, neginf=-1.0)
         values = np.clip(values, -100.0, 100.0)  # Allow larger range for values
-        
+
         last_state = np.nan_to_num(last_state, nan=0.0, posinf=1.0, neginf=-1.0)
 
         rewards_t = torch.tensor(rewards, dtype=torch.float32, device=self.device)
@@ -417,16 +437,16 @@ class PPOTrainer:
             advantages[t] = gae
 
         returns = advantages + values_t[:-1]
-        
+
         # Clamp returns to reasonable range
         returns = torch.clamp(returns, -100.0, 100.0)
 
         # More conservative advantage normalization
         advantages = torch.clamp(advantages, -10.0, 10.0)  # First clamp raw advantages
-        
+
         adv_mean = advantages.mean()
         adv_std = advantages.std(unbiased=False)
-        
+
         if torch.isfinite(adv_mean) and torch.isfinite(adv_std) and adv_std > 1e-8:
             advantages = (advantages - adv_mean) / (adv_std + 1e-8)
             # Much more conservative clamping after normalization
@@ -526,24 +546,24 @@ class PPOTrainer:
                     value_pred = value_pred.squeeze()
                     with torch.no_grad():
                         old_vals = torch.tensor(vals, dtype=torch.float32, device=self.device)[idx]
-                    
+
                     # Use raw returns but scale them appropriately
                     returns_scaled = b_ret * 0.1  # Scale down returns to reasonable range
-                    
+
                     # Clamp predictions to reasonable range
                     value_pred = torch.clamp(value_pred, -5.0, 5.0)
                     old_vals = torch.clamp(old_vals, -5.0, 5.0)
-                    
+
                     v_clipped = old_vals + torch.clamp(
                         value_pred - old_vals,
                         -self.clip_epsilon, self.clip_epsilon
                     )
-                    
+
                     # Use MSE loss with much better scaling
                     value_loss1 = F.mse_loss(value_pred, returns_scaled)
                     value_loss2 = F.mse_loss(v_clipped, returns_scaled)
                     value_loss = torch.max(value_loss1, value_loss2)
-                    
+
                     # Scale value loss to be comparable to policy loss (much smaller coefficient)
                     value_loss = value_loss * 0.01
 
@@ -611,23 +631,23 @@ class PPOTrainer:
                     if not hasattr(self, '_recent_policy_losses'):
                         self._recent_policy_losses = []
                         self._recent_value_losses = []
-                    
+
                     self._recent_policy_losses.append(policy_loss.item())
                     self._recent_value_losses.append(value_loss.item())
-                    
+
                     # Keep only recent values (last 100)
                     if len(self._recent_policy_losses) > 100:
                         self._recent_policy_losses = self._recent_policy_losses[-100:]
                         self._recent_value_losses = self._recent_value_losses[-100:]
 
                     batch_counter += 1
-                    
+
                     # Log progress much less frequently to avoid interfering with tqdm
                     if self.local_rank == 0 and batch_counter % 200 == 0:
                         recent_policy_loss = np.mean(policy_losses[-10:]) if len(policy_losses) >= 10 else np.mean(policy_losses) if policy_losses else 0.0
                         recent_value_loss = np.mean(value_losses[-10:]) if len(value_losses) >= 10 else np.mean(value_losses) if value_losses else 0.0
                         recent_kl = np.mean(kl_divergences[-10:]) if len(kl_divergences) >= 10 else np.mean(kl_divergences) if kl_divergences else 0.0
-                        
+
                         # Use tqdm.write to avoid interfering with progress bars
                         if hasattr(tqdm, 'write'):
                             tqdm.write(f"📊 PPO: epoch {epoch+1}/{self.update_epochs}, batch {batch_counter}/{total_batches}, "
@@ -779,18 +799,18 @@ class PPOTrainer:
                 # Calculate additional metrics for better progress display
                 lr = self.optimizer.param_groups[0]["lr"]
                 entropy_coef = getattr(self, 'entropy_coef', 0.0)
-                
+
                 # Get recent performance metrics
                 recent_policy_losses = getattr(self, '_recent_policy_losses', [0.0])
                 recent_value_losses = getattr(self, '_recent_value_losses', [0.0])
-                
+
                 avg_policy_loss = sum(recent_policy_losses[-10:]) / len(recent_policy_losses[-10:]) if recent_policy_losses else 0.0
                 avg_value_loss = sum(recent_value_losses[-10:]) / len(recent_value_losses[-10:]) if recent_value_losses else 0.0
-                
+
                 # Calculate iterations per second based on elapsed time
                 elapsed_time = time.time() - start_time
                 iter_per_sec = (update - start_update + 1) / elapsed_time if elapsed_time > 0 else 0.0
-                
+
                 pbar.set_postfix({
                     'reward': f"{mean_reward:.1f}",
                     'p_loss': f"{avg_policy_loss:.3f}",
@@ -798,7 +818,7 @@ class PPOTrainer:
                     'iter/s': f"{iter_per_sec:.2f}",
                     'progress': f"{update+1}/{n_updates}"
                 })
-                
+
                 # Update progress bar description with current phase info
                 if hasattr(self, '_current_phase'):
                     pbar.set_description(f"PPO Training ({self._current_phase})")
@@ -917,3 +937,46 @@ class PPOTrainer:
             'kl_div': np.mean(kl_divergences) if kl_divergences else 0.0
         }
         return metrics
+
+    def _log_trading_performance_metrics(self):
+        """Log trading performance metrics to TensorBoard."""
+        if not self.account_values:
+            logger.warning("No account value data to log.")
+            return
+
+        # Account Value
+        self.tb_writer.add_scalar("Trading/AccountValue", self.account_values[-1], self.global_step)
+
+        # Account Profits
+        if self.cumulative_profits:
+            self.tb_writer.add_scalar("Trading/AccountProfits", self.cumulative_profits[-1], self.global_step)
+
+        # Daily Profits
+        if self.daily_profits:
+            self.tb_writer.add_scalar("Trading/DailyProfits", np.mean(self.daily_profits[-10:]), self.global_step)
+
+        # Daily Loss
+        if self.daily_losses:
+            self.tb_writer.add_scalar("Trading/DailyLoss", np.mean(self.daily_losses[-10:]), self.global_step)
+
+        # Max Daily Drawdown
+         # Drawdown Calculation
+        if self.account_values:
+            drawdowns = []
+            peak = self.account_values[0]
+            for value in self.account_values:
+                if value > peak:
+                    peak = value
+                drawdown = peak - value
+                drawdowns.append(drawdown)
+
+            max_drawdown = max(drawdowns)
+            self.tb_writer.add_scalar("Trading/MaxDailyDrawdown", max_drawdown, self.global_step)
+
+        # Yearly CAGR
+        if self.cagr_history:
+            self.tb_writer.add_scalar("Trading/YearlyCAGR", self.cagr_history[-1], self.global_step)
+
+        # Sharpe Ratio
+        if self.sharpe_history:
+            self.tb_writer.add_scalar("Trading/SharpeRatio", self.sharpe_history[-1], self.global_step)

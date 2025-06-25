@@ -222,6 +222,15 @@ class AdaptiveTrainer:
                 logger.warning("No profits returned from evaluation!")
                 return 0.0, 0.0, {}
 
+            # Update PPO trainer metrics if applicable
+            if self.current_method == "PPO" and self.ppo_trainer:
+                total_profit = sum(profits)
+                current_account_value = 100000 + total_profit  # Starting capital + profits
+                self.ppo_trainer.update_trading_metrics(
+                    episode_profit=total_profit,
+                    current_account_value=current_account_value
+                )
+
             # Filter out None and NaN values from profits and times
             clean_profits = [p for p in profits if p is not None and np.isfinite(p)]
             if len(clean_profits) != len(profits):
