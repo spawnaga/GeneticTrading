@@ -94,6 +94,9 @@ def round_to_nearest_increment(value: float, increment: float) -> float:
     """
     Round `value` to the nearest multiple of `increment`.
     """
+    # Handle NaN and infinite values
+    if not np.isfinite(value) or not np.isfinite(increment) or increment == 0:
+        return 0.0
     return round(value / increment) * increment
 
 def monotonicity(series):

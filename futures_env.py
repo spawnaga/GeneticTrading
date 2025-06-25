@@ -321,6 +321,19 @@ class FuturesEnv(gym.Env):
         High/low bounds are used for clipping, while volume modulates
         slippage magnitude (lower volume -> more slippage).
         """
+        # Validate input parameters
+        if not np.isfinite(price) or price <= 0:
+            price = 100.0  # Default fallback price
+        
+        if high_price is not None and not np.isfinite(high_price):
+            high_price = None
+        
+        if low_price is not None and not np.isfinite(low_price):
+            low_price = None
+        
+        if volume is not None and not np.isfinite(volume):
+            volume = None
+        
         # 1) Decide whether the order actually fills
         current_state = self.states[self.current_index] if self.current_index < len(self.states) else None
         
@@ -365,11 +378,15 @@ class FuturesEnv(gym.Env):
         # 5) Combine all components
         raw_price = price + (slippage + spread_adj) * volume_scale
 
-        # 6) Clip to high/low range if provided
+        # 6) Check for NaN or infinite values
+        if not np.isfinite(raw_price):
+            raw_price = price  # Fallback to original price
+
+        # 7) Clip to high/low range if provided
         if high_price is not None and low_price is not None:
             raw_price = np.clip(raw_price, low_price, high_price)
 
-        # 7) Round to the nearest tick increment
+        # 8) Round to the nearest tick increment
         return round_to_nearest_increment(raw_price, self.tick_size)
 
     def _get_reward(self, state):
