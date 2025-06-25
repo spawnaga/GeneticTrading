@@ -365,8 +365,7 @@ def read_file_chunked(file_path):
     """Dummy function to simulate chunked file reading."""
     import pandas as pd
     import cudf
-    try```python
-:
+    try:
         df = cudf.read_csv(file_path)
         return [df]
     except:
