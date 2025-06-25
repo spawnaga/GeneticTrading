@@ -764,8 +764,7 @@ def feature_engineering(df, has_cudf):
     if has_cudf:
         nan_counts = df.isnull().sum()
     else:
-        nan_counts```python
- = df.isna().sum()
+        nan_counts = df.isna().sum()
 
     total_nans = nan_counts.sum()
     if total_nans > 0:
