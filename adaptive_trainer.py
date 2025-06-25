@@ -148,15 +148,24 @@ class AdaptiveTrainer:
             agent = self.ppo_trainer.model if self.ppo_trainer else self.ga_agent
 
         # Evaluate performance
-        profits, times = evaluate_agent_distributed(self.test_env, agent, self.local_rank)
-        logger.info(f"Evaluation results: {len(profits)} profits, total={sum(profits):.4f}")
+        try:
+            profits, times = evaluate_agent_distributed(self.test_env, agent, self.local_rank)
+            logger.info(f"Evaluation results: {len(profits)} profits, total={sum(profits):.4f}")
 
-        if len(profits) == 0:
-            logger.warning("No profits returned from evaluation!")
+            if len(profits) == 0:
+                logger.warning("No profits returned from evaluation!")
+                return 0.0, 0.0, {}
+
+            # Filter out None values from times before passing to metrics
+            valid_times = [t for t in times if t is not None] if times else None
+            if valid_times and len(valid_times) < len(profits):
+                logger.warning(f"Some timestamps are None: {len(valid_times)} valid out of {len(profits)} total")
+            
+            cagr, sharpe, mdd = compute_performance_metrics(profits, valid_times)
+            logger.info(f"Metrics: CAGR={cagr:.4f}, Sharpe={sharpe:.4f}, MDD={mdd:.4f}")
+        except Exception as e:
+            logger.error(f"Error during policy evaluation: {e}")
             return 0.0, 0.0, {}
-
-        cagr, sharpe, mdd = compute_performance_metrics(profits, times)
-        logger.info(f"Metrics: CAGR={cagr:.4f}, Sharpe={sharpe:.4f}, MDD={mdd:.4f}")
 
         # Calculate composite performance score with better scaling
         # Normalize metrics to prevent extreme values

@@ -281,6 +281,14 @@ class FuturesEnv(gym.Env):
                 'close_price': current_state.close_price,
                 'total_profit': self.balance
             })
+        else:
+            # Provide default values when no state is available
+            import datetime
+            info.update({
+                'timestamp': datetime.datetime.now(),
+                'close_price': 0.0,
+                'total_profit': self.balance
+            })
         
         return info
 

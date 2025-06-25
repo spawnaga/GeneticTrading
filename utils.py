@@ -138,9 +138,17 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
 
     # Time-based calculations
     if times is not None and len(times) >= 2:
-        # Calculate actual time period
-        total_time_days = max((times[-1] - times[0]).total_seconds() / (24 * 3600), 1)
-        years = max(total_time_days / 365.25, 1/252)  # Minimum 1 trading day
+        # Filter out None values from times
+        valid_times = [t for t in times if t is not None]
+        if len(valid_times) >= 2:
+            # Calculate actual time period
+            total_time_days = max((valid_times[-1] - valid_times[0]).total_seconds() / (24 * 3600), 1)
+            years = max(total_time_days / 365.25, 1/252)  # Minimum 1 trading day
+        else:
+            # Fallback if no valid times
+            trading_periods_per_day = 24  # Assuming 24 periods per day (15-min bars)
+            trading_days = len(profits) / trading_periods_per_day
+            years = max(trading_days / 252, 1/252)  # 252 trading days per year
     else:
         # Estimate time period from number of data points
         # Assume intraday data (e.g., 15-minute bars during trading hours)
@@ -312,7 +320,14 @@ def evaluate_agent_distributed(env, agent, local_rank=0):
             obs, reward, done, info = step_result
 
         profit_history.append(info.get('total_profit', 0.0))
-        timestamps.append(info.get('timestamp'))
+        # Handle missing timestamp gracefully
+        timestamp = info.get('timestamp')
+        if timestamp is None:
+            # Generate a synthetic timestamp if missing
+            import datetime
+            base_time = datetime.datetime.now()
+            timestamp = base_time + datetime.timedelta(seconds=len(timestamps))
+        timestamps.append(timestamp)
 
     return profit_history, timestamps
 
