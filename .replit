@@ -5,7 +5,7 @@ channel = "stable-24_05"
 packages = ["cairo", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "gobject-introspection", "gtk3", "libjpeg_turbo", "libpng", "pkg-config", "qhull", "tcl", "tk", "which"]
 
 [workflows]
-runButton = "Run Trading System Full Data"
+runButton = "Run 4GPU Distributed Training"
 
 [[workflows.workflow]]
 name = "Run Trading System"
@@ -24,3 +24,12 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py --data-percentage 1.0 --max-rows 0 --adaptive-iterations 20 --log-level INFO"
+
+[[workflows.workflow]]
+name = "Run 4GPU Distributed Training"
+author = 33211024
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "torchrun --nproc_per_node=4 --nnodes=1 --node_rank=0 --master_addr=127.0.0.1 --master_port=12355 main.py --data-percentage 1.0 --max-rows 0 --adaptive-iterations 20 --log-level INFO"
