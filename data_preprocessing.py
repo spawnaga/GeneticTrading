@@ -385,7 +385,8 @@ def create_environment_data(
     max_rows: int | None = None,
     test_size: float = 0.2,
     cache_folder: str = './cached_data',
-    chunk_size: int = 500000  # Process 500K rows at a time
+    chunk_size: int = 500000,  # Process 500K rows at a time
+    stream_processing: bool = False  # Enable for very large datasets
 ):
     """
     Args:
@@ -397,6 +398,17 @@ def create_environment_data(
     Returns:
       train_df, test_df, scaler, segment_dict
     """
+    # Enable streaming for very large datasets
+    if max_rows and max_rows > 10_000_000:
+        stream_processing = True
+        logger.info(f"Enabling streaming processing for {max_rows} rows")
+    
+    # For streaming, we process data in smaller batches to avoid memory issues
+    if stream_processing:
+        return _create_streaming_environment_data(
+            data_folder, max_rows, test_size, cache_folder, chunk_size
+        )
+    
     df = load_and_cache_data(data_folder, cache_folder)
     total_rows = len(df)
 
@@ -485,6 +497,188 @@ def read_file_chunked_pandas(file_path):
         header=None
     ):
         # Convert datetime column directly since we set the name explicitly
+
+
+def _create_streaming_environment_data(
+    data_folder: str,
+    max_rows: int,
+    test_size: float,
+    cache_folder: str,
+    chunk_size: int
+):
+    """
+    Streaming data processing for massive datasets (100M+ rows)
+    Processes data in chunks and saves intermediate results to avoid memory issues
+    """
+    logger.info("Starting streaming data processing for massive dataset")
+    
+    # Create temporary directory for streaming chunks
+    import tempfile
+    temp_dir = os.path.join(cache_folder, "streaming_chunks")
+    os.makedirs(temp_dir, exist_ok=True)
+    
+    # Process data in streaming chunks
+    processed_chunks = []
+    scaler = None
+    segment_dict = None
+    
+    # Load data in smaller chunks to avoid memory explosion
+    streaming_chunk_size = min(chunk_size, 100_000)  # Even smaller chunks for streaming
+    
+    try:
+        files = glob.glob(os.path.join(data_folder, "*.txt"))
+        if not files:
+            raise FileNotFoundError(f"No data files found in {data_folder}")
+        
+        total_processed = 0
+        
+        for file_idx, file_path in enumerate(files):
+            logger.info(f"Streaming processing file {file_idx + 1}/{len(files)}: {os.path.basename(file_path)}")
+            
+            # Read file in chunks using pandas (more memory efficient than cuDF for streaming)
+            chunk_reader = pd.read_csv(
+                file_path,
+                names=["date_time", "Open", "High", "Low", "Close", "Volume"],
+                header=None,
+                chunksize=streaming_chunk_size
+            )
+            
+            for chunk_idx, raw_chunk in enumerate(chunk_reader):
+                if max_rows and total_processed >= max_rows:
+                    break
+                    
+                try:
+                    # Basic data cleaning
+                    raw_chunk["date_time"] = pd.to_datetime(raw_chunk["date_time"], errors='coerce')
+                    raw_chunk = raw_chunk.dropna(subset=["date_time"])
+                    
+                    if len(raw_chunk) == 0:
+                        continue
+                    
+                    # Convert to cuDF if available for faster processing
+                    if HAS_CUDF:
+                        try:
+                            chunk = cudf.DataFrame.from_pandas(raw_chunk)
+                        except Exception:
+                            chunk = raw_chunk
+                    else:
+                        chunk = raw_chunk
+                    
+                    # Feature engineering
+                    chunk, seg_dict = feature_engineering_gpu(chunk)
+                    if segment_dict is None:
+                        segment_dict = seg_dict
+                    
+                    # Scaling - fit on first chunk, transform on rest
+                    numeric_cols = ["Open","High","Low","Close","Volume","return","ma_10"]
+                    chunk = chunk.dropna(subset=numeric_cols).reset_index(drop=True)
+                    
+                    if len(chunk) == 0:
+                        continue
+                    
+                    # Add raw columns
+                    raw_cols = ["Open", "High", "Low", "Close", "Volume"]
+                    for col in raw_cols:
+                        if col in chunk.columns:
+                            chunk[f"{col}_raw"] = chunk[col].astype("float64")
+                    
+                    if scaler is None:
+                        # Fit scaler on first chunk
+                        scaler = CuStandardScaler()
+                        X = chunk[numeric_cols]
+                        X_scaled = scaler.fit_transform(X)
+                        chunk[numeric_cols] = X_scaled
+                        logger.info("Fitted scaler on first data chunk")
+                    else:
+                        # Transform subsequent chunks
+                        X = chunk[numeric_cols]
+                        X_scaled = scaler.transform(X)
+                        chunk[numeric_cols] = X_scaled
+                    
+                    # Save chunk to temporary file
+                    chunk_file = os.path.join(temp_dir, f"chunk_{file_idx}_{chunk_idx}.parquet")
+                    
+                    # Convert back to pandas for saving if needed
+                    if hasattr(chunk, 'to_pandas'):
+                        chunk.to_pandas().to_parquet(chunk_file, index=False)
+                    else:
+                        chunk.to_parquet(chunk_file, index=False)
+                    
+                    processed_chunks.append(chunk_file)
+                    total_processed += len(chunk)
+                    
+                    if chunk_idx % 10 == 0:
+                        logger.info(f"Processed {total_processed} rows, saved {len(processed_chunks)} chunks")
+                    
+                    # Clear memory
+                    del chunk, raw_chunk
+                    
+                except Exception as e:
+                    logger.warning(f"Error processing chunk {chunk_idx} from file {file_path}: {e}")
+                    continue
+                
+                if max_rows and total_processed >= max_rows:
+                    break
+            
+            if max_rows and total_processed >= max_rows:
+                break
+        
+        logger.info(f"Streaming processing complete: {total_processed} rows in {len(processed_chunks)} chunks")
+        
+        # Now combine chunks and split into train/test
+        logger.info("Combining processed chunks for train/test split...")
+        
+        # Determine split point
+        split_idx = int(len(processed_chunks) * (1 - test_size))
+        train_chunk_files = processed_chunks[:split_idx]
+        test_chunk_files = processed_chunks[split_idx:]
+        
+        # Combine train chunks
+        if train_chunk_files:
+            train_dfs = []
+            for chunk_file in train_chunk_files:
+                df_chunk = pd.read_parquet(chunk_file)
+                train_dfs.append(df_chunk)
+            
+            train_df = pd.concat(train_dfs, ignore_index=True)
+            del train_dfs
+        else:
+            raise ValueError("No training data chunks available")
+        
+        # Combine test chunks
+        if test_chunk_files:
+            test_dfs = []
+            for chunk_file in test_chunk_files:
+                df_chunk = pd.read_parquet(chunk_file)
+                test_dfs.append(df_chunk)
+            
+            test_df = pd.concat(test_dfs, ignore_index=True)
+            del test_dfs
+        else:
+            raise ValueError("No test data chunks available")
+        
+        logger.info(f"Final streaming result: {len(train_df)} train, {len(test_df)} test rows")
+        
+        # Clean up temporary files
+        try:
+            import shutil
+            shutil.rmtree(temp_dir)
+            logger.info("Cleaned up temporary streaming files")
+        except Exception as e:
+            logger.warning(f"Failed to clean up temp directory: {e}")
+        
+        return train_df, test_df, scaler, segment_dict
+        
+    except Exception as e:
+        logger.error(f"Streaming processing failed: {e}")
+        # Clean up on failure
+        try:
+            import shutil
+            shutil.rmtree(temp_dir)
+        except:
+            pass
+        raise
+
         chunk["date_time"] = pd.to_datetime(chunk["date_time"], errors='coerce')
         chunk = chunk.dropna(subset=["date_time"])
         if len(chunk) > 0:

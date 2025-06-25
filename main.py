@@ -109,6 +109,10 @@ def parse_arguments():
                            help='Maximum number of rows to process (0 for all)')
     data_group.add_argument('--chunk-size', type=int, default=500000,
                            help='Chunk size for processing large datasets')
+    data_group.add_argument('--streaming-threshold', type=int, default=10000000,
+                           help='Row threshold to enable streaming processing')
+    data_group.add_argument('--memory-limit-gb', type=float, default=8.0,
+                           help='Memory limit in GB for processing')
     
     # Model configuration
     model_group = parser.add_argument_group('Model Configuration')
@@ -320,14 +324,24 @@ def main():
     train_path = os.path.join(args.cache_folder, "train_data.parquet")
     test_path  = os.path.join(args.cache_folder, "test_data.parquet")
 
-    # Handle small dataset optimization
+    # Handle large dataset optimization
     max_rows = args.max_rows if args.max_rows > 0 else None
     if max_rows and args.data_percentage < 1.0:
         max_rows = int(max_rows * args.data_percentage)
     
-    # For very small datasets, adjust chunk size
-    if max_rows and max_rows <= 1000:
-        args.chunk_size = min(args.chunk_size, max_rows // 2)
+    # Intelligent chunk sizing based on data size
+    if max_rows:
+        if max_rows <= 1000:
+            args.chunk_size = min(args.chunk_size, max_rows // 2)
+        elif max_rows > 10_000_000:  # Large datasets
+            args.chunk_size = 1_000_000  # 1M row chunks
+            logging.info(f"Large dataset detected ({max_rows} rows), using 1M row chunks")
+        elif max_rows > 1_000_000:   # Medium datasets  
+            args.chunk_size = 500_000   # 500K row chunks
+    else:
+        # No row limit - assume very large dataset
+        args.chunk_size = 1_000_000
+        logging.info("No row limit specified, using 1M row chunks for memory efficiency")
 
     if local_rank == 0:
         if not (os.path.exists(train_path) and os.path.exists(test_path)):
