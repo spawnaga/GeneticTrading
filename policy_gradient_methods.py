@@ -61,10 +61,10 @@ class ActorCriticNet(nn.Module):
         self.policy_head = nn.Linear(hidden_dim, action_dim).to(self.device)
         # State-value head
         self.value_head = nn.Linear(hidden_dim, 1).to(self.device)
-        
+
         # Initialize weights with Xavier/Glorot initialization
         self._initialize_weights()
-    
+
     def _initialize_weights(self):
         """Initialize network weights for stability"""
         for module in self.modules():
@@ -84,37 +84,37 @@ class ActorCriticNet(nn.Module):
             value: [batch, 1]
         """
         x = x.to(self.device)
-        
+
         # Check for NaN/infinite input
         if not torch.all(torch.isfinite(x)):
             logger.warning("NaN/infinite input detected, replacing with zeros")
             x = torch.where(torch.isfinite(x), x, torch.zeros_like(x))
-        
+
         if x.ndim > 2:
             x = x.view(x.size(0), -1)
-            
+
         hidden = self.base(x)
-        
+
         # Check for NaN in hidden layer
         if not torch.all(torch.isfinite(hidden)):
             logger.warning("NaN/infinite hidden values detected, clipping")
             hidden = torch.clamp(hidden, -10.0, 10.0)
             hidden = torch.where(torch.isfinite(hidden), hidden, torch.zeros_like(hidden))
-        
+
         policy_logits = self.policy_head(hidden)
         value = self.value_head(hidden)
-        
+
         # Final NaN check and clipping
         if not torch.all(torch.isfinite(policy_logits)):
             logger.warning("NaN/infinite policy logits detected, clipping")
             policy_logits = torch.clamp(policy_logits, -10.0, 10.0)
             policy_logits = torch.where(torch.isfinite(policy_logits), policy_logits, torch.zeros_like(policy_logits))
-        
+
         if not torch.all(torch.isfinite(value)):
             logger.warning("NaN/infinite value detected, clipping")
             value = torch.clamp(value, -10.0, 10.0)
             value = torch.where(torch.isfinite(value), value, torch.zeros_like(value))
-        
+
         return policy_logits, value
 
     def act(self, state):
@@ -149,17 +149,17 @@ class ActorCriticNet(nn.Module):
         if os.path.exists(path):
             try:
                 saved_state = torch.load(path, map_location=self.device)
-                
+
                 # Check if dimensions match
                 if 'base.0.weight' in saved_state:
                     saved_input_dim = saved_state['base.0.weight'].shape[1]
                     current_input_dim = self.base[0].weight.shape[1]
-                    
+
                     if saved_input_dim != current_input_dim:
                         logger.warning(f"Dimension mismatch: saved model expects {saved_input_dim}, current model has {current_input_dim}")
                         logger.info(f"Starting from scratch due to incompatible checkpoint at {path}")
                         return
-                
+
                 self.load_state_dict(saved_state)
                 logger.info(f"Loaded model from {path}")
             except Exception as e:
@@ -257,13 +257,13 @@ class PPOTrainer:
         rew_buf, done_buf = [], []
 
         state = _unpack_reset(self.env.reset())
-        
+
         # Add progress bar for trajectory collection
         trajectory_pbar = tqdm(range(self.rollout_steps), 
                               desc="Collecting trajectories", 
                               leave=False, 
                               disable=(self.local_rank != 0))
-        
+
         for step in trajectory_pbar:
             # Ensure state is not empty and has proper shape
             if len(state) == 0:
@@ -293,7 +293,7 @@ class PPOTrainer:
                 # Ensure reset state is not empty
                 if len(state) == 0:
                     state = np.zeros(self.env.observation_space.shape, dtype=np.float32)
-            
+
             # Update progress bar with current metrics
             if step % 100 == 0:
                 trajectory_pbar.set_postfix({
@@ -328,7 +328,7 @@ class PPOTrainer:
         rewards = np.nan_to_num(rewards, nan=0.0, posinf=1.0, neginf=-1.0)
         values = np.nan_to_num(values, nan=0.0, posinf=1.0, neginf=-1.0)
         last_state = np.nan_to_num(last_state, nan=0.0, posinf=1.0, neginf=-1.0)
-        
+
         rewards_t = torch.tensor(rewards, dtype=torch.float32, device=self.device)
         values_t = torch.tensor(values, dtype=torch.float32, device=self.device)
         dones_t = torch.tensor(dones, dtype=torch.float32, device=self.device)
@@ -337,7 +337,7 @@ class PPOTrainer:
             last_state_t = torch.tensor(last_state, dtype=torch.float32, device=self.device).unsqueeze(0)
             _, last_val_t = self.model(last_state_t)
             last_val_t = last_val_t.squeeze()
-            
+
             # Clamp last value to prevent extreme values
             last_val_t = torch.clamp(last_val_t, -10.0, 10.0)
 
@@ -351,17 +351,17 @@ class PPOTrainer:
             mask = 1.0 - dones_t[t]
             delta = rewards_t[t] + self.gamma * values_t[t + 1] * mask - values_t[t]
             gae = delta + self.gamma * self.gae_lambda * mask * gae
-            
+
             # Clamp GAE to prevent explosion
             gae = torch.clamp(gae, -10.0, 10.0)
             advantages[t] = gae
 
         returns = advantages + values_t[:-1]
-        
+
         # More robust advantage normalization
         adv_mean = advantages.mean()
         adv_std = advantages.std(unbiased=False)
-        
+
         if torch.isfinite(adv_mean) and torch.isfinite(adv_std) and adv_std > 1e-8:
             advantages = (advantages - adv_mean) / (adv_std + 1e-8)
         else:
@@ -383,7 +383,7 @@ class PPOTrainer:
             if not np.all(np.isfinite(obs)):
                 logger.warning("NaN/infinite observations detected, skipping update")
                 return 0.0
-            
+
             if not np.all(np.isfinite(rews)):
                 logger.warning("NaN/infinite rewards detected, skipping update")
                 return 0.0
@@ -394,39 +394,42 @@ class PPOTrainer:
             adv_t   = advs  # Already on correct device from compute_gae
             ret_t   = rets  # Already on correct device from compute_gae
 
-            # Track action distribution for analysis
-            action_counts = np.bincount(acts, minlength=self.env.action_space.n)
-            action_probs = action_counts / len(acts)
+            # Track action distribution for analysis (ensure acts is numpy array)
+            acts_numpy = acts if isinstance(acts, np.ndarray) else acts.cpu().numpy()
+            action_counts = np.bincount(acts_numpy, minlength=self.env.action_space.n)
+            action_probs = action_counts / len(acts_numpy)
             self.action_distribution_history.append(action_probs)
 
-            # Track reward patterns
-            self.reward_trends.extend(rews)
+            # Track reward patterns (ensure rews is numpy array)
+            rews_numpy = rews if isinstance(rews, np.ndarray) else rews.cpu().numpy()
+            self.reward_trends.extend(rews_numpy)
 
-            # Analyze trading behavior
-            self._analyze_trading_behavior(acts, rews, obs)
+            # Analyze trading behavior (ensure obs is numpy array)
+            obs_numpy = obs if isinstance(obs, np.ndarray) else obs.cpu().numpy()
+            self._analyze_trading_behavior(acts_numpy, rews_numpy, obs_numpy)
 
             # 2) PPO epochs with enhanced tracking
             policy_losses, value_losses, entropies = [], [], []
             kl_divergences, clip_fractions = [], []
 
             dataset_size = len(obs)
-            
+
             # Progress bar for PPO update epochs
             epoch_pbar = tqdm(range(self.update_epochs), 
                              desc="PPO Update Epochs", 
                              leave=False, 
                              disable=(self.local_rank != 0))
-            
+
             for epoch in epoch_pbar:
                 perm = torch.randperm(dataset_size, device=self.device)
-                
+
                 # Progress bar for batch processing within each epoch
                 batch_starts = list(range(0, dataset_size, self.batch_size))
                 batch_pbar = tqdm(batch_starts, 
                                  desc=f"Epoch {epoch+1} Batches", 
                                  leave=False, 
                                  disable=(self.local_rank != 0))
-                
+
                 for start in batch_pbar:
                     idx = perm[start:start + self.batch_size]
                     b_obs, b_acts = obs_t[idx], acts_t[idx]
@@ -469,37 +472,37 @@ class PPOTrainer:
                     if not torch.isfinite(loss):
                         logger.warning(f"NaN/infinite loss detected: {loss.item()}, skipping update")
                         continue
-                    
+
                     # Check for NaN/infinite values in logits
                     if not torch.all(torch.isfinite(logits)):
                         logger.warning("NaN/infinite logits detected, skipping update")
                         continue
-                    
+
                     self.optimizer.zero_grad()
                     loss.backward()
 
                     # Calculate gradient norm with better clipping
                     grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.5)
-                    
+
                     # Check for NaN gradients
                     has_nan_grad = False
                     for param in self.model.parameters():
                         if param.grad is not None and not torch.all(torch.isfinite(param.grad)):
                             has_nan_grad = True
                             break
-                    
+
                     if has_nan_grad:
                         logger.warning("NaN gradients detected, skipping optimizer step")
                         self.optimizer.zero_grad()
                         continue
-                    
+
                     if not torch.isfinite(grad_norm):
                         logger.warning("NaN gradient norm detected, skipping optimizer step")
                         self.optimizer.zero_grad()
                         continue
 
                     self.optimizer.step()
-                    
+
                     # Verify model parameters are still valid after update
                     has_nan_params = False
                     for name, param in self.model.named_parameters():
@@ -509,12 +512,12 @@ class PPOTrainer:
                             # Reinitialize the problematic layer with more conservative values
                             if hasattr(param, 'data'):
                                 param.data.normal_(0, 0.001)  # Much smaller initialization
-                    
+
                     # If we had NaN parameters, also reset optimizer state
                     if has_nan_params:
                         logger.info("Resetting optimizer state due to NaN parameters")
                         self.optimizer.state = {}
-                    
+
                     # Store valid gradient norm
                     if torch.isfinite(grad_norm):
                         self.gradient_norms.append(grad_norm.item())
@@ -522,23 +525,23 @@ class PPOTrainer:
                     policy_losses.append(policy_loss.item())
                     value_losses.append(value_loss.item())
                     entropies.append(entropy.item())
-                    
+
                     # Update batch progress bar
                     batch_pbar.set_postfix({
                         'policy_loss': f"{policy_loss.item():.4f}",
                         'value_loss': f"{value_loss.item():.4f}",
                         'entropy': f"{entropy.item():.4f}"
                     })
-                
+
                 batch_pbar.close()
-                
+
                 # Update epoch progress bar
                 epoch_pbar.set_postfix({
                     'avg_policy_loss': f"{np.mean(policy_losses[-len(batch_starts):]):.4f}",
                     'avg_value_loss': f"{np.mean(value_losses[-len(batch_starts):]):.4f}",
                     'kl_div': f"{np.mean(kl_divergences[-len(batch_starts):]):.4f}"
                 })
-            
+
             epoch_pbar.close()
 
             # Store loss trends
@@ -852,10 +855,10 @@ class PPOTrainer:
         # 4. Gradient Flow Analysis
         if len(self.gradient_norms) > 20:
             recent_grads = list(self.gradient_norms)[-50:]
-            
+
             # Filter out infinite and NaN values
             recent_grads = [g for g in recent_grads if np.isfinite(g)]
-            
+
             if len(recent_grads) > 0:  # Only create plot if we have valid data
                 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
 

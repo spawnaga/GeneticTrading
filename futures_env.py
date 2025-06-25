@@ -235,6 +235,9 @@ class FuturesEnv(gym.Env):
         current_state = self.states[self.current_index]
         base_features = current_state.features.copy()
         
+        # Clean base features of NaN/infinite values
+        base_features = np.nan_to_num(base_features, nan=0.0, posinf=1.0, neginf=-1.0)
+        
         # Add position information if required
         if self.add_current_position_to_state:
             position_features = np.zeros(3, dtype=np.float32)
@@ -251,6 +254,10 @@ class FuturesEnv(gym.Env):
         
         # Ensure observation is the right shape and type
         obs = np.array(obs, dtype=np.float32)
+        
+        # Final NaN check and cleaning
+        obs = np.nan_to_num(obs, nan=0.0, posinf=1.0, neginf=-1.0)
+        
         if obs.shape != self.observation_space.shape:
             # Pad or truncate to match expected shape
             expected_size = self.observation_space.shape[0]
@@ -258,6 +265,10 @@ class FuturesEnv(gym.Env):
                 obs = np.pad(obs, (0, expected_size - len(obs)), mode='constant')
             elif len(obs) > expected_size:
                 obs = obs[:expected_size]
+        
+        # Ensure all values are finite
+        if not np.all(np.isfinite(obs)):
+            obs = np.zeros(self.observation_space.shape, dtype=np.float32)
         
         return obs
 

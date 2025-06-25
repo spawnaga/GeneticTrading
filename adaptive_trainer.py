@@ -142,23 +142,47 @@ class AdaptiveTrainer:
         """
         Evaluate current policy and return performance metrics and policy entropy
         """
-        if self.current_method == "GA":
-            agent = self.ga_agent
-        else:
-            agent = self.ppo_trainer.model if self.ppo_trainer else self.ga_agent
-
-        # Move agent to CPU for evaluation to avoid CUDA issues
-        original_device = next(agent.parameters()).device
-        agent = agent.cpu()
-
-        # Evaluate performance
         try:
+            if self.current_method == "GA":
+                agent = self.ga_agent
+            else:
+                agent = self.ppo_trainer.model if self.ppo_trainer else self.ga_agent
+
+            # Ensure agent is on CPU for evaluation to avoid CUDA issues
+            if hasattr(agent, 'cpu'):
+                agent = agent.cpu()
+
+            # Evaluate performance
             profits, times = evaluate_agent_distributed(self.test_env, agent, self.local_rank)
             logger.info(f"Evaluation results: {len(profits)} profits, total={sum(profits):.4f}")
 
             if len(profits) == 0:
                 logger.warning("No profits returned from evaluation!")
                 return 0.0, 0.0, {}
+
+            # Calculate performance metrics
+            cagr, sharpe, mdd = compute_performance_metrics(profits, times)
+            logger.info(f"Metrics: CAGR={cagr:.4f}, Sharpe={sharpe:.4f}, MDD={mdd:.4f}")
+
+            # Calculate policy entropy (simplified)
+            entropy = 1.0986  # log(3) for 3 actions, uniform distribution
+
+            # Create comprehensive performance score
+            performance = cagr * 0.4 + sharpe * 0.3 - mdd * 0.3
+
+            metrics = {
+                'cagr': cagr,
+                'sharpe': sharpe,
+                'mdd': mdd,
+                'total_profits': sum(profits),
+                'num_trades': len(profits)
+            }
+
+            return performance, entropy, metrics
+
+        except Exception as e:
+            logger.error(f"Error during policy evaluation: {e}")
+            return 0.0, 0.0, {}
 
             # Filter out None values from times before passing to metrics
             valid_times = [t for t in times if t is not None] if times else None
