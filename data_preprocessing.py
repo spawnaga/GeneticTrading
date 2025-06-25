@@ -22,17 +22,28 @@ import warnings
 try:
     import cudf
     import cupy as cp
-    from cuml.preprocessing import StandardScaler as CuStandardScaler
-    from cuml.model_selection import train_test_split
     HAS_CUDF = True
 except ImportError:
     import pandas as pd
     import numpy as np
-    from sklearn.preprocessing import StandardScaler as CuStandardScaler
-    from sklearn.model_selection import train_test_split
     cudf = pd
     cp = np
     HAS_CUDF = False
+
+# Handle cuML imports separately with better error handling
+try:
+    from cuml.preprocessing import StandardScaler as CuStandardScaler
+    from cuml.model_selection import train_test_split
+    HAS_CUML = True
+except (ImportError, AttributeError, RuntimeError) as e:
+    # Handle various CUDA-related import errors
+    if "cuda" in str(e).lower() or "numba" in str(e).lower():
+        warnings.warn(f"cuML import failed due to CUDA/numba issues ({e}); using CPU fallback.")
+    else:
+        warnings.warn(f"cuML import failed ({e}); using CPU fallback.")
+    from sklearn.preprocessing import StandardScaler as CuStandardScaler
+    from sklearn.model_selection import train_test_split
+    HAS_CUML = False
 
 from utils import hash_files
 
