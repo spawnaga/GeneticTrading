@@ -1,0 +1,184 @@
+/home/alex/miniconda3/envs/GeneticTrading/bin/python /mnt/windows/GeneticTrading/run_simple.py 
+🤖 Trading System Launcher
+==================================================
+✓ Created directory: ./models
+✓ Created directory: ./logs
+✓ Created directory: ./cached_data
+✓ Created directory: ./runs
+Available modes:
+  test - Quick test with minimal data (default)
+  dev  - Development mode with 10% data
+  full - Full training with 100% data
+
+Usage: python run_simple.py [test|dev|full]
+Select mode (test/dev/full) [test]: dev
+🔧 Starting Development Mode...
+📊 Using all available data with adaptive training
+📈 Monitoring enabled - check ./logs/training_metrics.json for progress
+⚡ Adaptive GA+PPO training with all your data
+🔧 Starting Development Mode...
+📊 Using all available data
+WARNING:root:Distributed training not available, running in single-process mode
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] STARTUP             : ================================================================================
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] STARTUP             : Training session started for rank 0
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] STARTUP             : Log file: logs/training_rank_0.log
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] STARTUP             : Process ID: 28924
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] STARTUP             : Working directory: /mnt/windows/GeneticTrading
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] STARTUP             : ================================================================================
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] root                : NCCL_TIMEOUT = 1800000 ms
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] root                : Using 100.0% of available data
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] root                : Models will be saved to: ./models/dev
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] root                : Rank 0/1 starting on cuda:0 (has_cudf=True)
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] root                : Data loading parameters: max_rows=None, data_percentage=1.0
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] root                : No row limit specified, using 1M row chunks for memory efficiency
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] root                : Processing data with max_rows=None, chunk_size=1000000
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] data_preprocessing  : Scanning 1 files for raw data (using chunked reading)...
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] data_preprocessing  : Processing file: NQ_full_1min_continuous_absolute_adjusted.txt
+2025-06-25 02:18:13 [INFO    ] [Rank-28924] data_preprocessing  : Detected 6 columns in NQ_full_1min_continuous_absolute_adjusted.txt
+2025-06-25 02:18:14 [INFO    ] [Rank-28924] numba.cuda.cudadrv.driver: init
+2025-06-25 02:18:15 [INFO    ] [Rank-28924] data_preprocessing  : Combining all file chunks...
+2025-06-25 02:18:15 [INFO    ] [Rank-28924] data_preprocessing  : Performing comprehensive null data cleaning...
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+2025-06-25 02:18:15 [INFO    ] [Rank-28924] data_preprocessing  : Final clean data: 5389750 rows with no null values
+2025-06-25 02:18:15 [INFO    ] [Rank-28924] data_preprocessing  : Caching combined data...
+2025-06-25 02:18:15 [INFO    ] [Rank-28924] data_preprocessing  : Cached combined data to ./cached_data/combined_c45aa0ea65a985db5a05afa4579f0ae232581f54055da961dfa91464108f8fc3.parquet
+2025-06-25 02:18:15 [INFO    ] [Rank-28924] data_preprocessing  : Processing 5389750 rows in chunks of 1000000
+2025-06-25 02:18:15 [INFO    ] [Rank-28924] data_preprocessing  : Processing chunk 1/6
+2025-06-25 02:18:15 [INFO    ] [Rank-28924] data_preprocessing  : Starting comprehensive data validation and cleaning...
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+2025-06-25 02:18:15 [INFO    ] [Rank-28924] data_preprocessing  : Performing final null validation...
+2025-06-25 02:18:15 [INFO    ] [Rank-28924] data_preprocessing  : Feature engineering completed: 1000000 rows, no null values
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Processing chunk 2/6
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Starting comprehensive data validation and cleaning...
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Performing final null validation...
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Feature engineering completed: 1000000 rows, no null values
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Processing chunk 3/6
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Starting comprehensive data validation and cleaning...
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Performing final null validation...
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Feature engineering completed: 1000000 rows, no null values
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Processing chunk 4/6
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Starting comprehensive data validation and cleaning...
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Performing final null validation...
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Feature engineering completed: 1000000 rows, no null values
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Processing chunk 5/6
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Starting comprehensive data validation and cleaning...
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Performing final null validation...
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Feature engineering completed: 1000000 rows, no null values
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Processing chunk 6/6
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Starting comprehensive data validation and cleaning...
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Performing final null validation...
+2025-06-25 02:18:16 [INFO    ] [Rank-28924] data_preprocessing  : Feature engineering completed: 389750 rows, no null values
+2025-06-25 02:18:17 [INFO    ] [Rank-28924] root                : Saving processed data to compressed Parquet...
+2025-06-25 02:18:17 [INFO    ] [Rank-28924] root                : Data cached to Parquet and artifacts saved.
+2025-06-25 02:18:17 [INFO    ] [Rank-28924] root                : Total data: 4311800 train, 1077950 test rows
+2025-06-25 02:18:17 [INFO    ] [Rank-28924] root                : Rank 0: Sampled 100000 train rows from 4311800 total
+2025-06-25 02:18:17 [INFO    ] [Rank-28924] root                : Rank 0: Sampled 20000 test rows from 1077950 total
+2025-06-25 02:18:19 [INFO    ] [Rank-28924] email_notifications : Email notifications configured for ali.aloraibi@outlook.com
+2025-06-25 02:18:19 [INFO    ] [Rank-28924] email_notifications : Notifications will be sent every 6 hours
+2025-06-25 02:18:19 [INFO    ] [Rank-28924] email_notifications : No training metrics available for progress update
+2025-06-25 02:18:19 [INFO    ] [Rank-28924] email_notifications : Training monitoring started
+2025-06-25 02:18:19 [INFO    ] [Rank-28924] root                : Email notifications enabled - reports every 6 hours
+2025-06-25 02:18:19 [INFO    ] [Rank-28924] adaptive_trainer    : Removed old TensorBoard run: ./runs/ga_experiment
+2025-06-25 02:18:19 [INFO    ] [Rank-28924] adaptive_trainer    : Starting adaptive training
+2025-06-25 02:18:19 [INFO    ] [Rank-28924] adaptive_trainer    : 
+=== Adaptive Training Iteration 1/20 ===
+2025-06-25 02:18:20 [INFO    ] [Rank-28924] adaptive_trainer    : Evaluation results: 1181 profits, total=-50340942921.7394
+2025-06-25 02:18:20 [INFO    ] [Rank-28924] adaptive_trainer    : Metrics: CAGR=-99.0000, Sharpe=-3.0000, MDD=100.0000
+2025-06-25 02:18:20 [INFO    ] [Rank-28924] adaptive_trainer    : Current performance: -0.6470 (best: -0.6470)
+2025-06-25 02:18:20 [INFO    ] [Rank-28924] adaptive_trainer    : Stagnation: 0, Poor performance: 0
+2025-06-25 02:18:20 [INFO    ] [Rank-28924] adaptive_trainer    : Method: GA, Entropy: 1.0986
+2025-06-25 02:18:20 [INFO    ] [Rank-28924] adaptive_trainer    : Switching to PPO due to: ga_solution_refinement
+2025-06-25 02:18:20 [INFO    ] [Rank-28924] adaptive_trainer    : Switching from GA to PPO
+2025-06-25 02:18:20 [INFO    ] [Rank-28924] adaptive_trainer    : Starting PPO phase: 150 updates
+2025-06-25 02:18:20 [WARNING ] [Rank-28924] policy_gradient_methods: Dimension mismatch: saved model expects 51, current model has 117
+2025-06-25 02:18:20 [INFO    ] [Rank-28924] policy_gradient_methods: Starting from scratch due to incompatible checkpoint at models/dev/ppo_models/adaptive_ppo_model.pth
+I0625 02:18:20.411000 28924 site-packages/torch/distributed/nn/jit/instantiator.py:24] Created a temporary directory at /tmp/tmp2fg0xwsb
+I0625 02:18:20.411000 28924 site-packages/torch/distributed/nn/jit/instantiator.py:75] Writing /tmp/tmp2fg0xwsb/_remote_module_non_scriptable.py
+Removed old TensorBoard run: ./runs/ppo_rank_0
+2025-06-25 02:18:20 [WARNING ] [Rank-28924] policy_gradient_methods: Dimension mismatch: saved model expects 51, current model has 117
+2025-06-25 02:18:20 [INFO    ] [Rank-28924] policy_gradient_methods: Starting from scratch due to incompatible checkpoint at models/dev/ppo_models/adaptive_ppo_model.pth
+2025-06-25 02:18:25 [INFO    ] [Rank-28924] adaptive_trainer    : Evaluation results: 13993 profits, total=-7220581023990.9727
+2025-06-25 02:18:25 [INFO    ] [Rank-28924] adaptive_trainer    : Metrics: CAGR=-99.0000, Sharpe=-3.0000, MDD=100.0000
+2025-06-25 02:19:12 [INFO    ] [Rank-28924] adaptive_trainer    : Evaluation results: 9617 profits, total=-3363088096015.9951
+2025-06-25 02:19:12 [INFO    ] [Rank-28924] adaptive_trainer    : Metrics: CAGR=-99.0000, Sharpe=-3.0000, MDD=100.0000
+2025-06-25 02:19:12 [INFO    ] [Rank-28924] adaptive_trainer    : PPO Update 50: Performance=-0.6470, Entropy=1.0986
+2025-06-25 02:19:12 [WARNING ] [Rank-28924] adaptive_trainer    : PPO early stopping due to lack of improvement (patience: 3)
+2025-06-25 02:19:12 [INFO    ] [Rank-28924] policy_gradient_methods: Saved model to models/dev/ppo_models/adaptive_ppo_model.pth at 2025-06-25 02:19:12.060007
+2025-06-25 02:19:17 [INFO    ] [Rank-28924] adaptive_trainer    : Evaluation results: 14899 profits, total=14529812084437.3184
+2025-06-25 02:19:17 [INFO    ] [Rank-28924] adaptive_trainer    : Metrics: CAGR=200.0000, Sharpe=4.0000, MDD=5.0000
+2025-06-25 02:19:17 [INFO    ] [Rank-28924] adaptive_trainer    : PPO phase completed with performance: 0.7900
+2025-06-25 02:19:17 [INFO    ] [Rank-28924] adaptive_trainer    : 
+=== Adaptive Training Iteration 2/20 ===
+2025-06-25 02:19:20 [INFO    ] [Rank-28924] adaptive_trainer    : Evaluation results: 10808 profits, total=7518273452163.7070
+2025-06-25 02:19:20 [INFO    ] [Rank-28924] adaptive_trainer    : Metrics: CAGR=167.9214, Sharpe=4.0000, MDD=5.0000
+2025-06-25 02:19:20 [INFO    ] [Rank-28924] adaptive_trainer    : Current performance: 0.6938 (best: 0.6938)
+2025-06-25 02:19:20 [INFO    ] [Rank-28924] adaptive_trainer    : Stagnation: 0, Poor performance: 0
+2025-06-25 02:19:20 [INFO    ] [Rank-28924] adaptive_trainer    : Method: PPO, Entropy: 1.0870
+2025-06-25 02:19:20 [INFO    ] [Rank-28924] adaptive_trainer    : Switching to GA due to: exploration_phase
+2025-06-25 02:19:20 [INFO    ] [Rank-28924] adaptive_trainer    : Switching from PPO to GA
+2025-06-25 02:19:20 [INFO    ] [Rank-28924] adaptive_trainer    : Starting GA phase: 20 generations, population 20
+[GA] Dimension mismatch: saved model expects 51, current model has 117
+[GA] Starting from scratch due to incompatible checkpoint at models/dev/ga_models/adaptive_ga_model.pth
+[GA] Dimension mismatch: saved model expects 51, current model has 117
+[GA] Starting from scratch due to incompatible checkpoint at models/dev/ga_models/adaptive_ga_model.pth
+[GA gens]:   0%|                                                                                 | 0/10 [00:00<?, ?it/s]
