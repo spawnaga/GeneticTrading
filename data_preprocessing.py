@@ -124,7 +124,13 @@ def load_and_cache_data(
                     header=None,
                 )
                 # Convert datetime column directly since we set the name explicitly
-                file_df["date_time"] = cudf.to_datetime(file_df["date_time"], errors='coerce')
+                try:
+                    file_df["date_time"] = cudf.to_datetime(file_df["date_time"])
+                except Exception as e:
+                    logger.warning(f"cuDF datetime conversion failed: {e}, trying alternative method")
+                    # Fallback method for cuDF datetime conversion
+                    file_df["date_time"] = file_df["date_time"].astype(str)
+                    file_df["date_time"] = cudf.to_datetime(file_df["date_time"], format='mixed', utc=False)
             else:
                 # Use pandas chunked reading for large files
                 chunk_reader = pd.read_csv(
@@ -184,8 +190,13 @@ def load_and_cache_data(
         df = pd.concat(pandas_chunks, ignore_index=True)
 
     # Ensure date_time column is properly typed before sorting (already named correctly)
-    if HAS_CUDF:
-        df["date_time"] = cudf.to_datetime(df["date_time"], errors='coerce')
+    if HAS_CUDF and hasattr(df, 'to_pandas') and len(df) > 0:
+        try:
+            df["date_time"] = cudf.to_datetime(df["date_time"])
+        except Exception as e:
+            logger.warning(f"cuDF datetime conversion failed: {e}, converting to pandas")
+            df = df.to_pandas()
+            df["date_time"] = pd.to_datetime(df["date_time"], errors='coerce')
     else:
         df["date_time"] = pd.to_datetime(df["date_time"], errors='coerce')
 
@@ -444,11 +455,20 @@ def read_file_chunked(file_path):
         return [cudf.DataFrame.from_pandas(df)]
 
 def read_file_chunked_pandas(file_path):
-    """Dummy function to simulate chunked file reading with pandas."""
+    """Pandas fallback for chunked file reading with proper column names."""
     import pandas as pd
     chunks = []
-    for chunk in pd.read_csv(file_path, chunksize=10000):
-        chunks.append(chunk)
+    for chunk in pd.read_csv(
+        file_path, 
+        chunksize=10000,
+        names=["date_time", "Open", "High", "Low", "Close", "Volume"],
+        header=None
+    ):
+        # Convert datetime column directly since we set the name explicitly
+        chunk["date_time"] = pd.to_datetime(chunk["date_time"], errors='coerce')
+        chunk = chunk.dropna(subset=["date_time"])
+        if len(chunk) > 0:
+            chunks.append(chunk)
     return chunks
 # ─── FEATURE ENGINEERING ───────────────────────────────────────────────────
 
