@@ -407,3 +407,84 @@ def read_file_chunked_pandas(file_path):
     for chunk in pd.read_csv(file_path, chunksize=10000):
         chunks.append(chunk)
     return chunks
+# ─── FEATURE ENGINEERING ───────────────────────────────────────────────────
+
+def feature_engineering(df, has_cudf):
+    logging.info("Computing technical indicators...")
+
+    # moving averages
+    df["ma_5"]  = df["close"].rolling(5).mean()
+    df["ma_20"] = df["close"].rolling(20).mean()
+
+    # RSI
+    delta = df["close"].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+    rs = gain / loss
+    df["rsi"] = 100 - (100 / (1 + rs))
+
+    # bollinger bands
+    bb_period = 20
+    bb_std = 2
+    df["bb_mid"] = df["close"].rolling(bb_period).mean()
+    bb_std_val = df["close"].rolling(bb_period).std()
+    df["bb_upper"] = df["bb_mid"] + (bb_std_val * bb_std)
+    df["bb_lower"] = df["bb_mid"] - (bb_std_val * bb_std)
+
+    # volatility
+    df["volatility"] = df["close"].pct_change().rolling(10).std()
+
+    # volume indicators (if volume exists)
+    if "volume" in df.columns:
+        df["volume_ma"] = df["volume"].rolling(10).mean()
+        df["volume_ratio"] = df["volume"] / df["volume_ma"]
+    else:
+        df["volume_ma"] = 1000
+        df["volume_ratio"] = 1.0
+
+    # returns & lagged features
+    df["return"] = df["close"].pct_change()
+    df["return_lag1"] = df["return"].shift(1)
+    df["return_lag2"] = df["return"].shift(2)
+
+    # ─── NaN CLEANING ───────────────────────────────────────────────────────────
+    logging.info("Cleaning NaN values...")
+
+    # Replace infinite values with NaN first
+    if has_cudf:
+        import cupy as cp
+        df = df.replace([cp.inf, -cp.inf], None)
+    else:
+        df = df.replace([np.inf, -np.inf], np.nan)
+
+    # Forward fill then backward fill
+    df = df.fillna(method='ffill').fillna(method='bfill')
+
+    # If still NaN, fill with reasonable defaults
+    numeric_cols = df.select_dtypes(include=[np.number]).columns
+    for col in numeric_cols:
+        if col == 'rsi':
+            df[col] = df[col].fillna(50.0)  # Neutral RSI
+        elif 'return' in col:
+            df[col] = df[col].fillna(0.0)   # Zero returns
+        elif 'ratio' in col:
+            df[col] = df[col].fillna(1.0)   # Neutral ratios
+        elif 'price' in col or col in ['open', 'high', 'low', 'close']:
+            df[col] = df[col].fillna(df[col].median())  # Median price
+        else:
+            df[col] = df[col].fillna(0.0)   # Default to zero
+
+    # Verify no NaN values remain
+    if has_cudf:
+        nan_counts = df.isnull().sum()
+    else:
+        nan_counts = df.isna().sum()
+
+    total_nans = nan_counts.sum()
+    if total_nans > 0:
+        logging.warning(f"Still have {total_nans} NaN values after cleaning")
+        # Final aggressive cleaning
+        df = df.fillna(0.0)
+
+    logging.info("NaN cleaning completed")
+    return df

@@ -130,7 +130,7 @@ class FuturesEnv(gym.Env):
         Begin a new episode. Return initial observation of fixed length.
         """
         super().reset(seed=seed)
-        
+
         # Reset all internal trackers
         self.done = False
         start_idx = 0
@@ -165,80 +165,62 @@ class FuturesEnv(gym.Env):
             obs = np.concatenate([base, extras])
         else:
             obs = base.copy()
-            
+
         return obs, {}
 
     def step(self, action):
         """
-        Execute action & advance one time-step.
-        Actions: 0=Buy, 1=Hold, 2=Sell
-        Returns (obs, reward, done, info) with obs always fixed-length.
+        Take action in environment and return (obs, reward, done, info).
         """
-        if self.done:
-            return np.zeros(self.observation_space.shape, dtype=np.float32), 0.0, True, {}
+        if self.done or self.current_index >= self.limit:
+            return self._get_observation(), 0.0, True, {}
 
-        # If there is no next bar, close any open position and end episode
-        if self.current_index + 1 >= self.limit:
-            last_state = self.states[self.current_index]
-            if self.current_position == 1:
-                self._close_long(last_state)
-            elif self.current_position == -1:
-                self._close_short(last_state)
-            reward = self._get_reward(last_state)
+        # Validate action
+        if not isinstance(action, (int, np.integer)) or action < 0 or action >= 3:
+            action = 0  # Default to hold for invalid actions
+
+        # Track state before action
+        prev_balance = self.balance
+        prev_total_reward = self.total_reward
+
+        # Process action
+        if action == 0:  # hold
+            pass
+        elif action == 1:  # buy/long
+            if self.current_position <= 0:
+                self._execute_trade(1)
+        elif action == 2:  # sell/short  
+            if self.current_position >= 0:
+                self._execute_trade(-1)
+
+        # Move to next state
+        self.current_index += 1
+        if self.current_index >= self.limit:
             self.done = True
-            return (
-                np.zeros(self.observation_space.shape, dtype=np.float32),
-                reward,
-                True,
-                {"timestamp": last_state.ts, "total_profit": self.total_reward},
+
+        # Calculate reward with NaN protection
+        try:
+            reward = self._get_reward(
+                self.states[min(self.current_index - 1, self.limit - 1)]
             )
 
-        # current state for reward & trade logic
-        current_state = self.states[self.current_index]
-        next_state    = self.states[self.current_index + 1]
-        self.current_index += 1
+            # Ensure reward is finite
+            if not np.isfinite(reward):
+                reward = 0.0
 
-        # Handle BUY/SELL actions at the next bar's open
-        high_p = next_state.features[1]
-        low_p = next_state.features[2]
-        volume = next_state.features[4] if len(next_state.features) > 4 else None
+        except Exception as e:
+            reward = 0.0
 
-        # Allow trading at all times for training (disable market hours check)
-        if True:  # Always allow trading
-            # Detect and penalize gap exposure (reduced penalty)
-            gap_size = self._detect_gap(next_state, current_state)
-            if gap_size > 0.02 and self.current_position != 0:  # Increased threshold to 2%
-                gap_cost = gap_size * self.gap_penalty * 0.1 * abs(self.current_position) * self.contracts_per_trade  # Reduced impact
-                self.balance -= gap_cost
-            
-            if action == 0:
-                self._handle_buy(next_state)
-            elif action == 2:
-                self._handle_sell(next_state)
+        # Get updated observation and info with NaN protection
+        obs = self._get_observation()
+        info = self._get_info()
 
-        # compute reward from this time-step
-        reward = self._get_reward(self.states[self.current_index])
-        info = {
-            "message": f"Pos {self.current_position}",
-            "total_profit": self.total_reward,
-            "timestamp": current_state.ts
-        }
+        # Final NaN check on all outputs
+        if not np.all(np.isfinite(obs)):
+            obs = np.zeros_like(obs)
 
-        # Build next observation fresh:
-        if self.current_index < self.limit:
-            base = self.states[self.current_index].features
-        else:
-            # end of episode
-            self.done = True
-            base = np.zeros(len(self.states[0].features), dtype=np.float32)
-
-        if self.add_current_position_to_state:
-            entry_ts = self.entry_time.timestamp() if self.entry_time else 0.0
-            exit_ts  = self.exit_time.timestamp()  if self.exit_time  else 0.0
-            extras = np.array([self.current_position, entry_ts, exit_ts], dtype=np.float32)
-            obs = np.concatenate([base, extras])
-        else:
-            obs = base.copy()
+        if not np.isfinite(reward):
+            reward = 0.0
 
         return obs, reward, self.done, info
 
@@ -281,31 +263,31 @@ class FuturesEnv(gym.Env):
         """Check if market is open based on timestamp"""
         if not self.weekend_trading and timestamp.weekday() >= 5:  # Saturday=5, Sunday=6
             return False
-        
+
         hour = timestamp.hour
         return self.market_hours[0] <= hour < self.market_hours[1]
-    
+
     def _detect_gap(self, current_state, previous_state):
         """Detect price gaps between sessions"""
         if previous_state is None:
             return 0.0
-        
+
         # Check for time gap (overnight, weekend)
         time_diff = (current_state.ts - previous_state.ts).total_seconds()
         if time_diff > 3600:  # More than 1 hour gap
             price_change = abs(current_state.open_price - previous_state.close_price) / previous_state.close_price
             return price_change
         return 0.0
-    
+
     def _adjust_for_liquidity(self, price, volume, trade_type):
         """Adjust execution price based on market liquidity"""
         if not self.liquidity_impact or volume is None:
             return price
-        
+
         # Lower volume = higher slippage
         liquidity_factor = 1.0 / (1.0 + volume / 10000.0)  # Normalize volume
         slippage_adjustment = liquidity_factor * 0.001 * abs(trade_type)  # 0.1% max slippage
-        
+
         return price + (slippage_adjustment * trade_type)
 
     def _simulate_fill(
@@ -324,24 +306,24 @@ class FuturesEnv(gym.Env):
         # Validate input parameters
         if not np.isfinite(price) or price <= 0:
             price = 100.0  # Default fallback price
-        
+
         if high_price is not None and not np.isfinite(high_price):
             high_price = None
-        
+
         if low_price is not None and not np.isfinite(low_price):
             low_price = None
-        
+
         if volume is not None and not np.isfinite(volume):
             volume = None
-        
+
         # 1) Decide whether the order actually fills
         current_state = self.states[self.current_index] if self.current_index < len(self.states) else None
-        
+
         # Reduce fill probability during low liquidity periods
         adjusted_fill_prob = self.fill_probability
         if volume is not None and volume < 1000:  # Low volume threshold
             adjusted_fill_prob *= 0.8
-        
+
         if np.random.rand() > adjusted_fill_prob:
             return price
 
@@ -355,7 +337,7 @@ class FuturesEnv(gym.Env):
                 slippage = np.random.choice(self.long_values, p=self.long_probabilities)
             else:
                 slippage = np.random.choice(self.short_values, p=self.short_probabilities)
-        
+
         # 4) Add volatility-based slippage during high volatility periods
         if high_price is not None and low_price is not None:
             volatility = (high_price - low_price) / price
@@ -390,54 +372,69 @@ class FuturesEnv(gym.Env):
         return round_to_nearest_increment(raw_price, self.tick_size)
 
     def _get_reward(self, state):
-        """Simplified, stable reward function focused on P&L."""
-        reward = 0.0
-        
-        # Update equity tracking with better scaling
-        if self.current_position == 1:
-            diff = state.close_price - self.entry_price if self.entry_price else 0
-        elif self.current_position == -1:
-            diff = self.entry_price - state.close_price if self.entry_price else 0
-        else:
-            diff = 0.0
+        """
+        Compute the step reward based on P&L change + position penalties.
+        """
+        # Validate input state
+        if state is None or not hasattr(state, 'close_price'):
+            return 0.0
 
-        # Scale down unrealized P&L to prevent extreme values
-        if diff != 0:
-            ticks = diff / self.tick_size
-            unrealized = ticks * self.value_per_tick * self.contracts_per_trade
-            # Scale down the unrealized P&L significantly
-            unrealized = unrealized / 1000.0  # Scale down by 1000x
-        else:
-            unrealized = 0
-            
-        self.total_reward = self.balance + unrealized
-        
-        # Primary reward: normalized change in equity
-        if hasattr(self, 'last_total_reward'):
-            equity_change = self.total_reward - self.last_total_reward
-            # More aggressive scaling to prevent extreme values
-            reward += np.tanh(equity_change / 100.0)  # Use tanh for bounded output
-        
-        # Reward for completed profitable trades (smaller impact)
-        if hasattr(self, 'last_action_was_close') and self.last_action_was_close and len(self.trades) > 0:
-            last_trade_profit = self.trades[-1][4]  # profit column
-            if last_trade_profit > 0:
-                reward += 0.5  # Smaller bonus
+        current_price = state.close_price
+        if not np.isfinite(current_price) or current_price <= 0:
+            return 0.0
+
+        # Update unrealized P&L based on current market price
+        if self.current_position != 0 and self.entry_price is not None:
+            if np.isfinite(self.entry_price) and self.entry_price > 0:
+                price_diff = (current_price - self.entry_price) * self.current_position
+                unrealized_pnl = price_diff * self.value_per_tick / self.tick_size
+
+                # Check for NaN/infinite unrealized PnL
+                if not np.isfinite(unrealized_pnl):
+                    unrealized_pnl = 0.0
             else:
-                reward -= 0.2  # Smaller penalty
-        
-        # Minimal holding cost
-        if self.current_position == 0:
-            reward -= 0.001  # Much smaller penalty
-        
-        # Store for next iteration
-        self.last_total_reward = self.total_reward
-        self.last_price = state.close_price
-        self.last_position = self.current_position
-        self.last_ts = state.ts
-        
-        # Tighter bounds for stability
-        return np.clip(reward, -2.0, 2.0)
+                unrealized_pnl = 0.0
+        else:
+            unrealized_pnl = 0.0
+
+        # Ensure balance is finite
+        if not np.isfinite(self.balance):
+            self.balance = 0.0
+
+        # Total equity = realized balance + unrealized P&L
+        current_total = self.balance + unrealized_pnl
+
+        # Check for NaN/infinite total
+        if not np.isfinite(current_total):
+            current_total = 0.0
+
+        # Ensure total_reward is finite
+        if not np.isfinite(self.total_reward):
+            self.total_reward = 0.0
+
+        # Reward is the change in total equity from last step
+        reward = current_total - self.total_reward
+
+        # Check for NaN/infinite reward
+        if not np.isfinite(reward):
+            reward = 0.0
+
+        self.total_reward = current_total
+
+        # Add small position holding cost to encourage trading
+        if self.current_position != 0:
+            holding_cost = abs(self.current_position) * 0.01  # Small holding cost
+            if np.isfinite(holding_cost):
+                reward -= holding_cost
+
+        # Final reward validation
+        if not np.isfinite(reward):
+            reward = 0.0
+
+        # Clamp reward to reasonable range
+        reward = np.clip(reward, -1000.0, 1000.0)
+
+        return reward
 
     def _close_long(self, state):
         """
@@ -562,3 +559,110 @@ class FuturesEnv(gym.Env):
                 json.dump(metrics, f, indent=4)
 
         return metrics
+
+    def _execute_trade(self, target_position):
+        """
+        Execute a trade to move from current_position to target_position.
+        """
+        if target_position == self.current_position:
+            return
+
+        current_state = (
+            self.states[self.current_index] 
+            if self.current_index < len(self.states) 
+            else self.states[-1]
+        )
+
+        trade_size = target_position - self.current_position
+        fill_price = self._simulate_fill(
+            price=current_state.close_price,
+            size=trade_size,
+            high_price=getattr(current_state, 'high_price', None),
+            low_price=getattr(current_state, 'low_price', None),
+            volume=getattr(current_state, 'volume', None)
+        )
+
+        # Validate fill price
+        if not np.isfinite(fill_price) or fill_price <= 0:
+            fill_price = current_state.close_price
+            if not np.isfinite(fill_price) or fill_price <= 0:
+                return  # Skip trade if price is invalid
+
+        # Calculate trade cost
+        trade_cost = abs(trade_size) * self.execution_cost_per_order
+        if not np.isfinite(trade_cost):
+            trade_cost = 0.0
+
+        # Update position and costs
+        if self.current_position == 0:
+            # Opening new position
+            self.entry_price = fill_price
+            self.entry_time = current_state.ts
+            self.entry_cost = trade_cost
+        elif target_position == 0:
+            # Closing position
+            if self.entry_price is not None and np.isfinite(self.entry_price):
+                position_pnl = (
+                    (fill_price - self.entry_price) * self.current_position
+                    * self.value_per_tick / self.tick_size
+                )
+
+                # Validate PnL calculation
+                if np.isfinite(position_pnl):
+                    self.balance += position_pnl - self.entry_cost - trade_cost
+
+                    # Ensure balance remains finite
+                    if not np.isfinite(self.balance):
+                        self.balance = 0.0
+            else:
+                position_pnl = 0.0
+
+            self.exit_price = fill_price
+            self.exit_time = current_state.ts
+
+            # Record trade
+            self.trades.append({
+                'entry_time': self.entry_time,
+                'exit_time': self.exit_time,
+                'entry_price': self.entry_price,
+                'exit_price': fill_price,
+                'position_size': self.current_position,
+                'pnl': position_pnl if 'position_pnl' in locals() else 0,
+                'total_cost': self.entry_cost + trade_cost
+            })
+
+            # Reset position tracking
+            self.entry_price = None
+            self.entry_time = None
+            self.entry_cost = 0.0
+        else:
+            # Position reversal - close old, open new
+            if self.entry_price is not None and np.isfinite(self.entry_price):
+                position_pnl = (
+                    (fill_price - self.entry_price) * self.current_position
+                    * self.value_per_tick / self.tick_size
+                )
+
+                # Validate PnL calculation
+                if np.isfinite(position_pnl):
+                    self.balance += position_pnl - self.entry_cost - trade_cost
+
+                    # Ensure balance remains finite
+                    if not np.isfinite(self.balance):
+                        self.balance = 0.0
+
+            self.entry_price = fill_price
+            self.entry_time = current_state.ts
+            self.entry_cost = trade_cost
+
+        # Record the order
+        self.orders.append({
+            'time': current_state.ts,
+            'action': 'buy' if trade_size > 0 else 'sell',
+            'size': abs(trade_size),
+            'price': fill_price,
+            'cost': trade_cost
+        })
+
+        self.last_position = self.current_position
+        self.current_position = target_position
