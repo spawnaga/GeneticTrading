@@ -192,34 +192,60 @@ class AdaptiveTrainer:
 
     def _calculate_policy_entropy(self, agent) -> float:
         """
-        Calculate average policy entropy across random states
+        Calculate average policy entropy across random states with NaN protection
         """
         entropies = []
 
         # Sample random states from environment
         for _ in range(10):
-            obs = self.test_env.reset()
-            if isinstance(obs, tuple):
-                obs = obs[0]
+            try:
+                obs = self.test_env.reset()
+                if isinstance(obs, tuple):
+                    obs = obs[0]
 
-            obs_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(self.device)
+                # Ensure observation is valid
+                if not np.all(np.isfinite(obs)):
+                    obs = np.zeros_like(obs)
 
-            with torch.no_grad():
-                if hasattr(agent, 'forward'):
-                    output = agent.forward(obs_tensor)
-                    # Handle different agent types
-                    if isinstance(output, tuple):
-                        # PPO agent returns (logits, value)
-                        logits, _ = output
+                obs_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(self.device)
+
+                with torch.no_grad():
+                    if hasattr(agent, 'forward'):
+                        output = agent.forward(obs_tensor)
+                        # Handle different agent types
+                        if isinstance(output, tuple):
+                            # PPO agent returns (logits, value)
+                            logits, _ = output
+                        else:
+                            # GA agent returns only logits
+                            logits = output
                     else:
-                        # GA agent returns only logits
-                        logits = output
-                else:
-                    logits = agent(obs_tensor)
+                        logits = agent(obs_tensor)
 
-                probs = torch.softmax(logits, dim=-1)
-                entropy = -torch.sum(probs * torch.log(probs + 1e-8), dim=-1)
-                entropies.append(entropy.item())
+                    # Check for NaN/infinite logits
+                    if not torch.all(torch.isfinite(logits)):
+                        logger.warning("NaN/infinite logits detected in policy entropy calculation")
+                        continue
+
+                    probs = torch.softmax(logits, dim=-1)
+                    
+                    # Additional safety check
+                    if not torch.all(torch.isfinite(probs)):
+                        logger.warning("NaN/infinite probabilities detected")
+                        continue
+
+                    entropy = -torch.sum(probs * torch.log(probs + 1e-8), dim=-1)
+                    
+                    if torch.isfinite(entropy):
+                        entropies.append(entropy.item())
+
+            except Exception as e:
+                logger.warning(f"Error calculating entropy for sample: {e}")
+                continue
+
+        if not entropies:
+            logger.warning("No valid entropy calculations, returning default value")
+            return 1.0  # Default entropy value
 
         return np.mean(entropies)
 

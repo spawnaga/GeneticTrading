@@ -50,7 +50,7 @@ class ActorCriticNet(nn.Module):
     def __init__(self, input_dim: int, hidden_dim: int, action_dim: int, device: str = "cpu"):
         super().__init__()
         self.device = torch.device(device)
-        # Shared base network
+        # Shared base network with better initialization
         self.base = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
             nn.ReLU(),
@@ -61,6 +61,18 @@ class ActorCriticNet(nn.Module):
         self.policy_head = nn.Linear(hidden_dim, action_dim).to(self.device)
         # State-value head
         self.value_head = nn.Linear(hidden_dim, 1).to(self.device)
+        
+        # Initialize weights with Xavier/Glorot initialization
+        self._initialize_weights()
+    
+    def _initialize_weights(self):
+        """Initialize network weights for stability"""
+        for module in self.modules():
+            if isinstance(module, nn.Linear):
+                # Xavier initialization for better gradient flow
+                nn.init.xavier_uniform_(module.weight, gain=0.1)  # Small gain for stability
+                if module.bias is not None:
+                    nn.init.constant_(module.bias, 0.0)
 
     def forward(self, x: torch.Tensor):
         """
@@ -398,11 +410,37 @@ class PPOTrainer:
                 self.optimizer.zero_grad()
                 loss.backward()
 
-                # Calculate gradient norm
+                # Calculate gradient norm with better clipping
                 grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.5)
-                self.gradient_norms.append(grad_norm.item())
+                
+                # Check for NaN gradients
+                has_nan_grad = False
+                for param in self.model.parameters():
+                    if param.grad is not None and not torch.all(torch.isfinite(param.grad)):
+                        has_nan_grad = True
+                        break
+                
+                if has_nan_grad:
+                    logger.warning("NaN gradients detected, skipping optimizer step")
+                    self.optimizer.zero_grad()
+                    continue
+                
+                if torch.isfinite(grad_norm):
+                    self.gradient_norms.append(grad_norm.item())
+                else:
+                    logger.warning("NaN gradient norm detected")
+                    self.optimizer.zero_grad()
+                    continue
 
                 self.optimizer.step()
+                
+                # Verify model parameters are still valid after update
+                for name, param in self.model.named_parameters():
+                    if not torch.all(torch.isfinite(param)):
+                        logger.error(f"NaN/infinite parameters detected in {name}, reinitializing layer")
+                        # Reinitialize the problematic layer
+                        if hasattr(param, 'data'):
+                            param.data.normal_(0, 0.01)
 
                 policy_losses.append(policy_loss.item())
                 value_losses.append(value_loss.item())
