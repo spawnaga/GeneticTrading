@@ -156,57 +156,76 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
         trading_days = len(profits) / trading_periods_per_day
         years = max(trading_days / 252, 1/252)  # 252 trading days per year
 
-    # Only calculate CAGR if we have sufficient time period (at least 1 week of data)
-    if years < (7/365.25):
-        cagr = 0.0
-    else:
-        # Calculate cumulative returns properly
-        cumulative_profits = np.cumsum(profits)
-        if len(cumulative_profits) > 0:
-            # Assume starting capital based on scale of profits
-            profit_scale = np.abs(np.mean(profits))
-            if profit_scale > 1000:
-                starting_capital = 100000.0  # Large profits suggest large capital
-            elif profit_scale > 100:
-                starting_capital = 10000.0   # Medium profits
+    # Calculate CAGR with more realistic approach
+    cumulative_profits = np.cumsum(profits)
+    if len(cumulative_profits) > 0:
+        # Use a more reasonable starting capital estimation
+        profit_magnitude = np.percentile(np.abs(profits), 95)  # 95th percentile for outlier resistance
+        
+        # Estimate starting capital based on profit scale and typical risk management
+        if profit_magnitude > 500:
+            starting_capital = 100000.0  # Large institutional scale
+        elif profit_magnitude > 50:
+            starting_capital = 50000.0   # Professional trader scale
+        elif profit_magnitude > 5:
+            starting_capital = 10000.0   # Small account scale
+        else:
+            starting_capital = 5000.0    # Very small account
+        
+        total_pnl = cumulative_profits[-1]
+        ending_capital = starting_capital + total_pnl
+        
+        # Only calculate CAGR if we have sufficient time period and positive ending capital
+        if years >= (30/365.25) and ending_capital > 0:  # At least 30 days of data
+            total_return = ending_capital / starting_capital
+            if total_return > 0:
+                # CAGR calculation with bounds checking
+                cagr = (total_return ** (1 / years) - 1) * 100
+                # Apply more conservative bounds for realistic trading returns
+                cagr = np.clip(cagr, -99.0, 200.0)
             else:
-                starting_capital = 1000.0    # Small profits
-            
-            total_return_amount = cumulative_profits[-1]
-            ending_capital = starting_capital + total_return_amount
-            
-            if ending_capital > 0 and starting_capital > 0 and years > 0:
-                total_return = ending_capital / starting_capital
-                # Calculate CAGR: (Ending/Beginning)^(1/years) - 1
-                if total_return > 0:
-                    cagr = (total_return ** (1 / years) - 1) * 100
-                    # Clamp to reasonable range
-                    cagr = np.clip(cagr, -95.0, 500.0)
-                else:
-                    cagr = -95.0  # Near total loss
+                cagr = -99.0  # Total loss
+        else:
+            # For insufficient data or losses, use simple annualized return
+            if years > 0:
+                simple_annual_return = (total_pnl / starting_capital) / years * 100
+                cagr = np.clip(simple_annual_return, -99.0, 200.0)
             else:
                 cagr = 0.0
-        else:
-            cagr = 0.0
+    else:
+        cagr = 0.0
 
-    # Sharpe ratio calculation - more conservative approach
-    if len(profits) > 10:
-        # Use actual profit values without scaling if they're reasonable
-        mean_profit = np.mean(profits)
-        std_profit = np.std(profits, ddof=1)
+    # Sharpe ratio calculation with proper risk-free rate consideration
+    if len(profits) > 5:
+        # Clean profits of any remaining invalid values
+        valid_profits = profits[np.isfinite(profits)]
         
-        if std_profit > 0 and np.abs(mean_profit) > 1e-10:
-            # Calculate periods per year for annualization
-            periods_per_year = len(profits) / years
+        if len(valid_profits) >= 5:
+            mean_profit = np.mean(valid_profits)
+            std_profit = np.std(valid_profits, ddof=1)
             
-            # Sharpe ratio without assuming risk-free rate (excess return over 0)
-            sharpe_daily = mean_profit / std_profit
-            
-            # Annualize the Sharpe ratio
-            sharpe = sharpe_daily * np.sqrt(periods_per_year)
-            
-            # Apply reasonable bounds for Sharpe ratio
-            sharpe = np.clip(sharpe, -5.0, 5.0)
+            if std_profit > 0:
+                # Estimate periods per year more accurately
+                periods_per_year = len(valid_profits) / max(years, 1/252)  # Minimum 1 trading day
+                
+                # Apply risk-free rate (approximate 2% annually for recent years)
+                risk_free_rate_annual = 0.02
+                risk_free_per_period = risk_free_rate_annual / periods_per_year
+                
+                # Calculate excess return
+                excess_return = mean_profit - risk_free_per_period
+                
+                # Period Sharpe ratio
+                sharpe_period = excess_return / std_profit
+                
+                # Annualize using square root of time rule
+                sharpe = sharpe_period * np.sqrt(periods_per_year)
+                
+                # Apply realistic bounds for trading Sharpe ratios
+                # Professional traders rarely exceed 3.0, and -2.0 is quite poor
+                sharpe = np.clip(sharpe, -3.0, 4.0)
+            else:
+                sharpe = 0.0
         else:
             sharpe = 0.0
     else:
