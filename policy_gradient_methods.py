@@ -93,7 +93,7 @@ class ActorCriticNet(nn.Module):
 
         # Normalize input to prevent gradient explosion
         x = torch.clamp(x, -10.0, 10.0)
-        
+
         # Add small amount of noise to prevent identical states
         x = x + torch.randn_like(x) * 1e-6
 
@@ -271,35 +271,35 @@ class PPOTrainer:
             if len(state) == 0:
                 # Create a dummy observation if state is empty
                 state = np.zeros(self.env.observation_space.shape, dtype=np.float32)
-            
+
             # Validate state before creating tensor
             if not np.all(np.isfinite(state)):
                 # Replace NaN/inf values with small random noise
                 state = np.where(np.isfinite(state), state, np.random.normal(0, 0.01, state.shape))
-            
+
             # Clamp state values to reasonable range
             state = np.clip(state, -10.0, 10.0)
 
             state_t = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
-            
+
             try:
                 logits, value = self.model(state_t)
-                
+
                 # Ensure logits are valid for Categorical distribution
                 if torch.any(torch.isnan(logits)) or torch.any(torch.isinf(logits)):
                     logits = torch.zeros_like(logits)
                     logits[0, 0] = 1.0  # Default to first action
-                
+
                 dist = Categorical(logits=logits)
                 action = dist.sample()
                 logp = dist.log_prob(action)
-                
+
                 # Validate outputs
                 if torch.isnan(logp) or torch.isinf(logp):
                     logp = torch.tensor(0.0, device=self.device)
                 if torch.isnan(value) or torch.isinf(value):
                     value = torch.tensor(0.0, device=self.device)
-                    
+
             except Exception as e:
                 logger.warning(f"Error in model forward pass: {e}")
                 action = torch.tensor(0, device=self.device)  # Default action

@@ -105,7 +105,7 @@ def parse_arguments():
                            help='Path to folder for caching processed data')
     data_group.add_argument('--data-percentage', type=float, default=1.0,
                            help='Percentage of data to use (0.0-1.0)')
-    data_group.add_argument('--max-rows', type=int, default=100,
+    data_group.add_argument('--max-rows', type=int, default=0,
                            help='Maximum number of rows to process (0 for all)')
     data_group.add_argument('--chunk-size', type=int, default=500000,
                            help='Chunk size for processing large datasets')

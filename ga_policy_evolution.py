@@ -316,8 +316,9 @@ def run_ga_evolution(
         desc="[GA gens]",
         file=sys.stdout,
         disable=disable_bar,
-        dynamic_ncols=True,
-        leave=True,
+        ncols=120,
+        leave=False,
+        bar_format="{l_bar}{bar}| {n}/{total} [{elapsed}<{remaining}, {rate_fmt}]"
     )
 
     # Create TensorBoard directory first, then cleanup old runs
@@ -492,12 +493,7 @@ def run_ga_evolution(
                     # Continue without visualization
 
             # update tqdm postfix
-            bar.set_postfix({
-                "min": f"{gen_min:.1f}", "avg": f"{gen_avg:.1f}",
-                "med": f"{gen_med:.1f}", "max": f"{gen_max:.1f}",
-                "std": f"{param_std:.3f}", "stg": f"{stagnation}",
-                "mu_r": f"{mu_r:.2f}", "mu_s": f"{mu_s:.2f}"}
-            )
+            bar.set_description(f"[GA gens] avg={np.mean(fits):.1f}, max={np.max(fits):.1f}, stg={stagnation}")
 
             # update hall-of-fame
             for f, p in zip(fits, pop):
