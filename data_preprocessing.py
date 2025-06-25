@@ -17,6 +17,7 @@ This module provides a single unified GPU-first pipeline that:
 import glob
 import os
 import logging
+import warnings
 
 try:
     import cudf
@@ -47,7 +48,7 @@ NUMPY_RANDOM_SEED = 42
 WINDOW_RETURNS     = 1   # for pct_change
 WINDOW_MA          = 10
 WINDOW_RSI         = 14
-WINDOW_VOL         = 10
+WINDOW_VOL          = 10
 BIN_SIZE_MINUTES   = 15
 SECONDS_IN_DAY     = 24 * 60
 WEEKDAYS           = 7
@@ -364,7 +365,8 @@ def read_file_chunked(file_path):
     """Dummy function to simulate chunked file reading."""
     import pandas as pd
     import cudf
-    try:
+    try```python
+:
         df = cudf.read_csv(file_path)
         return [df]
     except:
