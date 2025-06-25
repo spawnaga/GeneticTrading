@@ -51,16 +51,16 @@ def run_quick_test():
     main()
 
 def run_development():
-    """Run development mode with all available data."""
+    """Run development mode with 10% of data."""
     print("🔧 Starting Development Mode...")
-    print("📊 Using all available data")
+    print("📊 Using 10% of data for development")
 
     from main import main
 
     sys.argv = [
         'main.py',
-        '--data-percentage', '1.0',   # Use all data
-        '--max-rows', '0',            # Use all rows (0 = no limit)
+        '--data-percentage', '0.1',   # Use 10% of data
+        '--max-rows', '5000',         # 5K rows
         '--models-dir', './models/dev',
         '--total-steps', '50000',     # Moderate training
         '--ga-population', '20',      # Reasonable population
@@ -69,6 +69,8 @@ def run_development():
         '--log-level', 'INFO'
     ]
 
+    print("📈 Monitoring enabled - check ./logs/training_metrics.json for progress")
+    print("⚠️  Training will auto-stop if performance stagnates to save compute")
     main()
 
 def run_full_training():
@@ -123,7 +125,7 @@ def main():
             run_quick_test()
         elif mode == 'dev':
             print("🔧 Starting Development Mode...")
-            print("📊 Using all available data")
+            print("📊 Using 10% of data for development")
             print("📈 Monitoring enabled - check ./logs/training_metrics.json for progress")
             print("⚠️  Training will auto-stop if performance stagnates to save compute")
             run_development()
