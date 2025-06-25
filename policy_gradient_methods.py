@@ -1,0 +1,821 @@
+# Corrected the _unpack_reset function call in the collect_trajectories method to handle the tuple return value from env.reset().
+# policy_gradient_methods.py
+
+"""
+Proximal Policy Optimization (PPO) implementation using PyTorch and DistributedDataParallel.
+
+This module defines:
+  - ActorCriticNet: shared-base actor-critic network
+  - PPOTrainer: collects trajectories, computes GAE, and updates policy/value heads
+  - Comprehensive TensorBoard instrumentation with creative visualizations for deep insights
+"""
+
+import os
+import datetime
+import logging
+import time
+from collections import deque
+
+import numpy as np
+import pandas as pd
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend to prevent threading issues
+import matplotlib.pyplot as plt
+import seaborn as sns
+from tqdm import trange, tqdm
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.distributions import Categorical
+from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.utils.tensorboard import SummaryWriter
+
+from utils import evaluate_agent_distributed, compute_performance_metrics, _unpack_reset, _unpack_step, cleanup_tensorboard_runs
+
+# Set up logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+
+class ActorCriticNet(nn.Module):
+    """
+    Shared-base actor-critic network.
+
+    - base: two hidden layers with ReLU
+    - policy_head: outputs logits for Discrete(action_dim)
+    - value_head: outputs scalar state value
+    """
+
+    def __init__(self, input_dim: int, hidden_dim: int, action_dim: int, device: str = "cpu"):
+        super().__init__()
+        self.device = torch.device(device)
+        # Shared base network
+        self.base = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU()
+        ).to(self.device)
+        # Policy logits head
+        self.policy_head = nn.Linear(hidden_dim, action_dim).to(self.device)
+        # State-value head
+        self.value_head = nn.Linear(hidden_dim, 1).to(self.device)
+
+    def forward(self, x: torch.Tensor):
+        """
+        Forward pass.
+        Args:
+            x: tensor of shape [batch, input_dim] or higher dimensions
+        Returns:
+            policy_logits: [batch, action_dim]
+            value: [batch, 1]
+        """
+        x = x.to(self.device)
+        if x.ndim > 2:
+            x = x.view(x.size(0), -1)
+        hidden = self.base(x)
+        return self.policy_head(hidden), self.value_head(hidden)
+
+    def act(self, state):
+        """
+        Select action greedily (for evaluation).
+        Args:
+            state: numpy array or torch tensor, shape [input_dim]
+        Returns:
+            action: int
+        """
+        if isinstance(state, np.ndarray):
+            state = torch.from_numpy(state).float()
+
+        # Ensure proper shape and device
+        if state.dim() == 1:
+            state = state.unsqueeze(0)
+        state = state.to(self.device)
+
+        with torch.no_grad():
+            logits, _ = self.forward(state)
+            return torch.argmax(logits, dim=-1).item()
+
+    def save_model(self, path: str, quiet: bool = False):
+        """Save model state dict."""
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        torch.save(self.state_dict(), path)
+        if not quiet:
+            logger.info(f"Saved model to {path} at {datetime.datetime.now()}")
+
+    def load_model(self, path: str):
+        """Load model state dict if exists, else leave random init."""
+        if os.path.exists(path):
+            try:
+                saved_state = torch.load(path, map_location=self.device)
+                
+                # Check if dimensions match
+                if 'base.0.weight' in saved_state:
+                    saved_input_dim = saved_state['base.0.weight'].shape[1]
+                    current_input_dim = self.base[0].weight.shape[1]
+                    
+                    if saved_input_dim != current_input_dim:
+                        logger.warning(f"Dimension mismatch: saved model expects {saved_input_dim}, current model has {current_input_dim}")
+                        logger.info(f"Starting from scratch due to incompatible checkpoint at {path}")
+                        return
+                
+                self.load_state_dict(saved_state)
+                logger.info(f"Loaded model from {path}")
+            except Exception as e:
+                logger.warning(f"Failed to load model from {path}: {e}")
+                logger.info("Starting from scratch")
+        else:
+            logger.info(f"No model file at {path}, starting from scratch")
+
+
+class PPOTrainer:
+    """
+    PPO trainer using clipped surrogate objective and GAE.
+
+    Workflow:
+      1. collect_trajectories() → rollouts
+      2. compute_gae() → advantages, returns
+      3. train_step() → multiple epochs of policy/value updates
+      4. train() → loop over train_step() until total_timesteps
+      5. Periodic evaluation and TensorBoard logging of all key metrics
+    """
+
+    def __init__(
+        self,
+        env,
+        input_dim: int,
+        action_dim: int,
+        hidden_dim: int = 64,
+        lr: float = 3e-4,
+        gamma: float = 0.99,
+        gae_lambda: float = 0.95,
+        clip_epsilon: float = 0.2,
+        update_epochs: int = 10,
+        rollout_steps: int = 2048,
+        batch_size: int = 64,
+        device: str = "cpu",
+        model_save_path: str = "ppo_model.pth",
+        local_rank: int = 0,
+        eval_interval: int = 10   # run evaluation every `eval_interval` updates
+    ):
+        self.env = env
+        self.gamma = gamma
+        self.gae_lambda = gae_lambda
+        self.clip_epsilon = clip_epsilon
+        self.update_epochs = update_epochs
+        self.rollout_steps = rollout_steps
+        self.batch_size = batch_size
+        self.device = torch.device(device)
+        self.model_save_path = model_save_path
+        self.local_rank = local_rank
+        self.eval_interval = eval_interval
+
+        # Build model (will wrap in DDP externally)
+        self.model = ActorCriticNet(input_dim, hidden_dim, action_dim, device=device)
+        self.model.load_model(self.model_save_path)
+
+        # Optimizer & LR scheduler: decay once per update_step
+        self.optimizer = optim.Adam(self.model.parameters(), lr=lr, eps=1e-5)
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=50, gamma=0.95)
+
+        # Entropy coefficient for exploration: decay once per update_step
+        self.entropy_coef = 0.05  # Higher initial exploration for better learning
+
+        # Enhanced tracking for visualization
+        self.action_distribution_history = deque(maxlen=100)
+        self.reward_trends = deque(maxlen=1000)
+        self.loss_trends = deque(maxlen=1000)
+        self.gradient_norms = deque(maxlen=100)
+        self.policy_divergence = deque(maxlen=100)
+        self.value_accuracy = deque(maxlen=100)
+
+        # Trading-specific metrics
+        self.position_changes = deque(maxlen=1000)
+        self.profit_per_trade = deque(maxlen=500)
+        self.drawdown_periods = []
+
+        # cleanup old TensorBoard runs before starting new one
+        if local_rank == 0:
+            cleanup_tensorboard_runs("./runs", keep_latest=1)
+
+        # tensorboard
+        self.tb_writer = SummaryWriter(
+            log_dir=f"runs/ppo_rank_{local_rank}",
+            flush_secs=1
+        )
+        self.global_step = 0
+
+    def collect_trajectories(self):
+        """
+        Run `rollout_steps` steps in env to collect:
+          observations, actions, log probabilities, values, rewards, dones
+        Returns numpy arrays.
+        """
+        obs_buf, act_buf = [], []
+        logp_buf, val_buf = [], []
+        rew_buf, done_buf = [], []
+
+        state = _unpack_reset(self.env.reset())
+        
+        # Add progress bar for trajectory collection
+        trajectory_pbar = tqdm(range(self.rollout_steps), 
+                              desc="Collecting trajectories", 
+                              leave=False, 
+                              disable=(self.local_rank != 0))
+        
+        for step in trajectory_pbar:
+            # Ensure state is not empty and has proper shape
+            if len(state) == 0:
+                # Create a dummy observation if state is empty
+                state = np.zeros(self.env.observation_space.shape, dtype=np.float32)
+
+            state_t = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
+            logits, value = self.model(state_t)
+            dist = Categorical(logits=logits)
+            action = dist.sample()
+            logp = dist.log_prob(action)
+
+            obs_buf.append(state)
+            act_buf.append(action.item())
+            logp_buf.append(logp.item())
+            val_buf.append(value.item())
+
+            # *** USE STEP-LEVEL reward (not cumulative total_profit) ***
+            next_state, reward, done, info = _unpack_step(self.env.step(action.item()))
+            rew_buf.append(float(reward))
+            done_buf.append(done)
+
+            if not done:
+                state = next_state
+            else:
+                state = _unpack_reset(self.env.reset())
+                # Ensure reset state is not empty
+                if len(state) == 0:
+                    state = np.zeros(self.env.observation_space.shape, dtype=np.float32)
+            
+            # Update progress bar with current metrics
+            if step % 100 == 0:
+                trajectory_pbar.set_postfix({
+                    'avg_reward': f"{np.mean(rew_buf[-100:]):.4f}" if rew_buf else "0.0000",
+                    'episode_done': sum(done_buf[-100:]) if done_buf else 0
+                })
+
+        trajectory_pbar.close()
+        return (
+            np.array(obs_buf, dtype=np.float32),
+            np.array(act_buf, dtype=np.int64),
+            np.array(rew_buf, dtype=np.float32),
+            np.array(logp_buf, dtype=np.float32),
+            np.array(val_buf, dtype=np.float32),
+            np.array(done_buf, dtype=np.bool_),
+            state  # final state after rollout
+        )
+
+    def compute_gae(self, rewards, values, dones, last_state):
+        """
+        Compute advantages and discounted returns using GAE — all on the GPU.
+        Args:
+          rewards: np.ndarray of shape [T]
+          values:  np.ndarray of shape [T]
+          dones:   np.ndarray of shape [T], dtype=bool
+          last_state: final state for bootstrapping
+        Returns:
+          adv_t: torch.Tensor [T] on self.device
+          ret_t: torch.Tensor [T] on self.device
+        """
+        rewards_t = torch.tensor(rewards, dtype=torch.float32, device=self.device)
+        values_t = torch.tensor(values, dtype=torch.float32, device=self.device)
+        dones_t = torch.tensor(dones, dtype=torch.float32, device=self.device)
+
+        with torch.no_grad():
+            last_state_t = torch.tensor(last_state, dtype=torch.float32, device=self.device).unsqueeze(0)
+            _, last_val_t = self.model(last_state_t)
+            last_val_t = last_val_t.squeeze()
+
+        values_t = torch.cat([values_t, last_val_t[None]], dim=0)
+
+        T = rewards_t.size(0)
+        advantages = torch.zeros_like(rewards_t, device=self.device)
+        gae = torch.tensor(0.0, device=self.device)
+
+        for t in reversed(range(T)):
+            mask = 1.0 - dones_t[t]
+            delta = rewards_t[t] + self.gamma * values_t[t + 1] * mask - values_t[t]
+            gae = delta + self.gamma * self.gae_lambda * mask * gae
+            advantages[t] = gae
+
+        returns = advantages + values_t[:-1]
+        advantages = (advantages - advantages.mean()) / (advantages.std(unbiased=False) + 1e-8)
+
+        return advantages, returns
+
+    def train_step(self):
+        """
+        Perform one PPO update with comprehensive metrics and creative visualizations
+        """
+        # 1) rollout & GAE
+        obs, acts, rews, old_lps, vals, dones, last_state = self.collect_trajectories()
+        advs, rets = self.compute_gae(rews, vals, dones, last_state)
+
+        obs_t   = torch.as_tensor(obs,    dtype=torch.float32, device=self.device)
+        acts_t  = torch.as_tensor(acts,   dtype=torch.long,   device=self.device)
+        oldlp_t = torch.as_tensor(old_lps,dtype=torch.float32, device=self.device)
+        adv_t   = torch.as_tensor(advs,  dtype=torch.float32, device=self.device)
+        ret_t   = torch.as_tensor(rets,  dtype=torch.float32, device=self.device)
+
+        # Track action distribution for analysis
+        action_counts = np.bincount(acts, minlength=self.env.action_space.n)
+        action_probs = action_counts / len(acts)
+        self.action_distribution_history.append(action_probs)
+
+        # Track reward patterns
+        self.reward_trends.extend(rews)
+
+        # Analyze trading behavior
+        self._analyze_trading_behavior(acts, rews, obs)
+
+        # 2) PPO epochs with enhanced tracking
+        policy_losses, value_losses, entropies = [], [], []
+        kl_divergences, clip_fractions = [], []
+
+        dataset_size = len(obs)
+        
+        # Progress bar for PPO update epochs
+        epoch_pbar = tqdm(range(self.update_epochs), 
+                         desc="PPO Update Epochs", 
+                         leave=False, 
+                         disable=(self.local_rank != 0))
+        
+        for epoch in epoch_pbar:
+            perm = torch.randperm(dataset_size, device=self.device)
+            
+            # Progress bar for batch processing within each epoch
+            batch_starts = list(range(0, dataset_size, self.batch_size))
+            batch_pbar = tqdm(batch_starts, 
+                             desc=f"Epoch {epoch+1} Batches", 
+                             leave=False, 
+                             disable=(self.local_rank != 0))
+            
+            for start in batch_pbar:
+                idx = perm[start:start + self.batch_size]
+                b_obs, b_acts = obs_t[idx], acts_t[idx]
+                b_oldlp, b_adv = oldlp_t[idx], adv_t[idx]
+                b_ret = ret_t[idx]
+
+                logits, value_pred = self.model(b_obs)
+                dist = Categorical(logits=logits)
+                new_lps = dist.log_prob(b_acts)
+                entropy = dist.entropy().mean()
+
+                # Calculate KL divergence and clipping metrics
+                ratio = torch.exp(new_lps - b_oldlp)
+                kl_div = torch.mean(b_oldlp - new_lps)
+                clip_frac = torch.mean((torch.abs(ratio - 1.0) > self.clip_epsilon).float())
+
+                kl_divergences.append(kl_div.item())
+                clip_fractions.append(clip_frac.item())
+
+                # policy loss
+                clipped = torch.clamp(ratio, 1 - self.clip_epsilon, 1 + self.clip_epsilon)
+                policy_loss = -torch.min(ratio * b_adv, clipped * b_adv).mean()
+
+                # value loss (clipped and weighted)
+                value_pred = value_pred.squeeze()
+                with torch.no_grad():
+                    old_vals = torch.tensor(vals, dtype=torch.float32, device=self.device)[idx]
+                v_clipped = old_vals + torch.clamp(
+                    value_pred - old_vals,
+                    -self.clip_epsilon, self.clip_epsilon
+                )
+                value_loss = torch.max(
+                    (value_pred - b_ret) ** 2,
+                    (v_clipped - b_ret) ** 2
+                ).mean()
+
+                loss = policy_loss + value_loss - self.entropy_coef * entropy
+
+                self.optimizer.zero_grad()
+                loss.backward()
+
+                # Calculate gradient norm
+                grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.5)
+                self.gradient_norms.append(grad_norm.item())
+
+                self.optimizer.step()
+
+                policy_losses.append(policy_loss.item())
+                value_losses.append(value_loss.item())
+                entropies.append(entropy.item())
+                
+                # Update batch progress bar
+                batch_pbar.set_postfix({
+                    'policy_loss': f"{policy_loss.item():.4f}",
+                    'value_loss': f"{value_loss.item():.4f}",
+                    'entropy': f"{entropy.item():.4f}"
+                })
+            
+            batch_pbar.close()
+            
+            # Update epoch progress bar
+            epoch_pbar.set_postfix({
+                'avg_policy_loss': f"{np.mean(policy_losses[-len(batch_starts):]):.4f}",
+                'avg_value_loss': f"{np.mean(value_losses[-len(batch_starts):]):.4f}",
+                'kl_div': f"{np.mean(kl_divergences[-len(batch_starts):]):.4f}"
+            })
+        
+        epoch_pbar.close()
+
+        # Store loss trends
+        self.loss_trends.extend(policy_losses)
+
+        # Calculate value function accuracy
+        with torch.no_grad():
+            logits, value_preds = self.model(obs_t)
+            value_accuracy = 1.0 - torch.mean(torch.abs(value_preds.squeeze() - ret_t) / (torch.abs(ret_t) + 1e-8))
+            self.value_accuracy.append(value_accuracy.item())
+
+        # Enhanced logging
+        self._log_comprehensive_metrics(
+            policy_losses, value_losses, entropies, kl_divergences, 
+            clip_fractions, action_probs, rews, vals, rets.numpy()
+        )
+
+        # Create advanced visualizations
+        if self.global_step % 50 == 0:
+            self._create_advanced_visualizations()
+
+        # decay LR & entropy once per train_step
+        if getattr(self, "current_update", 0) % 50 == 0:
+            self.scheduler.step()
+        self.entropy_coef = max(0.001, self.entropy_coef * 0.9995)  # Slower decay with minimum
+
+        # rollout reward: total sum of step rewards
+        total_reward = float(rews.sum())
+
+        # checkpoint with backup (save much less frequently to reduce log spam)
+        if self.local_rank == 0 and getattr(self, "current_update", 0) % 200 == 0 and getattr(self, "current_update", 0) > 0:
+            state_dict = (
+                self.model.module.state_dict()
+                if isinstance(self.model, DDP)
+                else self.model.state_dict()
+            )
+            ckpt = {
+                "update_idx": getattr(self, "current_update", 0),
+                "model_state": state_dict,
+                "optimizer_state": self.optimizer.state_dict(),
+                "scheduler_state": self.scheduler.state_dict(),
+                "entropy_coef": self.entropy_coef,
+                "total_reward": total_reward,
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+            # Save checkpoint
+            ckpt_path = self.model_save_path + ".ckpt"
+            torch.save(ckpt, ckpt_path)
+
+            # Save model state separately for inference
+            model_for_save = self.model.module if isinstance(self.model, DDP) else self.model
+            if hasattr(model_for_save, 'save_model'):
+                model_for_save.save_model(self.model_save_path)
+            else:
+                torch.save(state_dict, self.model_save_path)
+
+            # Create backup every 500 updates
+            if hasattr(self, "current_update") and self.current_update % 500 == 0:
+                backup_name = f"{self.model_save_path}.backup_{self.current_update}"
+                torch.save(ckpt, backup_name)
+
+        self.global_step += 1
+        return total_reward
+
+    def train(
+        self,
+        total_timesteps: int,
+        start_update: int = 0,
+        eval_env=None,
+    ):
+        """
+        Run PPO until `total_timesteps` env steps are collected.
+        Only rank 0 displays a single-line tqdm bar updated in place.
+        """
+        n_updates = max(1, total_timesteps // self.rollout_steps)
+        logger.info(f"Starting training: updates {start_update} → {n_updates - 1}")
+
+        # log hyperparameters once
+        self.tb_writer.add_hparams(
+            {
+                "gamma": self.gamma,
+                "gae_lambda": self.gae_lambda,
+                "clip_epsilon": self.clip_epsilon,
+                "rollout_steps": self.rollout_steps,
+                "update_epochs": self.update_epochs,
+                "batch_size": self.batch_size,
+                "lr": self.optimizer.param_groups[0]["lr"]
+            },
+            {"rollout_reward": 0}
+        )
+
+        start_time = time.time()
+        if eval_env is None:
+            logger.warning("No evaluation environment provided; skipping eval logs")
+
+        if self.local_rank == 0:
+            pbar = trange(start_update, n_updates, desc="PPO updates")
+        else:
+            pbar = range(start_update, n_updates)
+
+        for update in pbar:
+            self.current_update = update
+            mean_reward = self.train_step()
+
+            if self.local_rank == 0:
+                pbar.set_postfix(total_reward=f"{mean_reward:.4f}")
+
+            elapsed = time.time() - start_time
+            self.tb_writer.add_scalar("PPO/ElapsedSeconds", elapsed, update)
+
+            # periodic evaluation
+            if (
+                eval_env is not None
+                and self.local_rank == 0
+                and (update + 1) % self.eval_interval == 0
+            ):
+                real_agent = self.model.module if isinstance(self.model, DDP) else self.model
+                profits, times = evaluate_agent_distributed(eval_env, real_agent, 0)
+                cagr, sharpe, mdd = compute_performance_metrics(profits, times)
+                self.tb_writer.add_scalar("PPO/Eval/CAGR", cagr, update)
+                self.tb_writer.add_scalar("PPO/Eval/Sharpe", sharpe, update)
+                self.tb_writer.add_scalar("PPO/Eval/MDD", mdd, update)
+
+                fig = plt.figure()
+                pd.Series(profits).cumsum().plot(
+                    title=f"PPO Equity after update {update + 1}"
+                )
+                self.tb_writer.add_figure("PPO/Eval/EquityCurve", fig, update)
+                plt.close(fig)
+
+            # periodic weight histograms
+            if self.local_rank == 0 and (update + 1) % (self.eval_interval * 2) == 0:
+                real_model = self.model.module if isinstance(self.model, DDP) else self.model
+                for i, layer in enumerate(real_model.base):
+                    if isinstance(layer, nn.Linear):
+                        w = layer.weight.data.cpu().numpy()
+                        self.tb_writer.add_histogram(f"PPO/Layer{i}_Weights", w, update)
+
+        if self.local_rank == 0:
+            pbar.close()
+        self.tb_writer.close()
+        return self.model.module if isinstance(self.model, DDP) else self.model
+
+    def _analyze_trading_behavior(self, actions, rewards, observations):
+        """Analyze trading-specific behavior patterns"""
+        # Track position changes (assuming 0=hold, 1=buy, 2=sell)
+        position_changes = np.sum(actions != 0)  # Non-hold actions
+        self.position_changes.append(position_changes)
+
+        # Track profit per trade
+        trade_rewards = rewards[actions != 0]
+        if len(trade_rewards) > 0:
+            self.profit_per_trade.extend(trade_rewards)
+
+    def _log_comprehensive_metrics(self, policy_losses, value_losses, entropies, 
+                                 kl_divergences, clip_fractions, action_probs, 
+                                 rewards, values, returns):
+        """Log comprehensive metrics to TensorBoard"""
+
+        # Basic metrics
+        self.tb_writer.add_scalar("PPO/Loss/Policy_Mean", np.mean(policy_losses), self.global_step)
+        self.tb_writer.add_scalar("PPO/Loss/Policy_Std", np.std(policy_losses), self.global_step)
+        self.tb_writer.add_scalar("PPO/Loss/Value_Mean", np.mean(value_losses), self.global_step)
+        self.tb_writer.add_scalar("PPO/Loss/Value_Std", np.std(value_losses), self.global_step)
+
+        # Learning dynamics
+        self.tb_writer.add_scalar("PPO/Dynamics/KL_Divergence", np.mean(kl_divergences), self.global_step)
+        self.tb_writer.add_scalar("PPO/Dynamics/Clip_Fraction", np.mean(clip_fractions), self.global_step)
+        self.tb_writer.add_scalar("PPO/Dynamics/Entropy_Mean", np.mean(entropies), self.global_step)
+        self.tb_writer.add_scalar("PPO/Dynamics/Gradient_Norm", np.mean(list(self.gradient_norms)[-10:]), self.global_step)
+
+        # Value function performance
+        if self.value_accuracy:
+            self.tb_writer.add_scalar("PPO/ValueFunction/Accuracy", np.mean(list(self.value_accuracy)[-10:]), self.global_step)
+
+        # Action distribution analysis
+        for i, prob in enumerate(action_probs):
+            self.tb_writer.add_scalar(f"PPO/Actions/Action_{i}_Probability", prob, self.global_step)
+
+        # Reward analysis
+        self.tb_writer.add_scalar("PPO/Rewards/Mean", np.mean(rewards), self.global_step)
+        self.tb_writer.add_scalar("PPO/Rewards/Std", np.std(rewards), self.global_step)
+        self.tb_writer.add_scalar("PPO/Rewards/Max", np.max(rewards), self.global_step)
+        self.tb_writer.add_scalar("PPO/Rewards/Min", np.min(rewards), self.global_step)
+
+        # Value function analysis
+        self.tb_writer.add_scalar("PPO/Values/Mean", np.mean(values), self.global_step)
+        self.tb_writer.add_scalar("PPO/Values/Std", np.std(values), self.global_step)
+
+        # Returns analysis
+        self.tb_writer.add_scalar("PPO/Returns/Mean", np.mean(returns), self.global_step)
+        self.tb_writer.add_scalar("PPO/Returns/Std", np.std(returns), self.global_step)
+
+        # Trading-specific metrics
+        if self.position_changes:
+            self.tb_writer.add_scalar("Trading/Position_Changes_Per_Rollout", 
+                                    np.mean(list(self.position_changes)[-10:]), self.global_step)
+
+        if self.profit_per_trade:
+            recent_profits = list(self.profit_per_trade)[-50:]
+            self.tb_writer.add_scalar("Trading/Avg_Profit_Per_Trade", np.mean(recent_profits), self.global_step)
+            self.tb_writer.add_scalar("Trading/Win_Rate", np.mean(np.array(recent_profits) > 0), self.global_step)
+
+        # Learning rate and entropy tracking
+        self.tb_writer.add_scalar("PPO/Hyperparams/Learning_Rate", self.scheduler.get_last_lr()[0], self.global_step)
+        self.tb_writer.add_scalar("PPO/Hyperparams/Entropy_Coefficient", self.entropy_coef, self.global_step)
+
+    def _create_advanced_visualizations(self):
+        """Create advanced visualizations for TensorBoard"""
+
+        # 1. Action Distribution Heatmap
+        if len(self.action_distribution_history) > 10:
+            action_matrix = np.array(list(self.action_distribution_history)[-50:])
+
+            fig, ax = plt.subplots(figsize=(12, 8))
+            sns.heatmap(action_matrix.T, 
+                       annot=False, 
+                       cmap='viridis',
+                       ax=ax,
+                       cbar_kws={'label': 'Action Probability'})
+            ax.set_xlabel('Time Steps (Recent 50)')
+            ax.set_ylabel('Actions')
+            ax.set_title('Action Distribution Evolution')
+            self.tb_writer.add_figure("PPO/Visualizations/Action_Distribution_Heatmap", fig, self.global_step)
+            plt.close(fig)
+
+        # 2. Loss Trends Comparison
+        if len(self.loss_trends) > 100:
+            recent_losses = list(self.loss_trends)[-200:]
+
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
+
+            # Rolling average
+            window = 20
+            rolling_avg = pd.Series(recent_losses).rolling(window=window).mean()
+
+            ax1.plot(recent_losses, alpha=0.3, label='Raw Loss')
+            ax1.plot(rolling_avg, label=f'{window}-Step Moving Average', linewidth=2)
+            ax1.set_title('Policy Loss Trends')
+            ax1.set_ylabel('Loss')
+            ax1.legend()
+            ax1.grid(True, alpha=0.3)
+
+            # Loss distribution
+            ax2.hist(recent_losses, bins=30, alpha=0.7, edgecolor='black')
+            ax2.axvline(np.mean(recent_losses), color='red', linestyle='--', label=f'Mean: {np.mean(recent_losses):.4f}')
+            ax2.set_title('Policy Loss Distribution')
+            ax2.set_xlabel('Loss Value')
+            ax2.set_ylabel('Frequency')
+            ax2.legend()
+            ax2.grid(True, alpha=0.3)
+
+            plt.tight_layout()
+            self.tb_writer.add_figure("PPO/Visualizations/Loss_Analysis", fig, self.global_step)
+            plt.close(fig)
+
+        # 3. Reward Patterns Analysis
+        if len(self.reward_trends) > 100:
+            recent_rewards = list(self.reward_trends)[-500:]
+
+            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
+
+            # Reward time series
+            ax1.plot(recent_rewards, alpha=0.7)
+            ax1.set_title('Reward Time Series')
+            ax1.set_ylabel('Reward')
+            ax1.grid(True, alpha=0.3)
+
+            # Cumulative rewards
+            cumulative = np.cumsum(recent_rewards)
+            ax2.plot(cumulative, color='green', linewidth=2)
+            ax2.set_title('Cumulative Rewards')
+            ax2.set_ylabel('Cumulative Reward')
+            ax2.grid(True, alpha=0.3)
+
+            # Reward distribution
+            ax3.hist(recent_rewards, bins=30, alpha=0.7, edgecolor='black')
+            ax3.axvline(np.mean(recent_rewards), color='red', linestyle='--', 
+                       label=f'Mean: {np.mean(recent_rewards):.4f}')
+            ax3.set_title('Reward Distribution')
+            ax3.set_xlabel('Reward Value')
+            ax3.set_ylabel('Frequency')
+            ax3.legend()
+            ax3.grid(True, alpha=0.3)
+
+            # Reward moving statistics
+            window = 50
+            rewards_series = pd.Series(recent_rewards)
+            rolling_mean = rewards_series.rolling(window=window).mean()
+            rolling_std = rewards_series.rolling(window=window).std()
+
+            ax4.plot(rolling_mean, label='Rolling Mean', linewidth=2)
+            ax4.fill_between(range(len(rolling_mean)), 
+                           rolling_mean - rolling_std, 
+                           rolling_mean + rolling_std, 
+                           alpha=0.3, label='±1 Std')
+            ax4.set_title(f'Reward Statistics (Window: {window})')
+            ax4.set_ylabel('Reward')
+            ax4.legend()
+            ax4.grid(True, alpha=0.3)
+
+            plt.tight_layout()
+            self.tb_writer.add_figure("PPO/Visualizations/Reward_Analysis", fig, self.global_step)
+            plt.close(fig)
+
+        # 4. Gradient Flow Analysis
+        if len(self.gradient_norms) > 20:
+            recent_grads = list(self.gradient_norms)[-50:]
+            
+            # Filter out infinite and NaN values
+            recent_grads = [g for g in recent_grads if np.isfinite(g)]
+            
+            if len(recent_grads) > 0:  # Only create plot if we have valid data
+                fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+
+                # Gradient norm over time
+                ax1.plot(recent_grads, marker='o', markersize=3, alpha=0.7)
+                ax1.axhline(y=0.5, color='red', linestyle='--', alpha=0.7, label='Clip Threshold')
+                ax1.set_title('Gradient Norm Evolution')
+                ax1.set_ylabel('Gradient Norm')
+                ax1.set_xlabel('Update Steps')
+                ax1.legend()
+                ax1.grid(True, alpha=0.3)
+
+                # Gradient norm distribution
+                if len(recent_grads) > 1:  # Need at least 2 values for histogram
+                    ax2.hist(recent_grads, bins=min(15, len(recent_grads)), alpha=0.7, edgecolor='black')
+                    ax2.axvline(np.mean(recent_grads), color='red', linestyle='--', 
+                               label=f'Mean: {np.mean(recent_grads):.4f}')
+                    ax2.axvline(0.5, color='orange', linestyle='--', label='Clip Threshold')
+                    ax2.set_title('Gradient Norm Distribution')
+                    ax2.set_xlabel('Gradient Norm')
+                    ax2.set_ylabel('Frequency')
+                    ax2.legend()
+                    ax2.grid(True, alpha=0.3)
+                else:
+                    ax2.text(0.5, 0.5, 'Insufficient data for histogram', 
+                            transform=ax2.transAxes, ha='center', va='center')
+                    ax2.set_title('Gradient Norm Distribution')
+
+                plt.tight_layout()
+                self.tb_writer.add_figure("PPO/Visualizations/Gradient_Analysis", fig, self.global_step)
+                plt.close(fig)
+
+        # 5. Trading Performance Dashboard
+        if self.profit_per_trade and len(self.profit_per_trade) > 10:
+            recent_profits = list(self.profit_per_trade)[-50:]
+
+            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
+
+            # Profit per trade over time
+            ax1.plot(recent_profits, marker='o', markersize=3, alpha=0.7)
+            ax1.axhline(y=0, color='red', linestyle='--', alpha=0.7, label='Break-even')
+            ax1.set_title('Profit Per Trade')
+            ax1.set_ylabel('Profit')
+            ax1.set_xlabel('Trade Number')
+            ax1.legend()
+            ax1.grid(True, alpha=0.3)
+
+            # Cumulative profit
+            cumulative_profit = np.cumsum(recent_profits)
+            ax2.plot(cumulative_profit, color='green', linewidth=2)
+            ax2.set_title('Cumulative Profit')
+            ax2.set_ylabel('Cumulative Profit')
+            ax2.set_xlabel('Trade Number')
+            ax2.grid(True, alpha=0.3)
+
+            # Profit distribution
+            ax3.hist(recent_profits, bins=20, alpha=0.7, edgecolor='black')
+            ax3.axvline(np.mean(recent_profits), color='red', linestyle='--', 
+                       label=f'Mean: {np.mean(recent_profits):.4f}')
+            ax3.set_title('Profit Distribution')
+            ax3.set_xlabel('Profit')
+            ax3.set_ylabel('Frequency')
+            ax3.legend()
+            ax3.grid(True, alpha=0.3)
+
+            # Win/Loss analysis
+            wins = [p for p in recent_profits if p > 0]
+            losses = [p for p in recent_profits if p < 0]
+            win_rate = len(wins) / len(recent_profits) if recent_profits else 0
+
+            categories = ['Wins', 'Losses']
+            counts = [len(wins), len(losses)]
+            colors = ['green', 'red']
+
+            ax4.bar(categories, counts, color=colors, alpha=0.7)
+            ax4.set_title(f'Win/Loss Ratio (Win Rate: {win_rate:.2%})')
+            ax4.set_ylabel('Number of Trades')
+            ax4.grid(True, alpha=0.3)
+
+            plt.tight_layout()
+            self.tb_writer.add_figure("PPO/Visualizations/Trading_Performance", fig, self.global_step)
+            plt.close(fig)

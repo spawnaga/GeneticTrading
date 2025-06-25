@@ -1,0 +1,193 @@
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+WARNING:root:Distributed training not available, running in single-process mode
+2025-06-25 04:36:38 [INFO    ] [Rank-16086] STARTUP        : ================================================================================
+2025-06-25 04:36:38 [INFO    ] [Rank-16086] STARTUP        : Training session started for rank 0
+2025-06-25 04:36:38 [INFO    ] [Rank-16086] STARTUP        : Log file: logs/training_rank_0.log
+2025-06-25 04:36:38 [INFO    ] [Rank-16086] STARTUP        : Process ID: 16086
+2025-06-25 04:36:38 [INFO    ] [Rank-16086] STARTUP        : Working directory: /home/runner/workspace
+2025-06-25 04:36:38 [INFO    ] [Rank-16086] STARTUP        : ================================================================================
+2025-06-25 04:36:38 [INFO    ] [Rank-16086] root           : NCCL_TIMEOUT = 1800000 ms
+2025-06-25 04:36:38 [INFO    ] [Rank-16086] root           : Using 100.0% of available data
+2025-06-25 04:36:38 [INFO    ] [Rank-16086] root           : Models will be saved to: ./models
+2025-06-25 04:36:38 [INFO    ] [Rank-16086] root           : Rank 0/1 starting on cpu (has_cudf=False)
+2025-06-25 04:36:38 [INFO    ] [Rank-16086] root           : Parquet cache found; skipping preprocessing.
+2025-06-25 04:36:38 [INFO    ] [Rank-16086] root           : Total data: 4000 train, 1000 test rows
+2025-06-25 04:36:38 [INFO    ] [Rank-16086] adaptive_trainer: Starting adaptive training
+2025-06-25 04:36:38 [INFO    ] [Rank-16086] adaptive_trainer: 
+=== Adaptive Training Iteration 1/20 ===
+2025-06-25 04:36:39 [INFO    ] [Rank-16086] adaptive_trainer: Evaluation results: 923 profits, total=-187274.9947
+2025-06-25 04:36:39 [INFO    ] [Rank-16086] adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=100.0000
+2025-06-25 04:36:39 [INFO    ] [Rank-16086] adaptive_trainer: Current performance: -0.4500 (best: -0.4500)
+2025-06-25 04:36:39 [INFO    ] [Rank-16086] adaptive_trainer: Stagnation: 0, Poor performance: 0
+2025-06-25 04:36:39 [INFO    ] [Rank-16086] adaptive_trainer: Method: GA, Entropy: 1.0253
+2025-06-25 04:36:39 [INFO    ] [Rank-16086] adaptive_trainer: Switching to PPO due to: ga_solution_refinement
+2025-06-25 04:36:39 [INFO    ] [Rank-16086] adaptive_trainer: Switching from GA to PPO
+2025-06-25 04:36:39 [INFO    ] [Rank-16086] adaptive_trainer: Starting PPO phase: 150 updates
+2025-06-25 04:36:39 [INFO    ] [Rank-16086] policy_gradient_methods: Loaded model from models/ppo_models/adaptive_ppo_model.pth
+I0625 04:36:39.639000 16086 .pythonlibs/lib/python3.12/site-packages/torch/distributed/nn/jit/instantiator.py:24] Created a temporary directory at /tmp/tmpxthapvi8
+I0625 04:36:39.640000 16086 .pythonlibs/lib/python3.12/site-packages/torch/distributed/nn/jit/instantiator.py:75] Writing /tmp/tmpxthapvi8/_remote_module_non_scriptable.py
+Removed old TensorBoard run: ./runs/ppo_rank_0
+2025-06-25 04:36:40 [INFO    ] [Rank-16086] policy_gradient_methods: Loaded model from models/ppo_models/adaptive_ppo_model.pth
+2025-06-25 04:36:40 [INFO    ] [Rank-16086] adaptive_trainer: Evaluation results: 681 profits, total=100853.2181
+2025-06-25 04:36:40 [INFO    ] [Rank-16086] adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 04:36:48 [INFO    ] [Rank-16086] adaptive_trainer: Evaluation results: 890 profits, total=-187274.9947                                                                                            
+2025-06-25 04:36:48 [INFO    ] [Rank-16086] adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=100.0000                                                                                             
+2025-06-25 04:36:48 [INFO    ] [Rank-16086] adaptive_trainer: PPO Update 10: Performance=-0.4500, Entropy=1.0006
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] adaptive_trainer: Evaluation results: 923 profits, total=-187274.9947                                                                                            
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=100.0000                                                                                             
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] adaptive_trainer: PPO Update 20: Performance=-0.4500, Entropy=1.0348
+2025-06-25 04:36:56 [WARNING ] [Rank-16086] adaptive_trainer: PPO early stopping due to lack of improvement (patience: 6)
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] policy_gradient_methods: Saved model to models/ppo_models/adaptive_ppo_model.pth at 2025-06-25 04:36:56.022347
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] adaptive_trainer: Evaluation results: 63 profits, total=404.7184
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=5.0000, MDD=0.0189
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] adaptive_trainer: PPO phase completed with performance: 0.2500
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] adaptive_trainer: 
+=== Adaptive Training Iteration 2/20 ===
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] adaptive_trainer: Evaluation results: 582 profits, total=131.9821
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=5.0000, MDD=2.0282
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] adaptive_trainer: Current performance: 0.2459 (best: 0.2459)
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] adaptive_trainer: Stagnation: 0, Poor performance: 0
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] adaptive_trainer: Method: PPO, Entropy: 0.0000
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] adaptive_trainer: Switching to GA due to: low_diversity, exploration_phase
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] adaptive_trainer: Switching from PPO to GA
+2025-06-25 04:36:56 [INFO    ] [Rank-16086] adaptive_trainer: Starting GA phase: 20 generations, population 20
+[GA] Loaded GA model from models/ga_models/adaptive_ga_model.pth
+[GA] Loaded GA model from models/ga_models/adaptive_ga_model.pth                                                                                                                                             
+[GA] Saved GA model to models/ga_models/adaptive_ga_model.pth                                                                                                                                                
+[GA gens]:  50%|██████████████████████████████████████▌                                      | 10/20 [03:46<03:02, 18.28s/it, min=5.5, avg=90.7, med=12.4, max=514.2, std=0.825, stg=9, mu_r=0.19, mu_s=0.14]2025-06-25 04:40:42 [INFO    ] [Rank-16086] policy_gradient_methods: Loaded model from ppo_model.pth
+Removed old TensorBoard run: ./runs/ppo_rank_0
+[GA] Saved GA model to models/ga_models/adaptive_ga_model.pth                                                                                                                                                
+[GA] Saved GA model to models/ga_models/adaptive_ga_model.pth                                                                                                                                                
+[GA gens]: 100%|█████████████████████████████████████████████████████████████████████████| 20/20 [06:56<00:00, 20.85s/it, min=-106.6, avg=131.7, med=75.8, max=516.6, std=0.818, stg=0, mu_r=0.00, mu_s=0.00]
+2025-06-25 04:43:53 [INFO    ] [Rank-16086] adaptive_trainer: GA phase completed with fitness: 811.2058
+2025-06-25 04:43:53 [INFO    ] [Rank-16086] adaptive_trainer: 
+=== Adaptive Training Iteration 3/20 ===
+2025-06-25 04:43:53 [INFO    ] [Rank-16086] adaptive_trainer: Evaluation results: 541 profits, total=87749.9104
+2025-06-25 04:43:53 [INFO    ] [Rank-16086] adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 04:43:53 [INFO    ] [Rank-16086] adaptive_trainer: Current performance: 0.2500 (best: 0.2500)
+2025-06-25 04:43:53 [INFO    ] [Rank-16086] adaptive_trainer: Stagnation: 0, Poor performance: 0
+2025-06-25 04:43:53 [INFO    ] [Rank-16086] adaptive_trainer: Method: GA, Entropy: 0.0000
+2025-06-25 04:43:53 [INFO    ] [Rank-16086] adaptive_trainer: Switching to PPO due to: good_performance_refinement, ga_solution_refinement
+2025-06-25 04:43:53 [INFO    ] [Rank-16086] adaptive_trainer: Switching from GA to PPO
+2025-06-25 04:43:53 [INFO    ] [Rank-16086] adaptive_trainer: Starting PPO phase: 150 updates
+2025-06-25 04:43:53 [INFO    ] [Rank-16086] policy_gradient_methods: Loaded model from models/ppo_models/adaptive_ppo_model.pth
+2025-06-25 04:43:53 [INFO    ] [Rank-16086] adaptive_trainer: Evaluation results: 49 profits, total=-32399.9908
+2025-06-25 04:43:53 [INFO    ] [Rank-16086] adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=100.0000
+2025-06-25 04:44:00 [INFO    ] [Rank-16086] adaptive_trainer: Evaluation results: 391 profits, total=-234000.1399                                                                                            
+2025-06-25 04:44:00 [INFO    ] [Rank-16086] adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=100.0000                                                                                             
+2025-06-25 04:44:00 [INFO    ] [Rank-16086] adaptive_trainer: PPO Update 10: Performance=-0.4500, Entropy=0.0000
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] adaptive_trainer: Evaluation results: 818 profits, total=-214462.6998                                                                                            
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=100.0000                                                                                             
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] adaptive_trainer: PPO Update 20: Performance=-0.4500, Entropy=0.0000
+2025-06-25 04:44:08 [WARNING ] [Rank-16086] adaptive_trainer: PPO early stopping due to lack of improvement (patience: 6)
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] policy_gradient_methods: Saved model to models/ppo_models/adaptive_ppo_model.pth at 2025-06-25 04:44:08.132138
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] adaptive_trainer: Evaluation results: 732 profits, total=669.7947
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=5.0000, MDD=0.0172
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] adaptive_trainer: PPO phase completed with performance: 0.2500
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] adaptive_trainer: 
+=== Adaptive Training Iteration 4/20 ===
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] adaptive_trainer: Evaluation results: 311 profits, total=-99.6524
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=100.0000
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] adaptive_trainer: Current performance: -0.4500 (best: 0.2500)
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] adaptive_trainer: Stagnation: 1, Poor performance: 1
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] adaptive_trainer: Method: PPO, Entropy: 0.0000
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] adaptive_trainer: Switching to GA due to: low_diversity
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] adaptive_trainer: Switching from PPO to GA
+2025-06-25 04:44:08 [INFO    ] [Rank-16086] adaptive_trainer: Starting GA phase: 30 generations, population 30
+[GA] Loaded GA model from models/ga_models/adaptive_ga_model.pth
+[GA] Loaded GA model from models/ga_models/adaptive_ga_model.pth                                                                                                                                             
+[GA] Saved GA model to models/ga_models/adaptive_ga_model.pth                                                                                                                                                
+[GA] Saved GA model to models/ga_models/adaptive_ga_model.pth                                                                                                                                                
+[GA] Saved GA model to models/ga_models/adaptive_ga_model.pth                                                                                                                                                
+[GA] Saved GA model to models/ga_models/adaptive_ga_model.pth                                                                                                                                                
+[GA gens]:  33%|████████████████████████▋                                                 | 10/30 [05:40<09:24, 28.25s/it, min=-281.3, avg=37.9, med=10.1, max=745.8, std=0.913, stg=4, mu_r=0.26, mu_s=0.20]2025-06-25 04:49:49 [INFO    ] [Rank-16086] policy_gradient_methods: Loaded model from ppo_model.pth
+Removed old TensorBoard run: ./runs/ppo_rank_0
+[GA gens]:  67%|████████████████████████████████████████████████                        | 20/30 [10:30<04:48, 28.82s/it, min=-272.3, avg=154.4, med=16.0, max=964.1, std=0.893, stg=14, mu_r=0.12, mu_s=0.09]2025-06-25 04:54:39 [INFO    ] [Rank-16086] policy_gradient_methods: Loaded model from ppo_model.pth                                                                                                         
+Removed old TensorBoard run: ./runs/ga_experiment                                                                                                                                                            
+[GA gens]:  70%|██████████████████████████████████████████████████▍                     | 21/30 [10:42<04:56, 32.91s/it, min=-272.3, avg=154.4, med=16.0, max=964.1, std=0.893, stg=14, mu_r=0.12, mu_s=0.09]Exception in thread Thread-5:                                                                                                                                                                                
+[GA gens]:  70%|██████████████████████████████████████████████████▍                     | 21/30 [11:07<04:45, 31.76s/it, min=-272.3, avg=154.4, med=16.0, max=964.1, std=0.893, stg=14, mu_r=0.12, mu_s=0.09]Traceback (most recent call last):
+  File "/home/runner/workspace/ga_policy_evolution.py", line 436, in run_ga_evolution
+
+Traceback (most recent call last):
+  File "/home/runner/workspace/main.py", line 448, in <module>
+    writer.add_scalar("GA/Evolution/Mutation_Scale", mu_s, gen)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/torch/utils/tensorboard/writer.py", line 381, in add_scalar
+    main()
+  File "/home/runner/workspace/main.py", line 407, in main
+    self._get_file_writer().add_summary(summary, global_step, walltime)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/torch/utils/tensorboard/writer.py", line 115, in add_summary
+    self.add_event(event, global_step, walltime)
+    training_log = adaptive_trainer.adaptive_train(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/torch/utils/tensorboard/writer.py", line 99, in add_event
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    self.event_writer.add_event(event)
+  File "/home/runner/workspace/adaptive_trainer.py", line 398, in adaptive_train
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/summary/writer/event_file_writer.py", line 117, in add_event
+    self.run_ga_phase(generations=generations, population_size=population_size)
+  File "/home/runner/workspace/adaptive_trainer.py", line 212, in run_ga_phase
+    self._async_writer.write(event.SerializeToString())
+    best_agent, best_fitness, _, _ = run_ga_evolution(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/summary/writer/event_file_writer.py", line 178, in write
+                                     ^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/ga_policy_evolution.py", line 556, in run_ga_evolution
+    writer.close()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/torch/utils/tensorboard/writer.py", line 1200, in close
+    self._check_worker_status()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/summary/writer/event_file_writer.py", line 212, in _check_worker_status
+    raise exception
+  File "/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/threading.py", line 1075, in _bootstrap_inner
+    writer.flush()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/torch/utils/tensorboard/writer.py", line 153, in flush
+    self.event_writer.flush()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/summary/writer/event_file_writer.py", line 125, in flush
+    self._async_writer.flush()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/summary/writer/event_file_writer.py", line 186, in flush
+    self._check_worker_status()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/summary/writer/event_file_writer.py", line 212, in _check_worker_status
+    self.run()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/summary/writer/event_file_writer.py", line 244, in run
+    raise exception
+    self._run()
+  File "/home/runner/workspace/ga_policy_evolution.py", line 436, in run_ga_evolution
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/summary/writer/event_file_writer.py", line 275, in _run
+    writer.add_scalar("GA/Evolution/Mutation_Scale", mu_s, gen)
+    self._record_writer.write(data)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/torch/utils/tensorboard/writer.py", line 381, in add_scalar
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/summary/writer/record_writer.py", line 40, in write
+    self._get_file_writer().add_summary(summary, global_step, walltime)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/torch/utils/tensorboard/writer.py", line 115, in add_summary
+    self._writer.write(header + header_crc + data + footer_crc)
+    self.add_event(event, global_step, walltime)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/compat/tensorflow_stub/io/gfile.py", line 775, in write
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/torch/utils/tensorboard/writer.py", line 99, in add_event
+    self.fs.append(self.filename, file_content, self.binary_mode)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/compat/tensorflow_stub/io/gfile.py", line 167, in append
+    self.event_writer.add_event(event)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/summary/writer/event_file_writer.py", line 117, in add_event
+    self._write(filename, file_content, "ab" if binary_mode else "a")
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/compat/tensorflow_stub/io/gfile.py", line 171, in _write
+    self._async_writer.write(event.SerializeToString())
+    with io.open(filename, mode, encoding=encoding) as f:
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/summary/writer/event_file_writer.py", line 178, in write
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: b'./runs/ga_experiment/events.out.tfevents.1750826648.62e784b8467a.16086.3'
+    self._check_worker_status()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/summary/writer/event_file_writer.py", line 212, in _check_worker_status
+    raise exception
+  File "/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/threading.py", line 1075, in _bootstrap_inner
+    self.run()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/summary/writer/event_file_writer.py", line 244, in run
+    self._run()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/summary/writer/event_file_writer.py", line 275, in _run
+    self._record_writer.write(data)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/summary/writer/record_writer.py", line 40, in write
+    self._writer.write(header + header_crc + data + footer_crc)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/compat/tensorflow_stub/io/gfile.py", line 775, in write
+    self.fs.append(self.filename, file_content, self.binary_mode)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/compat/tensorflow_stub/io/gfile.py", line 167, in append
+    self._write(filename, file_content, "ab" if binary_mode else "a")
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/tensorboard/compat/tensorflow_stub/io/gfile.py", line 171, in _write
+    with io.open(filename, mode, encoding=encoding) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: b'./runs/ga_experiment/events.out.tfevents.1750826648.62e784b8467a.16086.3'

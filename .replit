@@ -1,0 +1,17 @@
+modules = ["python-3.12"]
+
+[nix]
+channel = "stable-24_05"
+packages = ["cairo", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "gobject-introspection", "gtk3", "libjpeg_turbo", "libpng", "pkg-config", "qhull", "tcl", "tk", "which"]
+
+[workflows]
+runButton = "Run Trading System"
+
+[[workflows.workflow]]
+name = "Run Trading System"
+author = 33211024
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"

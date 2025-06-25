@@ -1,0 +1,176 @@
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+WARNING:root:Distributed training not available, running in single-process mode
+2025-06-25 03:10:11 [INFO    ] [Rank-8889] STARTUP        : ================================================================================
+2025-06-25 03:10:11 [INFO    ] [Rank-8889] STARTUP        : Training session started for rank 0
+2025-06-25 03:10:11 [INFO    ] [Rank-8889] STARTUP        : Log file: logs/training_rank_0.log
+2025-06-25 03:10:11 [INFO    ] [Rank-8889] STARTUP        : Process ID: 8889
+2025-06-25 03:10:11 [INFO    ] [Rank-8889] STARTUP        : Working directory: /home/runner/workspace
+2025-06-25 03:10:11 [INFO    ] [Rank-8889] STARTUP        : ================================================================================
+2025-06-25 03:10:11 [INFO    ] [Rank-8889] root           : NCCL_TIMEOUT = 1800000 ms
+2025-06-25 03:10:11 [INFO    ] [Rank-8889] root           : Using 100.0% of available data
+2025-06-25 03:10:11 [INFO    ] [Rank-8889] root           : Models will be saved to: ./models
+2025-06-25 03:10:11 [INFO    ] [Rank-8889] root           : Rank 0/1 starting on cpu (has_cudf=False)
+2025-06-25 03:10:11 [INFO    ] [Rank-8889] root           : Parquet cache found; skipping preprocessing.
+2025-06-25 03:10:11 [INFO    ] [Rank-8889] root           : Total data: 4000 train, 1000 test rows
+[GA gens]:   0%|                                                                                                                                                                      | 0/50 [00:00<?, ?it/s]Removed old TensorBoard run: ./runs/ga_experiment
+[GA] Loaded GA model from models/ga_models/ga_policy_model.pth                                                                                                                                               
+[GA gens]:   0%|                                                                                                                                                                      | 0/50 [00:00<?, ?it/s/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+[GA] Saved GA model to models/ga_models/ga_policy_model.pth                                                                                                                                                  
+[GA gens]:   2%|█▍                                                                     | 1/50 [01:07<55:20, 67.77s/it, min=-1218.0, avg=826.2, med=807.9, max=3620.6, std=1.408, stg=0, mu_r=0.30, mu_s=0.50]/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+[GA gens]:   4%|██▉                                                                       | 2/50 [01:29<32:20, 40.43s/it, min=-249.9, avg=316.5, med=5.6, max=3206.3, std=1.431, stg=0, mu_r=0.29, mu_s=0.49]/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+[GA gens]:   6%|████▎                                                                  | 3/50 [01:51<25:15, 32.24s/it, min=-1736.6, avg=231.8, med=-10.0, max=2963.5, std=1.445, stg=1, mu_r=0.29, mu_s=0.48]/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+[GA gens]:   8%|█████▉                                                                    | 4/50 [02:14<21:53, 28.56s/it, min=-1453.5, avg=60.4, med=3.6, max=2285.3, std=1.454, stg=2, mu_r=0.28, mu_s=0.47]/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+[GA gens]:  10%|███████▏                                                                | 5/50 [02:39<20:31, 27.37s/it, min=-1954.3, avg=176.1, med=10.7, max=2981.8, std=1.458, stg=3, mu_r=0.28, mu_s=0.46]/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+[GA gens]:  12%|████████▋                                                               | 6/50 [03:02<18:48, 25.64s/it, min=-1980.4, avg=428.7, med=17.6, max=2867.6, std=1.466, stg=4, mu_r=0.27, mu_s=0.45]/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+[GA gens]:  14%|██████████                                                              | 7/50 [03:32<19:34, 27.31s/it, min=-1575.1, avg=435.6, med=20.6, max=2605.7, std=1.466, stg=5, mu_r=0.26, mu_s=0.44]/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+[GA gens]:  16%|███████████▋                                                             | 8/50 [03:56<18:19, 26.17s/it, min=-1868.7, avg=153.2, med=3.9, max=2385.1, std=1.472, stg=6, mu_r=0.26, mu_s=0.43]/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+[GA gens]:  18%|████████████▊                                                          | 9/50 [04:17<16:45, 24.52s/it, min=-2038.5, avg=480.5, med=294.9, max=2989.0, std=1.468, stg=7, mu_r=0.25, mu_s=0.42]/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+[GA gens]:  20%|██████████████                                                        | 10/50 [04:40<16:06, 24.16s/it, min=-1934.3, avg=285.0, med=114.8, max=2507.4, std=1.468, stg=8, mu_r=0.24, mu_s=0.41]/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+[GA gens]:  20%|██████████████▍                                                         | 10/50 [05:06<16:06, 24.16s/it, min=-1853.5, avg=163.5, med=5.7, max=3707.4, std=1.470, stg=9, mu_r=0.24, mu_s=0.40]2025-06-25 03:15:18 [INFO    ] [Rank-8889] policy_gradient_methods: Loaded model from ppo_model.pth
+I0625 03:15:18.984000 8889 .pythonlibs/lib/python3.12/site-packages/torch/distributed/nn/jit/instantiator.py:24] Created a temporary directory at /tmp/tmpa_t_9wp4
+I0625 03:15:18.985000 8889 .pythonlibs/lib/python3.12/site-packages/torch/distributed/nn/jit/instantiator.py:75] Writing /tmp/tmpa_t_9wp4/_remote_module_non_scriptable.py
+Removed old TensorBoard run: ./runs/ppo_rank_0
+2025-06-25 03:15:22 [INFO    ] [Rank-8889] policy_gradient_methods: Saved model to ppo_model.pth at 2025-06-25 03:15:22.719445
+2025-06-25 03:15:24 [INFO    ] [Rank-8889] policy_gradient_methods: Saved model to ppo_model.pth at 2025-06-25 03:15:24.694346
+2025-06-25 03:15:26 [INFO    ] [Rank-8889] policy_gradient_methods: Saved model to ppo_model.pth at 2025-06-25 03:15:26.500355
+2025-06-25 03:15:28 [INFO    ] [Rank-8889] policy_gradient_methods: Saved model to ppo_model.pth at 2025-06-25 03:15:28.334944
+2025-06-25 03:15:30 [INFO    ] [Rank-8889] policy_gradient_methods: Saved model to ppo_model.pth at 2025-06-25 03:15:30.449416
+[GA] Saved GA model to models/ga_models/ga_policy_model.pth                                                                                                                                                  
+[GA gens]:  22%|███████████████▊                                                        | 11/50 [05:18<18:24, 28.32s/it, min=-1853.5, avg=163.5, med=5.7, max=3707.4, std=1.470, stg=9, mu_r=0.24, mu_s=0.40]Exception ignored in: <function Image.__del__ at 0x7fca4c440720>
+Traceback (most recent call last):
+  File "/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/tkinter/__init__.py", line 4117, in __del__
+    self.tk.call('image', 'delete', self.name)
+RuntimeError: main thread is not in main loop
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+/home/runner/workspace/main.py:28: UserWarning: cudf import failed (No module named 'cudf'); falling back to pandas (no GPU).
+  warnings.warn(f"cudf import failed ({e}); falling back to pandas (no GPU).")
+Exception ignored in: <function Variable.__del__ at 0x7fca4c401ee0>
+Traceback (most recent call last):
+  File "/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/tkinter/__init__.py", line 414, in __del__
+    if self._tk.getboolean(self._tk.call("info", "exists", self._name)):
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: main thread is not in main loop
+Exception ignored in: <function Variable.__del__ at 0x7fca4c401ee0>
+Traceback (most recent call last):
+  File "/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/tkinter/__init__.py", line 414, in __del__
+    if self._tk.getboolean(self._tk.call("info", "exists", self._name)):
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: main thread is not in main loop
+Exception ignored in: <function Variable.__del__ at 0x7fca4c401ee0>
+Traceback (most recent call last):
+  File "/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/tkinter/__init__.py", line 414, in __del__
+    if self._tk.getboolean(self._tk.call("info", "exists", self._name)):
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: main thread is not in main loop
+Exception ignored in: <function Variable.__del__ at 0x7fca4c401ee0>
+Traceback (most recent call last):
+  File "/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/tkinter/__init__.py", line 414, in __del__
+    if self._tk.getboolean(self._tk.call("info", "exists", self._name)):
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: main thread is not in main loop
+Exception ignored in: <function Image.__del__ at 0x7fca4c440720>
+Traceback (most recent call last):
+  File "/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/tkinter/__init__.py", line 4117, in __del__
+    self.tk.call('image', 'delete', self.name)
+RuntimeError: main thread is not in main loop
+Exception ignored in: <function Variable.__del__ at 0x7fca4c401ee0>
+Traceback (most recent call last):
+  File "/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/tkinter/__init__.py", line 414, in __del__
+    if self._tk.getboolean(self._tk.call("info", "exists", self._name)):
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: main thread is not in main loop
+Exception ignored in: <function Variable.__del__ at 0x7fca4c401ee0>
+Traceback (most recent call last):
+  File "/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/tkinter/__init__.py", line 414, in __del__
+    if self._tk.getboolean(self._tk.call("info", "exists", self._name)):
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: main thread is not in main loop
+Exception ignored in: <function Variable.__del__ at 0x7fca4c401ee0>
+Traceback (most recent call last):
+  File "/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/tkinter/__init__.py", line 414, in __del__
+    if self._tk.getboolean(self._tk.call("info", "exists", self._name)):
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: main thread is not in main loop
