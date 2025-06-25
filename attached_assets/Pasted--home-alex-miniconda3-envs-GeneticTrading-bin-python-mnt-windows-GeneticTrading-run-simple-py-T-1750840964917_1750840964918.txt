@@ -1,0 +1,251 @@
+/home/alex/miniconda3/envs/GeneticTrading/bin/python /mnt/windows/GeneticTrading/run_simple.py 
+🤖 Trading System Launcher
+==================================================
+✓ Created directory: ./models
+✓ Created directory: ./logs
+✓ Created directory: ./cached_data
+✓ Created directory: ./runs
+
+Available modes:
+  test - Quick test with minimal data (default)
+  dev  - Development mode with 10% data
+
+Usage: python run_simple.py [test|dev]
+
+Select mode (test/dev) [test]: dev
+🔧 Starting Development Mode...
+📊 Using 10% of data for development
+📈 Monitoring enabled - check ./logs/training_metrics.json for progress
+⚠️  Training will auto-stop if performance stagnates to save compute
+🔧 Starting Development Mode...
+📊 Using 10% of data for development
+WARNING:root:Distributed training not available, running in single-process mode
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] STARTUP             : ================================================================================
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] STARTUP             : Training session started for rank 0
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] STARTUP             : Log file: logs/training_rank_0.log
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] STARTUP             : Process ID: 22203
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] STARTUP             : Working directory: /mnt/windows/GeneticTrading
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] STARTUP             : ================================================================================
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] root                : NCCL_TIMEOUT = 1800000 ms
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] root                : Using 10.0% of available data
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] root                : Models will be saved to: ./models/dev
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] root                : Rank 0/1 starting on cuda:0 (has_cudf=True)
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] root                : Parquet cache found; skipping preprocessing.
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] root                : Total data: 400 train, 100 test rows
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] numba.cuda.cudadrv.driver: init
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] email_notifications : Email notifications configured for ali.aloraibi@outlook.com
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] email_notifications : Notifications will be sent every 6 hours
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] email_notifications : No training metrics available for progress update
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] email_notifications : Training monitoring started
+2025-06-25 01:41:46 [INFO    ] [Rank-22203] root                : Email notifications enabled - reports every 6 hours
+2025-06-25 01:41:47 [INFO    ] [Rank-22203] adaptive_trainer    : Removed old TensorBoard run: ./runs/ga_experiment
+2025-06-25 01:41:47 [INFO    ] [Rank-22203] adaptive_trainer    : Starting adaptive training
+2025-06-25 01:41:47 [INFO    ] [Rank-22203] adaptive_trainer    : 
+=== Adaptive Training Iteration 1/20 ===
+2025-06-25 01:41:47 [INFO    ] [Rank-22203] adaptive_trainer    : Evaluation results: 76 profits, total=-4424637.5811
+2025-06-25 01:41:47 [INFO    ] [Rank-22203] adaptive_trainer    : Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=100.0000
+2025-06-25 01:41:47 [INFO    ] [Rank-22203] adaptive_trainer    : Current performance: -0.4500 (best: -0.4500)
+2025-06-25 01:41:47 [INFO    ] [Rank-22203] adaptive_trainer    : Stagnation: 0, Poor performance: 0
+2025-06-25 01:41:47 [INFO    ] [Rank-22203] adaptive_trainer    : Method: GA, Entropy: 1.0986
+2025-06-25 01:41:47 [INFO    ] [Rank-22203] adaptive_trainer    : Switching to PPO due to: ga_solution_refinement
+2025-06-25 01:41:47 [INFO    ] [Rank-22203] adaptive_trainer    : Switching from GA to PPO
+2025-06-25 01:41:47 [INFO    ] [Rank-22203] adaptive_trainer    : Starting PPO phase: 150 updates
+2025-06-25 01:41:47 [INFO    ] [Rank-22203] policy_gradient_methods: Loaded model from models/dev/ppo_models/adaptive_ppo_model.pth
+I0625 01:41:47.480000 22203 site-packages/torch/distributed/nn/jit/instantiator.py:24] Created a temporary directory at /tmp/tmp91w9da0h
+I0625 01:41:47.480000 22203 site-packages/torch/distributed/nn/jit/instantiator.py:75] Writing /tmp/tmp91w9da0h/_remote_module_non_scriptable.py
+2025-06-25 01:41:47 [INFO    ] [Rank-22203] policy_gradient_methods: Loaded model from models/dev/ppo_models/adaptive_ppo_model.pth
+Removed old TensorBoard run: ./runs/ppo_rank_0
+2025-06-25 01:41:47 [INFO    ] [Rank-22203] adaptive_trainer    : Evaluation results: 99 profits, total=-6673562.6164
+2025-06-25 01:41:47 [INFO    ] [Rank-22203] adaptive_trainer    : Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=100.0000
+2025-06-25 01:41:48 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=324.998, episodes=1
+2025-06-25 01:41:48 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=115.998, episodes=0
+2025-06-25 01:41:48 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.031, v_loss=0.067, kl=0.0004
+2025-06-25 01:41:49 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=103.748, episodes=0
+2025-06-25 01:41:49 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=197.123, episodes=0
+2025-06-25 01:41:49 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.031, v_loss=0.065, kl=-0.0002
+2025-06-25 01:41:50 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=148.623, episodes=1
+2025-06-25 01:41:50 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=236.624, episodes=1
+2025-06-25 01:41:50 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.014, v_loss=0.054, kl=0.0001
+2025-06-25 01:41:51 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=227.124, episodes=0
+2025-06-25 01:41:51 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=114.373, episodes=1
+2025-06-25 01:41:51 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.000, v_loss=0.046, kl=0.0012
+2025-06-25 01:41:52 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=149.748, episodes=0
+2025-06-25 01:41:52 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=218.624, episodes=0
+2025-06-25 01:41:52 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.002, v_loss=0.071, kl=0.0000
+2025-06-25 01:41:52 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=106.498, episodes=1
+2025-06-25 01:41:53 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=51.123, episodes=1
+2025-06-25 01:41:53 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.007, v_loss=0.070, kl=0.0001
+2025-06-25 01:41:53 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=152.873, episodes=0
+2025-06-25 01:41:54 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=1.123, episodes=0
+2025-06-25 01:41:54 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.007, v_loss=0.069, kl=0.0007
+2025-06-25 01:41:54 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=151.748, episodes=1
+2025-06-25 01:41:54 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=254.999, episodes=1
+2025-06-25 01:41:55 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.030, v_loss=0.061, kl=0.0002
+2025-06-25 01:41:55 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=205.998, episodes=1
+2025-06-25 01:41:55 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=120.498, episodes=0
+2025-06-25 01:41:55 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.043, v_loss=0.060, kl=0.0007
+2025-06-25 01:41:56 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=252.249, episodes=1
+2025-06-25 01:41:56 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=216.623, episodes=0
+2025-06-25 01:41:56 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.005, v_loss=0.063, kl=-0.0006
+2025-06-25 01:41:57 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=166.499, episodes=0
+2025-06-25 01:41:57 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=111.748, episodes=2
+2025-06-25 01:41:57 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.063, v_loss=0.048, kl=-0.0002
+2025-06-25 01:41:58 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=216.998, episodes=0
+2025-06-25 01:41:58 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=206.248, episodes=1
+2025-06-25 01:41:58 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.035, v_loss=0.059, kl=-0.0018
+2025-06-25 01:41:58 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=268.873, episodes=1
+2025-06-25 01:41:59 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=190.123, episodes=1
+2025-06-25 01:41:59 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.018, v_loss=0.061, kl=-0.0005
+2025-06-25 01:41:59 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=146.623, episodes=0
+2025-06-25 01:42:00 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=166.498, episodes=1
+2025-06-25 01:42:00 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.035, v_loss=0.046, kl=0.0003
+2025-06-25 01:42:00 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=109.498, episodes=1
+2025-06-25 01:42:00 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=168.373, episodes=1
+2025-06-25 01:42:01 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.005, v_loss=0.058, kl=-0.0001
+2025-06-25 01:42:01 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=-18.126, episodes=0
+2025-06-25 01:42:01 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=153.623, episodes=0
+2025-06-25 01:42:01 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.007, v_loss=0.066, kl=-0.0002
+2025-06-25 01:42:02 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=223.123, episodes=0
+2025-06-25 01:42:03 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=94.248, episodes=0
+2025-06-25 01:42:03 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.022, v_loss=0.060, kl=0.0005
+2025-06-25 01:42:03 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=191.123, episodes=1
+2025-06-25 01:42:04 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=36.998, episodes=0
+2025-06-25 01:42:04 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.070, v_loss=0.055, kl=-0.0003
+2025-06-25 01:42:04 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=255.499, episodes=0
+2025-06-25 01:42:04 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=133.498, episodes=1
+2025-06-25 01:42:05 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.038, v_loss=0.059, kl=-0.0004
+2025-06-25 01:42:05 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=202.874, episodes=0
+2025-06-25 01:42:05 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=132.248, episodes=0
+2025-06-25 01:42:06 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.011, v_loss=0.050, kl=-0.0007
+2025-06-25 01:42:06 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=219.249, episodes=0
+2025-06-25 01:42:06 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=298.623, episodes=1
+2025-06-25 01:42:06 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.007, v_loss=0.058, kl=-0.0010
+2025-06-25 01:42:07 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=179.998, episodes=0
+2025-06-25 01:42:07 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=120.498, episodes=0
+2025-06-25 01:42:08 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.019, v_loss=0.062, kl=-0.0001
+2025-06-25 01:42:08 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=156.873, episodes=0
+2025-06-25 01:42:08 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=258.998, episodes=0
+2025-06-25 01:42:08 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.027, v_loss=0.065, kl=0.0001
+2025-06-25 01:42:09 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=126.873, episodes=0
+2025-06-25 01:42:09 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=41.873, episodes=1
+2025-06-25 01:42:09 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.009, v_loss=0.087, kl=0.0010
+2025-06-25 01:42:10 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=321.873, episodes=0
+2025-06-25 01:42:10 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=159.249, episodes=0
+2025-06-25 01:42:10 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.040, v_loss=0.060, kl=0.0004
+2025-06-25 01:42:11 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=159.373, episodes=1
+2025-06-25 01:42:11 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=115.998, episodes=0
+2025-06-25 01:42:11 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.012, v_loss=0.049, kl=-0.0009
+2025-06-25 01:42:11 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=171.873, episodes=0
+2025-06-25 01:42:12 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=189.373, episodes=1
+2025-06-25 01:42:12 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.006, v_loss=0.069, kl=0.0002
+2025-06-25 01:42:12 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=113.624, episodes=1
+2025-06-25 01:42:13 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=201.248, episodes=1
+2025-06-25 01:42:13 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.055, v_loss=0.047, kl=0.0003
+2025-06-25 01:42:13 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=171.123, episodes=2
+2025-06-25 01:42:13 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=237.998, episodes=1
+2025-06-25 01:42:14 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.048, v_loss=0.049, kl=-0.0000
+2025-06-25 01:42:14 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=285.249, episodes=0
+2025-06-25 01:42:14 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=160.873, episodes=1
+2025-06-25 01:42:14 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.019, v_loss=0.055, kl=-0.0001
+2025-06-25 01:42:15 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=-11.126, episodes=0
+2025-06-25 01:42:15 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=78.998, episodes=0
+2025-06-25 01:42:15 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.001, v_loss=0.088, kl=-0.0001
+2025-06-25 01:42:16 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=237.123, episodes=0
+2025-06-25 01:42:16 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=83.248, episodes=1
+2025-06-25 01:42:16 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.023, v_loss=0.053, kl=0.0005
+2025-06-25 01:42:16 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=237.498, episodes=1
+2025-06-25 01:42:17 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=250.873, episodes=2
+2025-06-25 01:42:17 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.003, v_loss=0.052, kl=-0.0001
+2025-06-25 01:42:17 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=78.999, episodes=0
+2025-06-25 01:42:18 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=143.623, episodes=1
+2025-06-25 01:42:18 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.002, v_loss=0.055, kl=0.0002
+2025-06-25 01:42:18 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=294.999, episodes=0
+2025-06-25 01:42:19 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=118.748, episodes=0
+2025-06-25 01:42:19 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.027, v_loss=0.050, kl=-0.0000
+2025-06-25 01:42:19 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=158.623, episodes=2
+2025-06-25 01:42:19 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=134.623, episodes=0
+2025-06-25 01:42:20 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.014, v_loss=0.051, kl=-0.0001
+2025-06-25 01:42:20 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=273.249, episodes=1
+2025-06-25 01:42:20 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=194.373, episodes=0
+2025-06-25 01:42:20 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.022, v_loss=0.060, kl=-0.0004
+2025-06-25 01:42:21 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=214.623, episodes=1
+2025-06-25 01:42:21 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=125.623, episodes=1
+2025-06-25 01:42:21 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.039, v_loss=0.052, kl=-0.0003
+2025-06-25 01:42:22 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=179.998, episodes=1
+2025-06-25 01:42:22 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=298.373, episodes=0
+2025-06-25 01:42:22 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.026, v_loss=0.059, kl=0.0002
+2025-06-25 01:42:23 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=201.499, episodes=0
+2025-06-25 01:42:23 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=277.873, episodes=1
+2025-06-25 01:42:23 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.073, v_loss=0.084, kl=0.0009
+2025-06-25 01:42:23 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=181.248, episodes=0
+2025-06-25 01:42:24 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=260.748, episodes=0
+2025-06-25 01:42:24 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.018, v_loss=0.048, kl=0.0010
+2025-06-25 01:42:24 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=184.373, episodes=0
+2025-06-25 01:42:25 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=293.373, episodes=1
+2025-06-25 01:42:25 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.026, v_loss=0.053, kl=-0.0003
+2025-06-25 01:42:25 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=133.498, episodes=0
+2025-06-25 01:42:25 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=228.873, episodes=1
+2025-06-25 01:42:26 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.004, v_loss=0.049, kl=-0.0000
+2025-06-25 01:42:26 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=330.249, episodes=0
+2025-06-25 01:42:26 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=349.874, episodes=0
+2025-06-25 01:42:26 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.006, v_loss=0.049, kl=0.0001
+2025-06-25 01:42:27 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=304.998, episodes=1
+2025-06-25 01:42:27 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=213.623, episodes=0
+2025-06-25 01:42:27 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.004, v_loss=0.048, kl=-0.0001
+2025-06-25 01:42:28 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=141.123, episodes=0
+2025-06-25 01:42:28 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=147.498, episodes=0
+2025-06-25 01:42:28 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.007, v_loss=0.054, kl=-0.0002
+2025-06-25 01:42:28 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=207.123, episodes=0
+2025-06-25 01:42:29 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=190.373, episodes=1
+2025-06-25 01:42:29 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.002, v_loss=0.066, kl=-0.0003
+2025-06-25 01:42:29 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=180.248, episodes=0
+2025-06-25 01:42:30 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=152.499, episodes=0
+2025-06-25 01:42:30 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.022, v_loss=0.049, kl=0.0004
+2025-06-25 01:42:30 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=60.873, episodes=0
+2025-06-25 01:42:31 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=211.249, episodes=1
+2025-06-25 01:42:31 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.048, v_loss=0.058, kl=-0.0002
+2025-06-25 01:42:31 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=196.248, episodes=0
+2025-06-25 01:42:31 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=184.373, episodes=0
+2025-06-25 01:42:32 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.038, v_loss=0.048, kl=-0.0005
+2025-06-25 01:42:32 [INFO    ] [Rank-22203] adaptive_trainer    : Evaluation results: 2 profits, total=0.0000
+2025-06-25 01:42:32 [INFO    ] [Rank-22203] adaptive_trainer    : Metrics: CAGR=0.0000, Sharpe=0.0000, MDD=0.0000
+2025-06-25 01:42:32 [INFO    ] [Rank-22203] adaptive_trainer    : PPO Update 50: Performance=0.0000, Entropy=1.0986
+2025-06-25 01:42:32 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=104.999, episodes=0
+2025-06-25 01:42:32 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=196.373, episodes=0
+2025-06-25 01:42:32 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.024, v_loss=0.054, kl=0.0003
+2025-06-25 01:42:33 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=135.249, episodes=1
+2025-06-25 01:42:33 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=259.873, episodes=0
+2025-06-25 01:42:33 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.031, v_loss=0.049, kl=-0.0002
+2025-06-25 01:42:34 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=189.749, episodes=0
+2025-06-25 01:42:34 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=348.624, episodes=0
+2025-06-25 01:42:34 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.010, v_loss=0.046, kl=-0.0002
+2025-06-25 01:42:35 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=121.498, episodes=1
+2025-06-25 01:42:35 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=204.123, episodes=0
+2025-06-25 01:42:35 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.028, v_loss=0.043, kl=0.0011
+2025-06-25 01:42:36 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=183.623, episodes=0
+2025-06-25 01:42:36 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=203.248, episodes=0
+2025-06-25 01:42:36 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.027, v_loss=0.062, kl=-0.0006
+2025-06-25 01:42:36 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=207.498, episodes=0
+2025-06-25 01:42:37 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=166.498, episodes=0
+2025-06-25 01:42:37 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.051, v_loss=0.043, kl=0.0002
+2025-06-25 01:42:37 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=159.998, episodes=0
+2025-06-25 01:42:38 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=305.748, episodes=1
+2025-06-25 01:42:38 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.035, v_loss=0.061, kl=0.0006
+2025-06-25 01:42:38 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=197.499, episodes=0
+2025-06-25 01:42:38 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=124.124, episodes=0
+2025-06-25 01:42:39 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.010, v_loss=0.058, kl=0.0006
+2025-06-25 01:42:39 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=249.498, episodes=0
+2025-06-25 01:42:39 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=103.498, episodes=1
+2025-06-25 01:42:39 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.078, v_loss=0.047, kl=-0.0005
+2025-06-25 01:42:40 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=208.373, episodes=0
+2025-06-25 01:42:40 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=260.123, episodes=1
+2025-06-25 01:42:40 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.023, v_loss=0.045, kl=0.0002
+2025-06-25 01:42:41 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=183.374, episodes=0
+2025-06-25 01:42:41 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=305.373, episodes=1
+2025-06-25 01:42:41 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.025, v_loss=0.047, kl=-0.0000
+2025-06-25 01:42:41 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=80.373, episodes=1
+2025-06-25 01:42:42 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=171.373, episodes=0
+2025-06-25 01:42:42 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=0.012, v_loss=0.054, kl=0.0002
+2025-06-25 01:42:42 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 500/1024 steps, avg_reward=161.248, episodes=1
+2025-06-25 01:42:43 [INFO    ] [Rank-22203] policy_gradient_methods: Trajectory collection: 1000/1024 steps, avg_reward=259.748, episodes=0
+2025-06-25 01:42:43 [INFO    ] [Rank-22203] policy_gradient_methods: PPO training: epoch 4/4, batch 50/64, p_loss=-0.001, v_loss=0.046, kl=0.0001
