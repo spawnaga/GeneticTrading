@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 """
 Simple Trading System Launcher
@@ -22,7 +21,7 @@ def setup_environment():
         './cached_data',
         './runs'
     ]
-    
+
     for dir_path in dirs_to_create:
         Path(dir_path).mkdir(parents=True, exist_ok=True)
         print(f"✓ Created directory: {dir_path}")
@@ -31,10 +30,10 @@ def run_quick_test():
     """Run a quick test with minimal data for development."""
     print("🚀 Starting Quick Test Mode...")
     print("📊 Using minimal data for fast iteration")
-    
+
     # Import main after environment setup
     from main import main
-    
+
     # Override sys.argv to simulate command line arguments
     sys.argv = [
         'main.py',
@@ -47,17 +46,17 @@ def run_quick_test():
         '--eval-interval', '1',       # Frequent evaluation
         '--log-level', 'INFO'
     ]
-    
+
     # Run the main function
     main()
 
 def run_development():
-    """Run development mode with reasonable data size."""
+    """Run development mode with 10% of data."""
     print("🔧 Starting Development Mode...")
     print("📊 Using 10% of data for development")
-    
+
     from main import main
-    
+
     sys.argv = [
         'main.py',
         '--data-percentage', '0.1',   # Use 10% of data
@@ -69,17 +68,17 @@ def run_development():
         '--eval-interval', '5',
         '--log-level', 'INFO'
     ]
-    
+
     main()
 
 def main():
     """Main launcher with mode selection."""
     print("🤖 Trading System Launcher")
     print("=" * 50)
-    
+
     # Setup environment
     setup_environment()
-    
+
     if len(sys.argv) > 1:
         mode = sys.argv[1].lower()
     else:
@@ -88,15 +87,15 @@ def main():
         print("  dev  - Development mode with 10% data")
         print("\nUsage: python run_simple.py [test|dev]")
         mode = input("\nSelect mode (test/dev) [test]: ").lower() or 'test'
-    
+
     try:
         if mode == 'dev':
             run_development()
         else:
             run_quick_test()
-            
+
         print("\n✅ Training completed successfully!")
-        
+
     except KeyboardInterrupt:
         print("\n⚠️ Training interrupted by user")
     except Exception as e:

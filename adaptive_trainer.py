@@ -339,12 +339,12 @@ class AdaptiveTrainer:
         if os.path.exists(self.ga_model_path):
             self.ga_agent.load_model(self.ga_model_path)
 
-        # Run GA evolution
+        # Run GA evolution with faster settings
         best_agent, best_fitness, _, _ = run_ga_evolution(
             self.train_env,
-            population_size=population_size,
-            generations=generations,
-            tournament_size=max(3, population_size // 7),
+            population_size=min(population_size, 15),  # Limit population size
+            generations=min(generations, 10),  # Limit generations
+            tournament_size=max(3, min(population_size, 15) // 5),
             mutation_rate=0.4,
             mutation_scale=0.3,
             num_workers=1,
@@ -418,8 +418,8 @@ class AdaptiveTrainer:
                 self.ppo_trainer.optimizer.state = {}  # Reset optimizer state
                 continue
 
-            # Reduced evaluation frequency to avoid CUDA issues
-            if (update + 1) % 25 == 0:  # Evaluate every 25 updates instead of 10
+            # Reduced evaluation frequency for faster training
+            if (update + 1) % 50 == 0:  # Evaluate every 50 updates
                 try:
                     performance, entropy, metrics = self.evaluate_current_policy()
                     logger.info(f"PPO Update {update + 1}: Performance={performance:.4f}, Entropy={entropy:.4f}")
