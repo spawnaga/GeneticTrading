@@ -1,0 +1,163 @@
+/home/alex/miniconda3/envs/GeneticTrading/bin/python /mnt/windows/GeneticTrading/run_simple.py 
+🤖 Trading System Launcher
+==================================================
+✓ Created directory: ./models
+✓ Created directory: ./logs
+✓ Created directory: ./cached_data
+✓ Created directory: ./runs
+
+Available modes:
+  test - Quick test with minimal data (default)
+  dev  - Development mode with 10% data
+
+Usage: python run_simple.py [test|dev]
+
+Select mode (test/dev) [test]: dev
+🔧 Starting Development Mode...
+📊 Using 10% of data for development
+📈 Monitoring enabled - check ./logs/training_metrics.json for progress
+⚠️  Training will auto-stop if performance stagnates to save compute
+🔧 Starting Development Mode...
+📊 Using 10% of data for development
+WARNING:root:Distributed training not available, running in single-process mode
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] STARTUP             : ================================================================================
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] STARTUP             : Training session started for rank 0
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] STARTUP             : Log file: logs/training_rank_0.log
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] STARTUP             : Process ID: 24538
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] STARTUP             : Working directory: /mnt/windows/GeneticTrading
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] STARTUP             : ================================================================================
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] root                : NCCL_TIMEOUT = 1800000 ms
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] root                : Using 10.0% of available data
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] root                : Models will be saved to: ./models/dev
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] root                : Rank 0/1 starting on cuda:0 (has_cudf=True)
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] root                : Processing data with max_rows=500, chunk_size=250
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] data_preprocessing  : Scanning 1 files for raw data (using chunked reading)...
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] data_preprocessing  : Processing file: NQ_full_1min_continuous_absolute_adjusted.txt
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] data_preprocessing  : Combining all file chunks...
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] data_preprocessing  : Caching combined data...
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] data_preprocessing  : Cached combined data to ./cached_data/combined_c45aa0ea65a985db5a05afa4579f0ae232581f54055da961dfa91464108f8fc3.parquet
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] data_preprocessing  : Processing 500 rows in chunks of 250
+2025-06-25 01:51:59 [INFO    ] [Rank-24538] data_preprocessing  : Processing chunk 1/2
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] numba.cuda.cudadrv.driver: init
+2025-06-25 01:52:00 [WARNING ] [Rank-24538] data_preprocessing  : Trigonometric operations failed: name 'np' is not defined, using fallback
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] data_preprocessing  : Processing chunk 2/2
+/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/cudf/core/frame.py:784: FutureWarning: Series.fillna with 'method' is deprecated and will raise in a future version. Use obj.ffill() or obj.bfill() instead.
+  warnings.warn(
+2025-06-25 01:52:00 [WARNING ] [Rank-24538] data_preprocessing  : Trigonometric operations failed: name 'np' is not defined, using fallback
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] root                : Saving processed data to compressed Parquet...
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] root                : Data cached to Parquet and artifacts saved.
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] root                : Total data: 400 train, 100 test rows
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] email_notifications : Email notifications configured for ali.aloraibi@outlook.com
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] email_notifications : Notifications will be sent every 6 hours
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] email_notifications : No training metrics available for progress update
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] email_notifications : Training monitoring started
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] root                : Email notifications enabled - reports every 6 hours
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] adaptive_trainer    : Removed old TensorBoard run: ./runs/ga_experiment
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] adaptive_trainer    : Starting adaptive training
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] adaptive_trainer    : 
+=== Adaptive Training Iteration 1/20 ===
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 3 profits, total=0.0000
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=0.0000, Sharpe=0.0000, MDD=0.0000
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] adaptive_trainer    : Current performance: 0.0000 (best: 0.0000)
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] adaptive_trainer    : Stagnation: 0, Poor performance: 0
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] adaptive_trainer    : Method: GA, Entropy: 1.0986
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] adaptive_trainer    : Switching to PPO due to: ga_solution_refinement
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] adaptive_trainer    : Switching from GA to PPO
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] adaptive_trainer    : Starting PPO phase: 150 updates
+2025-06-25 01:52:00 [INFO    ] [Rank-24538] policy_gradient_methods: No model file at models/dev/ppo_models/adaptive_ppo_model.pth, starting from scratch
+I0625 01:52:00.693000 24538 site-packages/torch/distributed/nn/jit/instantiator.py:24] Created a temporary directory at /tmp/tmpk2iulw29
+I0625 01:52:00.693000 24538 site-packages/torch/distributed/nn/jit/instantiator.py:75] Writing /tmp/tmpk2iulw29/_remote_module_non_scriptable.py
+Removed old TensorBoard run: ./runs/ppo_rank_0
+2025-06-25 01:52:01 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 17 profits, total=0.0000
+2025-06-25 01:52:01 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=0.0000, Sharpe=0.0000, MDD=100.0000
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 96 profits, total=0.0000
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=0.0000, Sharpe=0.0000, MDD=100.0000
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] adaptive_trainer    : PPO Update 50: Performance=-0.2000, Entropy=1.0986
+2025-06-25 01:52:44 [WARNING ] [Rank-24538] adaptive_trainer    : PPO early stopping due to lack of improvement (patience: 3)
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] policy_gradient_methods: Saved model to models/dev/ppo_models/adaptive_ppo_model.pth at 2025-06-25 01:52:44.724640
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 59 profits, total=7139862.3495
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=500.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] adaptive_trainer    : PPO phase completed with performance: 1.7500
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] adaptive_trainer    : 
+=== Adaptive Training Iteration 2/20 ===
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 26 profits, total=2097887.4547
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=500.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] adaptive_trainer    : Current performance: 1.7500 (best: 1.7500)
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] adaptive_trainer    : Stagnation: 0, Poor performance: 0
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] adaptive_trainer    : Method: PPO, Entropy: 1.0913
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] adaptive_trainer    : Switching to GA due to: exploration_phase
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] adaptive_trainer    : Switching from PPO to GA
+2025-06-25 01:52:44 [INFO    ] [Rank-24538] adaptive_trainer    : Starting GA phase: 20 generations, population 20
+[GA] No model file at models/dev/ga_models/adaptive_ga_model.pth, starting from scratch
+[GA] Saved GA model to models/dev/ga_models/adaptive_ga_model.pth
+[GA] Saved GA model to models/dev/ga_models/adaptive_ga_model.pth
+[GA] Saved GA model to models/dev/ga_models/adaptive_ga_model.pth
+[GA] Saved GA model to models/dev/ga_models/adaptive_ga_model.pth
+[GA] Saved GA model to models/dev/ga_models/adaptive_ga_model.pth
+[GA] Saved GA model to models/dev/ga_models/adaptive_ga_model.pth
+[GA] Saved GA model to models/dev/ga_models/adaptive_ga_model.pth
+2025-06-25 01:53:16 [INFO    ] [Rank-24538] adaptive_trainer    : GA phase completed with fitness: 91359.6778
+2025-06-25 01:53:16 [INFO    ] [Rank-24538] adaptive_trainer    : 
+=== Adaptive Training Iteration 3/20 ===
+2025-06-25 01:53:16 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 68 profits, total=9588024.8072
+2025-06-25 01:53:16 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=500.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 01:53:16 [INFO    ] [Rank-24538] adaptive_trainer    : Current performance: 1.7500 (best: 1.7500)
+2025-06-25 01:53:16 [INFO    ] [Rank-24538] adaptive_trainer    : Stagnation: 1, Poor performance: 0
+2025-06-25 01:53:16 [INFO    ] [Rank-24538] adaptive_trainer    : Method: GA, Entropy: 1.0887
+2025-06-25 01:53:16 [INFO    ] [Rank-24538] adaptive_trainer    : Switching to PPO due to: good_performance_refinement, ga_solution_refinement
+2025-06-25 01:53:16 [INFO    ] [Rank-24538] adaptive_trainer    : Switching from GA to PPO
+2025-06-25 01:53:16 [INFO    ] [Rank-24538] adaptive_trainer    : Starting PPO phase: 150 updates
+2025-06-25 01:53:16 [INFO    ] [Rank-24538] policy_gradient_methods: Loaded model from models/dev/ppo_models/adaptive_ppo_model.pth
+2025-06-25 01:53:16 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 62 profits, total=8482362.3324
+2025-06-25 01:53:16 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=500.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 01:54:00 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 59 profits, total=8233212.3329
+2025-06-25 01:54:00 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=500.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 01:54:00 [INFO    ] [Rank-24538] adaptive_trainer    : PPO Update 50: Performance=1.7500, Entropy=1.0887
+2025-06-25 01:54:44 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 16 profits, total=465274.9901
+2025-06-25 01:54:44 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=446.1539, Sharpe=3.8131, MDD=0.0000
+2025-06-25 01:54:44 [INFO    ] [Rank-24538] adaptive_trainer    : PPO Update 100: Performance=1.5291, Entropy=1.0887
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 70 profits, total=11142387.2802
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=500.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] adaptive_trainer    : PPO Update 150: Performance=1.7500, Entropy=1.0887
+2025-06-25 01:55:28 [WARNING ] [Rank-24538] adaptive_trainer    : PPO early stopping due to lack of improvement (patience: 3)
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] policy_gradient_methods: Saved model to models/dev/ppo_models/adaptive_ppo_model.pth at 2025-06-25 01:55:28.403600
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 56 profits, total=7751912.3682
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=500.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] adaptive_trainer    : PPO phase completed with performance: 1.7500
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] adaptive_trainer    : 
+=== Adaptive Training Iteration 4/20 ===
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 6 profits, total=158962.4974
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=0.0000, Sharpe=0.0000, MDD=0.0000
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] adaptive_trainer    : Current performance: 0.0000 (best: 1.7500)
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] adaptive_trainer    : Stagnation: 2, Poor performance: 1
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] adaptive_trainer    : Method: PPO, Entropy: 1.0978
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] adaptive_trainer    : Starting PPO phase: 100 updates
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] policy_gradient_methods: Loaded model from models/dev/ppo_models/adaptive_ppo_model.pth
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 67 profits, total=9824587.3312
+2025-06-25 01:55:28 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=500.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 01:56:12 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 73 profits, total=11352999.8041
+2025-06-25 01:56:12 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=500.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 01:56:12 [INFO    ] [Rank-24538] adaptive_trainer    : PPO Update 50: Performance=1.7500, Entropy=1.0962
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 77 profits, total=11840474.7893
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=500.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] adaptive_trainer    : PPO Update 100: Performance=1.7500, Entropy=1.0943
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] policy_gradient_methods: Saved model to models/dev/ppo_models/adaptive_ppo_model.pth at 2025-06-25 01:56:55.661061
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 46 profits, total=6451462.3878
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=500.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] adaptive_trainer    : PPO phase completed with performance: 1.7500
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] adaptive_trainer    : 
+=== Adaptive Training Iteration 5/20 ===
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 61 profits, total=7670437.3682
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=500.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] adaptive_trainer    : Current performance: 1.7500 (best: 1.7500)
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] adaptive_trainer    : Stagnation: 3, Poor performance: 0
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] adaptive_trainer    : Method: PPO, Entropy: 1.0943
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] adaptive_trainer    : Starting PPO phase: 100 updates
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] policy_gradient_methods: Loaded model from models/dev/ppo_models/adaptive_ppo_model.pth
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 36 profits, total=4152162.4209
+2025-06-25 01:56:55 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=500.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 01:57:40 [INFO    ] [Rank-24538] adaptive_trainer    : Evaluation results: 18 profits, total=1221587.4757
+2025-06-25 01:57:40 [INFO    ] [Rank-24538] adaptive_trainer    : Metrics: CAGR=500.0000, Sharpe=5.0000, MDD=0.0000
+2025-06-25 01:57:40 [INFO    ] [Rank-24538] adaptive_trainer    : PPO Update 50: Performance=1.7500, Entropy=1.0914
