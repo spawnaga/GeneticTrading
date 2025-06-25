@@ -739,7 +739,7 @@ class PPOTrainer:
         """Log comprehensive metrics to TensorBoard"""
 
         # Basic metrics
-        self.tb_writer.add_scalar("PPO/Loss/Policy_Mean", np.mean(policylosses), self.global_step)
+        self.tb_writer.add_scalar("PPO/Loss/Policy_Mean", np.mean(policy_losses), self.global_step)
         self.tb_writer.add_scalar("PPO/Loss/Policy_Std", np.std(policy_losses), self.global_step)
         self.tb_writer.add_scalar("PPO/Loss/Value_Mean", np.mean(value_losses), self.global_step)
         self.tb_writer.add_scalar("PPO/Loss/Value_Std", np.std(value_losses), self.global_step)
