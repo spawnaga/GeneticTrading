@@ -1,0 +1,24 @@
+/home/runner/workspace/main.py:61: UserWarning: cuML import failed (No module named 'cuml'); using CPU fallback.
+  warnings.warn(f"cuML import failed ({e}); using CPU fallback.")
+/home/runner/workspace/data_preprocessing.py:62: UserWarning: cuML import failed (No module named 'cuml'); using CPU fallback.
+  warnings.warn(f"cuML import failed ({e}); using CPU fallback.")
+WARNING:root:Distributed training not available, running in single-process mode
+2025-06-25 08:22:34 [INFO    ] [Rank-16029] STARTUP        : ================================================================================
+2025-06-25 08:22:34 [INFO    ] [Rank-16029] STARTUP        : Training session started for rank 0
+2025-06-25 08:22:34 [INFO    ] [Rank-16029] STARTUP        : Log file: logs/training_rank_0.log
+2025-06-25 08:22:34 [INFO    ] [Rank-16029] STARTUP        : Process ID: 16029
+2025-06-25 08:22:34 [INFO    ] [Rank-16029] STARTUP        : Working directory: /home/runner/workspace
+2025-06-25 08:22:34 [INFO    ] [Rank-16029] STARTUP        : ================================================================================
+2025-06-25 08:22:34 [INFO    ] [Rank-16029] root           : NCCL_TIMEOUT = 1800000 ms
+2025-06-25 08:22:34 [INFO    ] [Rank-16029] root           : Using 100.0% of available data
+2025-06-25 08:22:34 [INFO    ] [Rank-16029] root           : Models will be saved to: ./models
+2025-06-25 08:22:34 [INFO    ] [Rank-16029] root           : Rank 0/1 starting on cpu (has_cudf=False)
+2025-06-25 08:22:34 [INFO    ] [Rank-16029] root           : No row limit specified, using 1M row chunks for memory efficiency
+2025-06-25 08:22:34 [INFO    ] [Rank-16029] root           : Parquet cache found; skipping preprocessing.
+2025-06-25 08:22:34 [INFO    ] [Rank-16029] root           : Total data: 80 train, 20 test rows
+Traceback (most recent call last):
+  File "/home/runner/workspace/main.py", line 524, in <module>
+    main()
+  File "/home/runner/workspace/main.py", line 462, in main
+    from email_notifications import TrainingNotificationManager
+ImportError: cannot import name 'TrainingNotificationManager' from 'email_notifications' (/home/runner/workspace/email_notifications.py). Did you mean: 'TrainingNotificationSystem'?
