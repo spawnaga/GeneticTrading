@@ -53,7 +53,9 @@ class AdaptiveTrainer:
         action_dim: int,
         device: str = "cpu",
         models_dir: str = "./models",
-        local_rank: int = 0
+        local_rank: int = 0,
+        world_size: int = 1,
+        use_distributed: bool = False
     ):
         self.train_env = train_env
         self.test_env = test_env
@@ -62,6 +64,8 @@ class AdaptiveTrainer:
         self.device = device
         self.models_dir = Path(models_dir)
         self.local_rank = local_rank
+        self.world_size = world_size
+        self.use_distributed = use_distributed
 
         # Ensure TensorBoard directories exist with proper permissions
         import os

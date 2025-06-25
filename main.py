@@ -506,9 +506,7 @@ def main():
         # Run adaptive training with smaller iterations to avoid timeouts
         training_log = adaptive_trainer.adaptive_train(
             max_iterations=10,  # Reduced to avoid timeouts
-            evaluation_interval=1,
-            max_ga_generations=5,  # Shorter GA runs
-            max_ppo_updates=50    # Shorter PPO runs
+            evaluation_interval=1
         )
         
         # Get the best agent from adaptive training
