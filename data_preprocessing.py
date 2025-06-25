@@ -80,55 +80,17 @@ def load_and_cache_data(
         return cudf.read_parquet(cache_file)
 
     logger.info("Scanning %d files for raw data (using chunked reading)...", len(files))
-    
+
     # Process files in chunks to handle large datasets
     all_chunks = []
-    
+
     for fp in files:
         logger.info(f"Processing file: {os.path.basename(fp)}")
-        
-        # Read file in chunks if it's large
+
+        # Read file (cuDF doesn't support chunksize, so read directly)
         try:
-            # Read the full file in chunks
             if HAS_CUDF:
-                chunk_reader = cudf.read_csv(
-                    fp,
-                    names=["date_time", "Open", "High", "Low", "Close", "Volume"],
-                    header=None,
-                    chunksize=read_chunk_size
-                )
-            else:
-                chunk_reader = pd.read_csv(
-                    fp,
-                    names=["date_time", "Open", "High", "Low", "Close", "Volume"],
-                    header=None,
-                    chunksize=read_chunk_size
-                )
-            
-            file_chunks = []
-            for chunk in chunk_reader:
-                # Parse dates manually to handle different formats
-                if HAS_CUDF:
-                    chunk["date_time"] = cudf.to_datetime(chunk["date_time"], errors='coerce')
-                else:
-                    chunk["date_time"] = pd.to_datetime(chunk["date_time"], errors='coerce')
-                
-                # Drop rows with invalid dates
-                chunk = chunk.dropna(subset=["date_time"])
-                if len(chunk) > 0:
-                    file_chunks.append(chunk)
-            
-            if file_chunks:
-                if HAS_CUDF:
-                    file_df = cudf.concat(file_chunks, ignore_index=True)
-                else:
-                    file_df = pd.concat(file_chunks, ignore_index=True)
-                all_chunks.append(file_df)
-                
-        except Exception as e:
-            logger.warning(f"Failed to read {fp} in chunks, trying direct read: {e}")
-            # Fallback to direct read
-            if HAS_CUDF:
+                # cuDF doesn't support chunked reading, read entire file
                 file_df = cudf.read_csv(
                     fp,
                     names=["date_time", "Open", "High", "Low", "Close", "Volume"],
@@ -136,43 +98,60 @@ def load_and_cache_data(
                 )
                 file_df["date_time"] = cudf.to_datetime(file_df["date_time"], errors='coerce')
             else:
-                file_df = pd.read_csv(
+                # Use pandas chunked reading for large files
+                chunk_reader = pd.read_csv(
                     fp,
                     names=["date_time", "Open", "High", "Low", "Close", "Volume"],
                     header=None,
+                    chunksize=read_chunk_size
                 )
-                file_df["date_time"] = pd.to_datetime(file_df["date_time"], errors='coerce')
-            
+
+                file_chunks = []
+                for chunk in chunk_reader:
+                    chunk["date_time"] = pd.to_datetime(chunk["date_time"], errors='coerce')
+                    chunk = chunk.dropna(subset=["date_time"])
+                    if len(chunk) > 0:
+                        file_chunks.append(chunk)
+
+                if file_chunks:
+                    file_df = pd.concat(file_chunks, ignore_index=True)
+                else:
+                    continue
+
             # Drop rows with invalid dates
             file_df = file_df.dropna(subset=["date_time"])
             if len(file_df) > 0:
                 all_chunks.append(file_df)
-    
+
+        except Exception as e:
+            logger.warning(f"Failed to read {fp}: {e}")
+            continue
+
     logger.info("Combining all file chunks...")
     if not all_chunks:
         logger.error("No valid data chunks found!")
         raise ValueError("No valid data found in input files")
-    
+
     if HAS_CUDF:
         df = cudf.concat(all_chunks, ignore_index=True)
     else:
         df = pd.concat(all_chunks, ignore_index=True)
-    
+
     # Ensure date_time column is properly typed before sorting
     if HAS_CUDF:
         df["date_time"] = cudf.to_datetime(df["date_time"], errors='coerce')
     else:
         df["date_time"] = pd.to_datetime(df["date_time"], errors='coerce')
-    
+
     # Drop any remaining invalid dates
     df = df.dropna(subset=["date_time"])
-    
+
     if len(df) == 0:
         logger.error("No valid data remaining after date parsing!")
         raise ValueError("No valid data remaining after date parsing")
-    
+
     df = df.sort_values("date_time").reset_index(drop=True)
-    
+
     # Convert numeric columns to proper dtypes before saving to Parquet
     numeric_columns = ["Open", "High", "Low", "Close", "Volume"]
     for col in numeric_columns:
@@ -181,14 +160,14 @@ def load_and_cache_data(
                 df[col] = cudf.to_numeric(df[col], errors='coerce')
             else:
                 df[col] = pd.to_numeric(df[col], errors='coerce')
-    
+
     # Drop any rows where numeric conversion failed
     df = df.dropna(subset=numeric_columns)
-    
+
     if len(df) == 0:
         logger.error("No valid data remaining after numeric conversion!")
         raise ValueError("No valid data remaining after numeric conversion")
-    
+
     logger.info("Caching combined data...")
     df.to_parquet(cache_file)
     logger.info("Cached combined data to %s", cache_file)
@@ -307,26 +286,26 @@ def create_environment_data(
     """
     df = load_and_cache_data(data_folder, cache_folder)
     total_rows = len(df)
-    
+
     if max_rows is not None and max_rows > 0:
         df = df.iloc[-max_rows:].reset_index(drop=True)
         total_rows = len(df)
 
     logger.info(f"Processing {total_rows} rows in chunks of {chunk_size}")
-    
+
     # Process in chunks to avoid memory issues
     if total_rows > chunk_size:
         processed_chunks = []
         scaler = None
-        
+
         for start_idx in range(0, total_rows, chunk_size):
             end_idx = min(start_idx + chunk_size, total_rows)
             chunk = df.iloc[start_idx:end_idx].copy()
-            
+
             logger.info(f"Processing chunk {start_idx//chunk_size + 1}/{(total_rows + chunk_size - 1)//chunk_size}")
-            
+
             chunk, segment_dict = feature_engineering_gpu(chunk)
-            
+
             # Fit scaler on first chunk, transform on subsequent chunks
             if scaler is None:
                 _, _, scaler = scale_and_split_gpu(chunk, test_size=0, random_state=42)
@@ -335,21 +314,21 @@ def create_environment_data(
             else:
                 numeric_cols = ["Open","High","Low","Close","Volume","return","ma_10"]
                 chunk[numeric_cols] = scaler.transform(chunk[numeric_cols])
-            
+
             processed_chunks.append(chunk)
-            
+
             # Clear memory
             del chunk
-            
+
         # Combine all chunks
         df = cudf.concat(processed_chunks, ignore_index=True)
         del processed_chunks
-        
+
         # Final train/test split
         train_df, test_df = train_test_split(df, test_size=test_size, random_state=42)
-        
+
     else:
         df, segment_dict = feature_engineering_gpu(df)
         train_df, test_df, scaler = scale_and_split_gpu(df, test_size=test_size)
-    
+
     return train_df, test_df, scaler, segment_dict
