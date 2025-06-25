@@ -1,4 +1,4 @@
-# Applying the change to ensure TensorBoard directories exist before creating writers.
+# Applying the change to ensure TensorBoard directories exist before creating writers and cleaning up old runs.
 import os
 import logging
 import numpy as np
@@ -76,6 +76,26 @@ class AdaptiveTrainer:
 
         os.makedirs(os.path.dirname(self.ga_model_path), exist_ok=True)
         os.makedirs(os.path.dirname(self.ppo_model_path), exist_ok=True)
+
+        # Setup TensorBoard logging
+        if self.local_rank == 0:
+            # Ensure TensorBoard directory exists
+            os.makedirs("./runs", exist_ok=True)
+            os.makedirs("./runs/ga_experiment", exist_ok=True)
+
+            # Clean up old runs to prevent confusion
+            if os.path.exists("./runs/ga_experiment"):
+                try:
+                    import shutil
+                    shutil.rmtree("./runs/ga_experiment")
+                    logger.info("Removed old TensorBoard run: ./runs/ga_experiment")
+                except Exception as e:
+                    logger.warning(f"Could not remove old TensorBoard run: {e}")
+
+            # Recreate directory after cleanup
+            os.makedirs("./runs/ga_experiment", exist_ok=True)
+            from torch.utils.tensorboard import SummaryWriter
+            self.tb_writer = SummaryWriter('./runs/ga_experiment')
 
     def should_switch_to_ga(self, current_performance: float, policy_entropy: float) -> bool:
         """
@@ -179,11 +199,11 @@ class AdaptiveTrainer:
             valid_times = [t for t in times if t is not None] if times else None
             if valid_times and len(valid_times) < len(times):
                 logger.warning(f"Some timestamps are None: {len(valid_times)} valid out of {len(times)} total")
-            
+
             # Calculate performance metrics with additional safety checks
             try:
                 cagr, sharpe, mdd = compute_performance_metrics(profits, valid_times)
-                
+
                 # Ensure all metrics are finite
                 if not np.isfinite(cagr):
                     cagr = 0.0
@@ -191,7 +211,7 @@ class AdaptiveTrainer:
                     sharpe = 0.0
                 if not np.isfinite(mdd):
                     mdd = 100.0
-                    
+
             except Exception as e:
                 logger.warning(f"Error computing performance metrics: {e}")
                 cagr, sharpe, mdd = 0.0, 0.0, 100.0
@@ -276,7 +296,7 @@ class AdaptiveTrainer:
                 # Ensure observation is valid and numpy array
                 if not isinstance(obs, np.ndarray):
                     obs = np.array(obs)
-                
+
                 if not np.all(np.isfinite(obs)):
                     obs = np.zeros_like(obs)
 
@@ -304,14 +324,14 @@ class AdaptiveTrainer:
                     # Clamp logits to prevent extreme values
                     logits = torch.clamp(logits, -10.0, 10.0)
                     probs = torch.softmax(logits, dim=-1)
-                    
+
                     # Additional safety check
                     if not torch.all(torch.isfinite(probs)):
                         logger.warning("NaN/infinite probabilities detected")
                         continue
 
                     entropy = -torch.sum(probs * torch.log(probs + 1e-8), dim=-1)
-                    
+
                     if torch.isfinite(entropy):
                         entropies.append(float(entropy.detach().cpu().item()))  # Ensure CPU conversion and float
 
@@ -326,7 +346,7 @@ class AdaptiveTrainer:
         entropy_mean = np.mean(entropies)
         if not np.isfinite(entropy_mean):
             return 1.0986
-        
+
         return float(entropy_mean)
 
     def run_ga_phase(self, generations: int = 20, population_size: int = 20) -> float:
@@ -398,20 +418,20 @@ class AdaptiveTrainer:
             try:
                 reward = self.ppo_trainer.train_step()
                 consecutive_failures = 0  # Reset on successful update
-                
+
                 # Check if reward is valid
                 if not np.isfinite(reward):
                     logger.warning(f"Invalid reward at update {update}: {reward}")
                     reward = 0.0
-                    
+
             except Exception as e:
                 consecutive_failures += 1
                 logger.warning(f"PPO training step failed at update {update}: {e}")
-                
+
                 if consecutive_failures >= max_consecutive_failures:
                     logger.error(f"Too many consecutive PPO failures ({consecutive_failures}), stopping PPO phase")
                     break
-                    
+
                 # Try to recover by reinitializing the model
                 logger.info("Attempting to recover by reinitializing PPO model")
                 self.ppo_trainer.model._initialize_weights()
