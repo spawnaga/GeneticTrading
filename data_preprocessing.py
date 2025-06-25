@@ -19,6 +19,9 @@ import os
 import logging
 import warnings
 
+# Setup logger first before using it
+logger = logging.getLogger(__name__)
+
 try:
     import torch
     if torch.cuda.is_available() and torch.cuda.device_count() > 0:
@@ -54,9 +57,8 @@ except (ImportError, AttributeError, RuntimeError) as e:
 from utils import hash_files
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Logger setup
+# Logger setup (moved to top of file)
 # ──────────────────────────────────────────────────────────────────────────────
-logger = logging.getLogger(__name__)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Constants & Defaults
