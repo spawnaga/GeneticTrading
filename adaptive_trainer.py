@@ -96,7 +96,7 @@ class AdaptiveTrainer:
         self.ppo_model_path = os.path.join(models_dir, "ppo_models", "adaptive_ppo_model.pth")
 
         # Initialize GA and PPO models
-        self.ga_model = PolicyNetwork(input_dim, 64, action_dim, device=device)
+        self.ga_agent = PolicyNetwork(input_dim, 64, action_dim, device=device)
         self.ppo_trainer = None
 
         # Store current dimensions for validation
@@ -105,6 +105,9 @@ class AdaptiveTrainer:
 
         os.makedirs(os.path.dirname(self.ga_model_path), exist_ok=True)
         os.makedirs(os.path.dirname(self.ppo_model_path), exist_ok=True)
+
+        # Call cleanup after initialization
+        self.cleanup_incompatible_models()
 
         # Setup TensorBoard logging
         if self.local_rank == 0:
@@ -193,8 +196,13 @@ class AdaptiveTrainer:
         """
         try:
             if self.current_method == "GA":
+                if not hasattr(self, 'ga_agent') or self.ga_agent is None:
+                    # Initialize GA agent if missing
+                    self.ga_agent = PolicyNetwork(self.input_dim, 64, self.action_dim, device=self.device)
                 agent = self.ga_agent
             else:
+                if self.ppo_trainer is None:
+                    self._initialize_ppo_trainer()
                 agent = self.ppo_trainer.model if self.ppo_trainer else self.ga_agent
 
             # Store original device and ensure consistent device usage
@@ -430,7 +438,11 @@ class AdaptiveTrainer:
         else:
             # Transfer weights from GA agent
             try:
-                self.ppo_trainer.model.load_state_dict(self.ga_agent.state_dict())
+                if hasattr(self, 'ga_agent') and self.ga_agent is not None:
+                    self.ppo_trainer.model.load_state_dict(self.ga_agent.state_dict())
+                else:
+                    logger.warning("GA agent not available for weight transfer")
+                    self.ppo_trainer.model._initialize_weights()
             except Exception as e:
                 logger.warning(f"Failed to transfer GA weights to PPO: {e}")
                 self.ppo_trainer.model._initialize_weights()
