@@ -224,6 +224,66 @@ class FuturesEnv(gym.Env):
 
         return obs, reward, self.done, info
 
+    def _get_observation(self):
+        """
+        Build the current observation from state features and position.
+        """
+        if self.current_index >= len(self.states):
+            # Return zeros if we're past the end
+            return np.zeros(self.observation_space.shape, dtype=np.float32)
+        
+        current_state = self.states[self.current_index]
+        base_features = current_state.features.copy()
+        
+        # Add position information if required
+        if self.add_current_position_to_state:
+            position_features = np.zeros(3, dtype=np.float32)
+            if self.current_position == 1:
+                position_features[0] = 1.0  # Long position
+            elif self.current_position == -1:
+                position_features[1] = 1.0  # Short position
+            else:
+                position_features[2] = 1.0  # Flat position
+            
+            obs = np.concatenate([base_features, position_features])
+        else:
+            obs = base_features
+        
+        # Ensure observation is the right shape and type
+        obs = np.array(obs, dtype=np.float32)
+        if obs.shape != self.observation_space.shape:
+            # Pad or truncate to match expected shape
+            expected_size = self.observation_space.shape[0]
+            if len(obs) < expected_size:
+                obs = np.pad(obs, (0, expected_size - len(obs)), mode='constant')
+            elif len(obs) > expected_size:
+                obs = obs[:expected_size]
+        
+        return obs
+
+    def _get_info(self):
+        """
+        Return info dictionary with current state information.
+        """
+        info = {
+            'current_position': self.current_position,
+            'balance': self.balance,
+            'total_reward': self.total_reward,
+            'current_index': self.current_index,
+            'done': self.done
+        }
+        
+        # Add current state info if available
+        if self.current_index < len(self.states):
+            current_state = self.states[self.current_index]
+            info.update({
+                'timestamp': current_state.ts,
+                'close_price': current_state.close_price,
+                'total_profit': self.balance
+            })
+        
+        return info
+
 
     def _handle_buy(self, state):
         """
@@ -295,8 +355,7 @@ class FuturesEnv(gym.Env):
         price: float,
         high_price: float | None = None,
         low_price: float | None = None,
-        volume: float | None = None,
-        size: int = 1
+        volume: float | None = None
     ) -> float:
         """
         Simulate execution price with slippage and spread adjustments.
@@ -332,6 +391,7 @@ class FuturesEnv(gym.Env):
 
         # 3) Sample slippage if custom distributions are provided
         slippage = 0.0
+        size = 1  # Default size for fills
         if self.can_random:
             if size == 1:
                 slippage = np.random.choice(self.long_values, p=self.long_probabilities)
@@ -578,8 +638,7 @@ class FuturesEnv(gym.Env):
             price=current_state.close_price,
             high_price=getattr(current_state, 'high_price', None),
             low_price=getattr(current_state, 'low_price', None),
-            volume=getattr(current_state, 'volume', None),
-            size=trade_size
+            volume=getattr(current_state, 'volume', None)
         )
 
         # Validate fill price
