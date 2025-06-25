@@ -395,17 +395,26 @@ class PPOTrainer:
             ret_t   = rets  # Already on correct device from compute_gae
 
             # Track action distribution for analysis (ensure acts is numpy array)
-            acts_numpy = acts if isinstance(acts, np.ndarray) else acts.cpu().numpy()
+            if isinstance(acts, torch.Tensor):
+                acts_numpy = acts.detach().cpu().numpy()
+            else:
+                acts_numpy = np.array(acts)
             action_counts = np.bincount(acts_numpy, minlength=self.env.action_space.n)
             action_probs = action_counts / len(acts_numpy)
             self.action_distribution_history.append(action_probs)
 
             # Track reward patterns (ensure rews is numpy array)
-            rews_numpy = rews if isinstance(rews, np.ndarray) else rews.cpu().numpy()
+            if isinstance(rews, torch.Tensor):
+                rews_numpy = rews.detach().cpu().numpy()
+            else:
+                rews_numpy = np.array(rews)
             self.reward_trends.extend(rews_numpy)
 
             # Analyze trading behavior (ensure obs is numpy array)
-            obs_numpy = obs if isinstance(obs, np.ndarray) else obs.cpu().numpy()
+            if isinstance(obs, torch.Tensor):
+                obs_numpy = obs.detach().cpu().numpy()
+            else:
+                obs_numpy = np.array(obs)
             self._analyze_trading_behavior(acts_numpy, rews_numpy, obs_numpy)
 
             # 2) PPO epochs with enhanced tracking
@@ -549,9 +558,32 @@ class PPOTrainer:
 
             # Calculate value function accuracy
             with torch.no_grad():
-                logits, value_preds = self.model(obs_t)
-                value_accuracy = 1.0 - torch.mean(torch.abs(value_preds.squeeze() - ret_t) / (torch.abs(ret_t) + 1e-8))
-                self.value_accuracy.append(value_accuracy.item())
+                try:
+                    logits, value_preds = self.model(obs_t)
+                    value_preds_squeezed = value_preds.squeeze()
+                    
+                    # Ensure both tensors are on the same device
+                    if value_preds_squeezed.device != ret_t.device:
+                        value_preds_squeezed = value_preds_squeezed.to(ret_t.device)
+                    
+                    # Calculate accuracy with NaN protection
+                    abs_diff = torch.abs(value_preds_squeezed - ret_t)
+                    abs_ret = torch.abs(ret_t) + 1e-8
+                    relative_error = abs_diff / abs_ret
+                    
+                    # Filter out NaN/infinite values
+                    valid_mask = torch.isfinite(relative_error)
+                    if valid_mask.any():
+                        value_accuracy = 1.0 - torch.mean(relative_error[valid_mask])
+                        if torch.isfinite(value_accuracy):
+                            self.value_accuracy.append(float(value_accuracy.cpu().item()))
+                        else:
+                            self.value_accuracy.append(0.5)  # Default value
+                    else:
+                        self.value_accuracy.append(0.5)  # Default value
+                except Exception as e:
+                    logger.warning(f"Error calculating value accuracy: {e}")
+                    self.value_accuracy.append(0.5)  # Default value
 
             # Enhanced logging
             self._log_comprehensive_metrics(

@@ -233,10 +233,18 @@ class FuturesEnv(gym.Env):
             return np.zeros(self.observation_space.shape, dtype=np.float32)
         
         current_state = self.states[self.current_index]
-        base_features = current_state.features.copy()
         
-        # Clean base features of NaN/infinite values
-        base_features = np.nan_to_num(base_features, nan=0.0, posinf=1.0, neginf=-1.0)
+        # Handle cases where features might be None
+        if current_state.features is None:
+            base_features = np.zeros(len(self.states[0].features), dtype=np.float32)
+        else:
+            base_features = current_state.features.copy()
+        
+        # Clean base features of NaN/infinite values with more conservative bounds
+        base_features = np.nan_to_num(base_features, nan=0.0, posinf=10.0, neginf=-10.0)
+        
+        # Additional clipping to prevent extreme values
+        base_features = np.clip(base_features, -100.0, 100.0)
         
         # Add position information if required
         if self.add_current_position_to_state:
@@ -255,8 +263,9 @@ class FuturesEnv(gym.Env):
         # Ensure observation is the right shape and type
         obs = np.array(obs, dtype=np.float32)
         
-        # Final NaN check and cleaning
-        obs = np.nan_to_num(obs, nan=0.0, posinf=1.0, neginf=-1.0)
+        # Final NaN check and cleaning with conservative bounds
+        obs = np.nan_to_num(obs, nan=0.0, posinf=10.0, neginf=-10.0)
+        obs = np.clip(obs, -100.0, 100.0)
         
         if obs.shape != self.observation_space.shape:
             # Pad or truncate to match expected shape
@@ -266,7 +275,7 @@ class FuturesEnv(gym.Env):
             elif len(obs) > expected_size:
                 obs = obs[:expected_size]
         
-        # Ensure all values are finite
+        # Final safety check - if still contains NaN/inf, replace with zeros
         if not np.all(np.isfinite(obs)):
             obs = np.zeros(self.observation_space.shape, dtype=np.float32)
         

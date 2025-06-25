@@ -412,16 +412,24 @@ def read_file_chunked_pandas(file_path):
 def feature_engineering(df, has_cudf):
     logging.info("Computing technical indicators...")
 
-    # moving averages
-    df["ma_5"]  = df["close"].rolling(5).mean()
-    df["ma_20"] = df["close"].rolling(20).mean()
+    # Fill any NaN values in close prices first
+    df["close"] = df["close"].fillna(method='ffill').fillna(method='bfill').fillna(0)
 
-    # RSI
+    # moving averages
+    df["ma_5"]  = df["close"].rolling(5, min_periods=1).mean()
+    df["ma_20"] = df["close"].rolling(20, min_periods=1).mean()
+
+    # RSI with better NaN handling
     delta = df["close"].diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-    rs = gain / loss
+    gain = (delta.where(delta > 0, 0)).rolling(window=14, min_periods=1).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=14, min_periods=1).mean()
+    
+    # Prevent division by zero
+    rs = gain / (loss + 1e-10)
     df["rsi"] = 100 - (100 / (1 + rs))
+    
+    # Fill any remaining NaN values in RSI
+    df["rsi"] = df["rsi"].fillna(50.0)  # Neutral RSI value
 
     # bollinger bands
     bb_period = 20

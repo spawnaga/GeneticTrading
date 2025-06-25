@@ -148,14 +148,16 @@ class AdaptiveTrainer:
             else:
                 agent = self.ppo_trainer.model if self.ppo_trainer else self.ga_agent
 
-            # Store original device before moving to CPU
-            original_device = next(agent.parameters()).device if hasattr(agent, 'parameters') else self.device
+            # Store original device and ensure consistent device usage
+            if hasattr(agent, 'parameters'):
+                original_device = next(agent.parameters()).device
+            else:
+                original_device = torch.device(self.device)
 
-            # Ensure agent is on CPU for evaluation to avoid CUDA issues
-            if hasattr(agent, 'cpu'):
-                agent = agent.cpu()
+            # Keep agent on its original device for evaluation
+            agent = agent.to(original_device)
 
-            # Evaluate performance
+            # Evaluate performance with device-aware evaluation
             profits, times = evaluate_agent_distributed(self.test_env, agent, self.local_rank)
             logger.info(f"Evaluation results: {len(profits)} profits, total={sum(profits):.4f}")
 
@@ -163,13 +165,37 @@ class AdaptiveTrainer:
                 logger.warning("No profits returned from evaluation!")
                 return 0.0, 0.0, {}
 
+            # Filter out None and NaN values from profits and times
+            clean_profits = [p for p in profits if p is not None and np.isfinite(p)]
+            if len(clean_profits) != len(profits):
+                logger.warning(f"Filtered {len(profits) - len(clean_profits)} invalid profits")
+                profits = clean_profits
+
+            if not profits:
+                logger.warning("No valid profits after filtering!")
+                return 0.0, 0.0, {}
+
             # Filter out None values from times before passing to metrics
             valid_times = [t for t in times if t is not None] if times else None
-            if valid_times and len(valid_times) < len(profits):
-                logger.warning(f"Some timestamps are None: {len(valid_times)} valid out of {len(profits)} total")
+            if valid_times and len(valid_times) < len(times):
+                logger.warning(f"Some timestamps are None: {len(valid_times)} valid out of {len(times)} total")
             
-            # Calculate performance metrics
-            cagr, sharpe, mdd = compute_performance_metrics(profits, valid_times)
+            # Calculate performance metrics with additional safety checks
+            try:
+                cagr, sharpe, mdd = compute_performance_metrics(profits, valid_times)
+                
+                # Ensure all metrics are finite
+                if not np.isfinite(cagr):
+                    cagr = 0.0
+                if not np.isfinite(sharpe):
+                    sharpe = 0.0
+                if not np.isfinite(mdd):
+                    mdd = 100.0
+                    
+            except Exception as e:
+                logger.warning(f"Error computing performance metrics: {e}")
+                cagr, sharpe, mdd = 0.0, 0.0, 100.0
+
             logger.info(f"Metrics: CAGR={cagr:.4f}, Sharpe={sharpe:.4f}, MDD={mdd:.4f}")
 
             # Calculate policy entropy (measure of exploration)
@@ -183,23 +209,26 @@ class AdaptiveTrainer:
 
             performance_score = normalized_sharpe * 0.5 + normalized_cagr * 0.3 - normalized_mdd * 0.2
 
+            # Ensure performance score is finite
+            if not np.isfinite(performance_score):
+                performance_score = 0.0
+
             # Additional metrics
             metrics = {
-                'cagr': cagr,
-                'sharpe': sharpe,
-                'mdd': mdd,
-                'total_profit': sum(profits),
-                'win_rate': len([p for p in profits if p > 0]) / len(profits) if profits else 0,
-                'policy_entropy': policy_entropy
+                'cagr': float(cagr),
+                'sharpe': float(sharpe),
+                'mdd': float(mdd),
+                'total_profit': float(sum(profits)),
+                'win_rate': len([p for p in profits if p > 0]) / len(profits) if profits else 0.0,
+                'policy_entropy': float(policy_entropy)
             }
-
-            # Move agent back to original device
-            agent = agent.to(original_device)
 
             return performance_score, policy_entropy, metrics
 
         except Exception as e:
             logger.error(f"Error during policy evaluation: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return 0.0, 0.0, {}
 
         # Calculate composite performance score with better scaling
@@ -231,6 +260,12 @@ class AdaptiveTrainer:
         """
         entropies = []
 
+        # Get agent's device
+        if hasattr(agent, 'parameters'):
+            agent_device = next(agent.parameters()).device
+        else:
+            agent_device = torch.device('cpu')
+
         # Sample random states from environment
         for _ in range(10):
             try:
@@ -238,11 +273,15 @@ class AdaptiveTrainer:
                 if isinstance(obs, tuple):
                     obs = obs[0]
 
-                # Ensure observation is valid
+                # Ensure observation is valid and numpy array
+                if not isinstance(obs, np.ndarray):
+                    obs = np.array(obs)
+                
                 if not np.all(np.isfinite(obs)):
                     obs = np.zeros_like(obs)
 
-                obs_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(self.device)
+                # Convert to tensor on the same device as the agent
+                obs_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(agent_device)
 
                 with torch.no_grad():
                     if hasattr(agent, 'forward'):
@@ -274,7 +313,7 @@ class AdaptiveTrainer:
                     entropy = -torch.sum(probs * torch.log(probs + 1e-8), dim=-1)
                     
                     if torch.isfinite(entropy):
-                        entropies.append(entropy.cpu().item())  # Ensure CPU conversion
+                        entropies.append(float(entropy.cpu().item()))  # Ensure CPU conversion and float
 
             except Exception as e:
                 logger.warning(f"Error calculating entropy for sample: {e}")
@@ -282,9 +321,13 @@ class AdaptiveTrainer:
 
         if not entropies:
             logger.warning("No valid entropy calculations, returning default value")
-            return 1.0  # Default entropy value
+            return 1.0986  # Default entropy value (log(3) for 3 actions)
 
-        return np.mean(entropies)
+        entropy_mean = np.mean(entropies)
+        if not np.isfinite(entropy_mean):
+            return 1.0986
+        
+        return float(entropy_mean)
 
     def run_ga_phase(self, generations: int = 20, population_size: int = 20) -> float:
         """
