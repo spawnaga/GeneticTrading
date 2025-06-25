@@ -300,14 +300,38 @@ def feature_engineering_gpu(
       - one-hot weekday (7 cols) & time_bin cols
     Returns modified df and the segment_dict for inference reuse.
     """
-    df["return"] = df["Close"].pct_change(periods=WINDOW_RETURNS).fillna(0).astype("float64")
-    df["ma_10"]  = df["Close"].rolling(window=window_ma, min_periods=1).mean().bfill()
-    delta       = df["Close"].diff()
-    gain        = delta.where(delta > 0, 0).rolling(window=window_rsi, min_periods=1).mean()
-    loss        = (-delta).where(delta < 0, 0).rolling(window=window_rsi, min_periods=1).mean()
-    rs          = gain / loss
-    df["rsi"]   = (100 - (100 / (1 + rs))).bfill()
-    df["volatility"] = df["return"].rolling(window=window_vol, min_periods=1).std().bfill()
+    # Ensure Close prices are valid and finite
+    df["Close"] = df["Close"].fillna(method='ffill').fillna(method='bfill')
+    if HAS_CUDF:
+        df["Close"] = df["Close"].replace([float('inf'), float('-inf')], None).fillna(df["Close"].median())
+    else:
+        df["Close"] = df["Close"].replace([np.inf, -np.inf], np.nan).fillna(df["Close"].median())
+    
+    # Calculate returns with robust NaN handling
+    df["return"] = df["Close"].pct_change(periods=WINDOW_RETURNS).fillna(0)
+    if HAS_CUDF:
+        df["return"] = df["return"].replace([float('inf'), float('-inf')], 0)
+    else:
+        df["return"] = df["return"].replace([np.inf, -np.inf], 0)
+    df["return"] = df["return"].clip(-0.5, 0.5)  # Clamp extreme returns
+    
+    # Moving average with robust handling
+    df["ma_10"] = df["Close"].rolling(window=window_ma, min_periods=1).mean()
+    df["ma_10"] = df["ma_10"].fillna(df["Close"]).bfill()
+    
+    # RSI calculation with division by zero protection
+    delta = df["Close"].diff().fillna(0)
+    gain = delta.where(delta > 0, 0).rolling(window=window_rsi, min_periods=1).mean()
+    loss = (-delta).where(delta < 0, 0).rolling(window=window_rsi, min_periods=1).mean()
+    
+    # Prevent division by zero in RSI calculation
+    loss = loss.where(loss > 1e-10, 1e-10)  # Minimum threshold
+    rs = gain / loss
+    df["rsi"] = (100 - (100 / (1 + rs))).fillna(50.0).clip(0, 100)
+    
+    # Volatility with robust handling
+    df["volatility"] = df["return"].rolling(window=window_vol, min_periods=1).std()
+    df["volatility"] = df["volatility"].fillna(0.01).clip(0, 1.0)  # Reasonable bounds
 
     dt       = df["date_time"]
     minutes  = (dt.dt.hour * 60 + dt.dt.minute).astype("int32")

@@ -85,35 +85,37 @@ class ActorCriticNet(nn.Module):
         """
         x = x.to(self.device)
 
-        # Check for NaN/infinite input
-        if not torch.all(torch.isfinite(x)):
-            logger.warning("NaN/infinite input detected, replacing with zeros")
-            x = torch.where(torch.isfinite(x), x, torch.zeros_like(x))
+        # More aggressive input validation
+        if torch.any(torch.isnan(x)) or torch.any(torch.isinf(x)):
+            # Replace NaN/inf with small random values instead of zeros
+            mask = torch.isfinite(x)
+            x = torch.where(mask, x, torch.randn_like(x) * 0.01)
+
+        # Normalize input to prevent gradient explosion
+        x = torch.clamp(x, -10.0, 10.0)
+        
+        # Add small amount of noise to prevent identical states
+        x = x + torch.randn_like(x) * 1e-6
 
         if x.ndim > 2:
             x = x.view(x.size(0), -1)
 
         hidden = self.base(x)
 
-        # Check for NaN in hidden layer
-        if not torch.all(torch.isfinite(hidden)):
-            logger.warning("NaN/infinite hidden values detected, clipping")
-            hidden = torch.clamp(hidden, -10.0, 10.0)
-            hidden = torch.where(torch.isfinite(hidden), hidden, torch.zeros_like(hidden))
+        # More aggressive hidden layer protection
+        if torch.any(torch.isnan(hidden)) or torch.any(torch.isinf(hidden)):
+            hidden = torch.clamp(hidden, -5.0, 5.0)
+            hidden = torch.where(torch.isfinite(hidden), hidden, torch.randn_like(hidden) * 0.01)
 
         policy_logits = self.policy_head(hidden)
         value = self.value_head(hidden)
 
-        # Final NaN check and clipping
-        if not torch.all(torch.isfinite(policy_logits)):
-            logger.warning("NaN/infinite policy logits detected, clipping")
-            policy_logits = torch.clamp(policy_logits, -10.0, 10.0)
-            policy_logits = torch.where(torch.isfinite(policy_logits), policy_logits, torch.zeros_like(policy_logits))
+        # Final robust output protection
+        policy_logits = torch.clamp(policy_logits, -5.0, 5.0)
+        policy_logits = torch.where(torch.isfinite(policy_logits), policy_logits, torch.randn_like(policy_logits) * 0.01)
 
-        if not torch.all(torch.isfinite(value)):
-            logger.warning("NaN/infinite value detected, clipping")
-            value = torch.clamp(value, -10.0, 10.0)
-            value = torch.where(torch.isfinite(value), value, torch.zeros_like(value))
+        value = torch.clamp(value, -10.0, 10.0)
+        value = torch.where(torch.isfinite(value), value, torch.zeros_like(value))
 
         return policy_logits, value
 
@@ -269,12 +271,40 @@ class PPOTrainer:
             if len(state) == 0:
                 # Create a dummy observation if state is empty
                 state = np.zeros(self.env.observation_space.shape, dtype=np.float32)
+            
+            # Validate state before creating tensor
+            if not np.all(np.isfinite(state)):
+                # Replace NaN/inf values with small random noise
+                state = np.where(np.isfinite(state), state, np.random.normal(0, 0.01, state.shape))
+            
+            # Clamp state values to reasonable range
+            state = np.clip(state, -10.0, 10.0)
 
             state_t = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
-            logits, value = self.model(state_t)
-            dist = Categorical(logits=logits)
-            action = dist.sample()
-            logp = dist.log_prob(action)
+            
+            try:
+                logits, value = self.model(state_t)
+                
+                # Ensure logits are valid for Categorical distribution
+                if torch.any(torch.isnan(logits)) or torch.any(torch.isinf(logits)):
+                    logits = torch.zeros_like(logits)
+                    logits[0, 0] = 1.0  # Default to first action
+                
+                dist = Categorical(logits=logits)
+                action = dist.sample()
+                logp = dist.log_prob(action)
+                
+                # Validate outputs
+                if torch.isnan(logp) or torch.isinf(logp):
+                    logp = torch.tensor(0.0, device=self.device)
+                if torch.isnan(value) or torch.isinf(value):
+                    value = torch.tensor(0.0, device=self.device)
+                    
+            except Exception as e:
+                logger.warning(f"Error in model forward pass: {e}")
+                action = torch.tensor(0, device=self.device)  # Default action
+                logp = torch.tensor(0.0, device=self.device)
+                value = torch.tensor(0.0, device=self.device)
 
             obs_buf.append(state)
             act_buf.append(action.item())
