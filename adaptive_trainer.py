@@ -148,6 +148,9 @@ class AdaptiveTrainer:
             else:
                 agent = self.ppo_trainer.model if self.ppo_trainer else self.ga_agent
 
+            # Store original device before moving to CPU
+            original_device = next(agent.parameters()).device if hasattr(agent, 'parameters') else self.device
+
             # Ensure agent is on CPU for evaluation to avoid CUDA issues
             if hasattr(agent, 'cpu'):
                 agent = agent.cpu()
@@ -160,43 +163,44 @@ class AdaptiveTrainer:
                 logger.warning("No profits returned from evaluation!")
                 return 0.0, 0.0, {}
 
-            # Calculate performance metrics
-            cagr, sharpe, mdd = compute_performance_metrics(profits, times)
-            logger.info(f"Metrics: CAGR={cagr:.4f}, Sharpe={sharpe:.4f}, MDD={mdd:.4f}")
-
-            # Calculate policy entropy (simplified)
-            entropy = 1.0986  # log(3) for 3 actions, uniform distribution
-
-            # Create comprehensive performance score
-            performance = cagr * 0.4 + sharpe * 0.3 - mdd * 0.3
-
-            metrics = {
-                'cagr': cagr,
-                'sharpe': sharpe,
-                'mdd': mdd,
-                'total_profits': sum(profits),
-                'num_trades': len(profits)
-            }
-
-            return performance, entropy, metrics
-
-        except Exception as e:
-            logger.error(f"Error during policy evaluation: {e}")
-            return 0.0, 0.0, {}
-
             # Filter out None values from times before passing to metrics
             valid_times = [t for t in times if t is not None] if times else None
             if valid_times and len(valid_times) < len(profits):
                 logger.warning(f"Some timestamps are None: {len(valid_times)} valid out of {len(profits)} total")
             
+            # Calculate performance metrics
             cagr, sharpe, mdd = compute_performance_metrics(profits, valid_times)
             logger.info(f"Metrics: CAGR={cagr:.4f}, Sharpe={sharpe:.4f}, MDD={mdd:.4f}")
+
+            # Calculate policy entropy (measure of exploration)
+            policy_entropy = self._calculate_policy_entropy(agent)
+
+            # Calculate composite performance score with better scaling
+            # Normalize metrics to prevent extreme values
+            normalized_sharpe = np.clip(sharpe / 10.0, -10, 10)  # Scale down Sharpe
+            normalized_cagr = np.clip(cagr / 100.0, -10, 10)     # Scale down CAGR  
+            normalized_mdd = np.clip(mdd / 100.0, 0, 10)         # Scale down MDD
+
+            performance_score = normalized_sharpe * 0.5 + normalized_cagr * 0.3 - normalized_mdd * 0.2
+
+            # Additional metrics
+            metrics = {
+                'cagr': cagr,
+                'sharpe': sharpe,
+                'mdd': mdd,
+                'total_profit': sum(profits),
+                'win_rate': len([p for p in profits if p > 0]) / len(profits) if profits else 0,
+                'policy_entropy': policy_entropy
+            }
+
+            # Move agent back to original device
+            agent = agent.to(original_device)
+
+            return performance_score, policy_entropy, metrics
+
         except Exception as e:
             logger.error(f"Error during policy evaluation: {e}")
             return 0.0, 0.0, {}
-        finally:
-            # Move agent back to original device
-            agent = agent.to(original_device)
 
         # Calculate composite performance score with better scaling
         # Normalize metrics to prevent extreme values
