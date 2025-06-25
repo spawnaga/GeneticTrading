@@ -313,7 +313,7 @@ class AdaptiveTrainer:
                     entropy = -torch.sum(probs * torch.log(probs + 1e-8), dim=-1)
                     
                     if torch.isfinite(entropy):
-                        entropies.append(float(entropy.cpu().item()))  # Ensure CPU conversion and float
+                        entropies.append(float(entropy.detach().cpu().item()))  # Ensure CPU conversion and float
 
             except Exception as e:
                 logger.warning(f"Error calculating entropy for sample: {e}")

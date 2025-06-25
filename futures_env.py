@@ -231,21 +231,21 @@ class FuturesEnv(gym.Env):
         if self.current_index >= len(self.states):
             # Return zeros if we're past the end
             return np.zeros(self.observation_space.shape, dtype=np.float32)
-        
+
         current_state = self.states[self.current_index]
-        
+
         # Handle cases where features might be None
         if current_state.features is None:
             base_features = np.zeros(len(self.states[0].features), dtype=np.float32)
         else:
             base_features = current_state.features.copy()
-        
+
         # Clean base features of NaN/infinite values with more conservative bounds
         base_features = np.nan_to_num(base_features, nan=0.0, posinf=10.0, neginf=-10.0)
-        
+
         # Additional clipping to prevent extreme values
         base_features = np.clip(base_features, -100.0, 100.0)
-        
+
         # Add position information if required
         if self.add_current_position_to_state:
             position_features = np.zeros(3, dtype=np.float32)
@@ -255,18 +255,18 @@ class FuturesEnv(gym.Env):
                 position_features[1] = 1.0  # Short position
             else:
                 position_features[2] = 1.0  # Flat position
-            
+
             obs = np.concatenate([base_features, position_features])
         else:
             obs = base_features
-        
+
         # Ensure observation is the right shape and type
         obs = np.array(obs, dtype=np.float32)
-        
+
         # Final NaN check and cleaning with conservative bounds
         obs = np.nan_to_num(obs, nan=0.0, posinf=10.0, neginf=-10.0)
         obs = np.clip(obs, -100.0, 100.0)
-        
+
         if obs.shape != self.observation_space.shape:
             # Pad or truncate to match expected shape
             expected_size = self.observation_space.shape[0]
@@ -274,11 +274,11 @@ class FuturesEnv(gym.Env):
                 obs = np.pad(obs, (0, expected_size - len(obs)), mode='constant')
             elif len(obs) > expected_size:
                 obs = obs[:expected_size]
-        
+
         # Final safety check - if still contains NaN/inf, replace with zeros
         if not np.all(np.isfinite(obs)):
             obs = np.zeros(self.observation_space.shape, dtype=np.float32)
-        
+
         return obs
 
     def _get_info(self):
@@ -292,7 +292,7 @@ class FuturesEnv(gym.Env):
             'current_index': self.current_index,
             'done': self.done
         }
-        
+
         # Add current state info if available
         if self.current_index < len(self.states):
             current_state = self.states[self.current_index]
@@ -309,7 +309,7 @@ class FuturesEnv(gym.Env):
                 'close_price': 0.0,
                 'total_profit': self.balance
             })
-        
+
         return info
 
 

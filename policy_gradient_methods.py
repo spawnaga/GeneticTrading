@@ -561,16 +561,16 @@ class PPOTrainer:
                 try:
                     logits, value_preds = self.model(obs_t)
                     value_preds_squeezed = value_preds.squeeze()
-                    
+
                     # Ensure both tensors are on the same device
                     if value_preds_squeezed.device != ret_t.device:
                         value_preds_squeezed = value_preds_squeezed.to(ret_t.device)
-                    
+
                     # Calculate accuracy with NaN protection
                     abs_diff = torch.abs(value_preds_squeezed - ret_t)
                     abs_ret = torch.abs(ret_t) + 1e-8
                     relative_error = abs_diff / abs_ret
-                    
+
                     # Filter out NaN/infinite values
                     valid_mask = torch.isfinite(relative_error)
                     if valid_mask.any():
@@ -588,7 +588,7 @@ class PPOTrainer:
             # Enhanced logging
             self._log_comprehensive_metrics(
                 policy_losses, value_losses, entropies, kl_divergences, 
-                clip_fractions, action_probs, rews, vals, rets.numpy()
+                clip_fractions, action_probs, rews, vals, rets.detach().cpu().numpy()
             )
 
             # Create advanced visualizations
@@ -739,7 +739,7 @@ class PPOTrainer:
         """Log comprehensive metrics to TensorBoard"""
 
         # Basic metrics
-        self.tb_writer.add_scalar("PPO/Loss/Policy_Mean", np.mean(policy_losses), self.global_step)
+        self.tb_writer.add_scalar("PPO/Loss/Policy_Mean", np.mean(policylosses), self.global_step)
         self.tb_writer.add_scalar("PPO/Loss/Policy_Std", np.std(policy_losses), self.global_step)
         self.tb_writer.add_scalar("PPO/Loss/Value_Mean", np.mean(value_losses), self.global_step)
         self.tb_writer.add_scalar("PPO/Loss/Value_Std", np.std(value_losses), self.global_step)
