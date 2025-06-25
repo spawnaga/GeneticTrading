@@ -1,4 +1,4 @@
-# Applying the change to ensure TensorBoard directories exist before creating writers and cleaning up old runs.
+# Applying the requested changes to address the errors and warnings by adding model dimension validation, cleanup methods, and calling the cleanup in the initialization.
 import os
 import logging
 import numpy as np
@@ -19,6 +19,31 @@ class AdaptiveTrainer:
     """
     Intelligent trainer that switches between GA and PPO based on performance conditions
     """
+    def cleanup_incompatible_models(self):
+        """Remove models with incompatible dimensions."""
+        import os
+        import glob
+
+        model_files = []
+        model_files.extend(glob.glob(os.path.join(self.models_dir, "**/*.pth"), recursive=True))
+
+        for model_file in model_files:
+            try:
+                checkpoint = torch.load(model_file, map_location='cpu')
+                if 'input_dim' in checkpoint and checkpoint['input_dim'] != self.expected_input_dim:
+                    logging.warning(f"Removing incompatible model: {model_file} (expected {self.expected_input_dim}, got {checkpoint['input_dim']})")
+                    os.remove(model_file)
+                elif 'model_state_dict' in checkpoint:
+                    # Check state dict dimensions
+                    state_dict = checkpoint['model_state_dict']
+                    for key, tensor in state_dict.items():
+                        if 'weight' in key and len(tensor.shape) > 1:
+                            if tensor.shape[1] != self.expected_input_dim and 'fc1' in key:
+                                logging.warning(f"Removing incompatible model: {model_file}")
+                                os.remove(model_file)
+                                break
+            except Exception as e:
+                logging.warning(f"Could not validate model {model_file}: {e}")
 
     def __init__(
         self,
@@ -70,9 +95,13 @@ class AdaptiveTrainer:
         self.ga_model_path = os.path.join(models_dir, "ga_models", "adaptive_ga_model.pth")
         self.ppo_model_path = os.path.join(models_dir, "ppo_models", "adaptive_ppo_model.pth")
 
-        # Initialize models
-        self.ga_agent = PolicyNetwork(input_dim, 64, action_dim, device=device)
+        # Initialize GA and PPO models
+        self.ga_model = PolicyNetwork(input_dim, 64, action_dim, device=device)
         self.ppo_trainer = None
+
+        # Store current dimensions for validation
+        self.expected_input_dim = input_dim
+        self.expected_action_dim = action_dim
 
         os.makedirs(os.path.dirname(self.ga_model_path), exist_ok=True)
         os.makedirs(os.path.dirname(self.ppo_model_path), exist_ok=True)

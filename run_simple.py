@@ -52,9 +52,6 @@ def run_quick_test():
 
 def run_development():
     """Run development mode with all available data."""
-    print("🔧 Starting Development Mode...")
-    print("📊 Using all available data")
-
     from main import main
 
     sys.argv = [

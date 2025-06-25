@@ -358,7 +358,10 @@ def feature_engineering_gpu(
                 df[col] = df[col].replace([np.inf, -np.inf], np.nan)
             
             # Forward fill, then backward fill, then use median
-            df[col] = df[col].fillna(method='ffill').fillna(method='bfill')
+            if HAS_CUDF:
+                df[col] = df[col].ffill().bfill()
+            else:
+                df[col] = df[col].fillna(method='ffill').fillna(method='bfill')
             if df[col].isna().any():
                 median_val = df[col].median()
                 if pd.isna(median_val):
@@ -370,10 +373,11 @@ def feature_engineering_gpu(
                 df[col] = df[col].fillna(median_val)
     
     # Ensure Close prices are specifically validated
-    df["Close"] = df["Close"].fillna(method='ffill').fillna(method='bfill')
     if HAS_CUDF:
+        df["Close"] = df["Close"].ffill().bfill()
         df["Close"] = df["Close"].replace([float('inf'), float('-inf')], None).fillna(df["Close"].median())
     else:
+        df["Close"] = df["Close"].fillna(method='ffill').fillna(method='bfill')
         df["Close"] = df["Close"].replace([np.inf, -np.inf], np.nan).fillna(df["Close"].median())
     
     # Final check for Close column
