@@ -20,11 +20,12 @@ import matplotlib.dates as mdates
 from matplotlib.animation import FuncAnimation
 import pandas as pd
 import numpy as np
+from email_notifications import TrainingNotificationManager
 
 class TrainingMonitor:
     """Real-time training monitor with early stopping recommendations."""
     
-    def __init__(self, log_dir: str = "./logs", models_dir: str = "./models"):
+    def __init__(self, log_dir: str = "./logs", models_dir: str = "./models", enable_email: bool = True):
         self.log_dir = Path(log_dir)
         self.models_dir = Path(models_dir)
         self.metrics_file = self.log_dir / "training_metrics.json"
@@ -40,6 +41,16 @@ class TrainingMonitor:
         
         # Create monitoring directory
         self.log_dir.mkdir(exist_ok=True)
+        
+        # Email notification setup
+        self.email_manager = None
+        if enable_email:
+            self.email_manager = TrainingNotificationManager()
+            if self.email_manager.setup_from_config():
+                self.email_manager.start_notifications()
+                logging.info("Email notifications enabled - reports every 6 hours")
+            else:
+                logging.info("Email notifications not configured - check ./config/email_config.json")
         
     def log_iteration(self, iteration: int, method: str, performance: float, 
                      metrics: Dict, training_time: float, switch_reason: str = ""):
