@@ -123,27 +123,7 @@ def load_and_cache_data(
                     names=["date_time", "Open", "High", "Low", "Close", "Volume"],
                     header=None,
                 )
-                # Ensure consistent datetime column name - handle different possible column names
-                datetime_columns = ['date_time', 'datetime', 'timestamp', 'time', 'Date', 'DateTime']
-                datetime_col = None
-
-                for col in datetime_columns:
-                    if col in file_df.columns:
-                        datetime_col = col
-                        break
-
-                if datetime_col is None:
-                    # If no datetime column found, try the first column if it looks like a date
-                    first_col = file_df.columns[0]
-                    if any(keyword in first_col.lower() for keyword in ['date', 'time']):
-                        datetime_col = first_col
-                    else:
-                        raise ValueError(f"No datetime column found. Available columns: {list(file_df.columns)}")
-
-                # Rename to standard name and convert to datetime
-                if datetime_col != "date_time":
-                    file_df = file_df.rename(columns={datetime_col: "date_time"})
-
+                # Convert datetime column directly since we set the name explicitly
                 file_df["date_time"] = cudf.to_datetime(file_df["date_time"], errors='coerce')
             else:
                 # Use pandas chunked reading for large files
@@ -156,26 +136,7 @@ def load_and_cache_data(
 
                 file_chunks = []
                 for chunk in chunk_reader:
-                    # Ensure consistent datetime column name - handle different possible column names
-                    datetime_columns = ['date_time', 'datetime', 'timestamp', 'time', 'Date', 'DateTime']
-                    datetime_col = None
-
-                    for col in datetime_columns:
-                        if col in chunk.columns:
-                            datetime_col = col
-                            break
-
-                    if datetime_col is None:
-                        # If no datetime column found, try the first column if it looks like a date
-                        first_col = chunk.columns[0]
-                        if any(keyword in first_col.lower() for keyword in ['date', 'time']):
-                            datetime_col = first_col
-                        else:
-                            raise ValueError(f"No datetime column found. Available columns: {list(chunk.columns)}")
-
-                    # Rename to standard name and convert to datetime
-                    if datetime_col != "date_time":
-                        chunk = chunk.rename(columns={datetime_col: "date_time"})
+                    # Convert datetime column directly since we set the name explicitly
                     chunk["date_time"] = pd.to_datetime(chunk["date_time"], errors='coerce')
                     chunk = chunk.dropna(subset=["date_time"])
                     if len(chunk) > 0:
@@ -222,28 +183,7 @@ def load_and_cache_data(
                 pandas_chunks.append(chunk)
         df = pd.concat(pandas_chunks, ignore_index=True)
 
-    # Ensure consistent datetime column name - handle different possible column names
-    datetime_columns = ['date_time', 'datetime', 'timestamp', 'time', 'Date', 'DateTime']
-    datetime_col = None
-
-    for col in datetime_columns:
-        if col in df.columns:
-            datetime_col = col
-            break
-
-    if datetime_col is None:
-        # If no datetime column found, try the first column if it looks like a date
-        first_col = df.columns[0]
-        if any(keyword in first_col.lower() for keyword in ['date', 'time']):
-            datetime_col = first_col
-        else:
-            raise ValueError(f"No datetime column found. Available columns: {list(df.columns)}")
-
-    # Rename to standard name and convert to datetime
-    if datetime_col != "date_time":
-        df = df.rename(columns={datetime_col: "date_time"})
-
-    # Ensure date_time column is properly typed before sorting
+    # Ensure date_time column is properly typed before sorting (already named correctly)
     if HAS_CUDF:
         df["date_time"] = cudf.to_datetime(df["date_time"], errors='coerce')
     else:
