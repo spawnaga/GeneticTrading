@@ -1,7 +1,3 @@
-` tags.
-
-```
-<replit_final_file>
 #!/usr/bin/env python3
 """
 Simple Trading System Launcher
@@ -73,6 +69,31 @@ def run_development():
         '--log-level', 'INFO'
     ]
 
+    print("📈 Monitoring enabled - check ./logs/training_metrics.json for progress")
+    print("⚠️  Training will auto-stop if performance stagnates to save compute")
+    main()
+
+def run_full_training():
+    """Run full training with all available data."""
+    print("🚀 Starting Full Training Mode...")
+    print("📊 Using 100% of available data")
+
+    from main import main
+
+    sys.argv = [
+        'main.py',
+        '--data-percentage', '1.0',   # Use all data
+        '--max-rows', '0',            # No row limit
+        '--models-dir', './models/production',
+        '--adaptive-iterations', '20', # Full adaptive training
+        '--ga-population', '80',      # Large population
+        '--ga-generations', '100',    # More generations
+        '--eval-interval', '5',
+        '--log-level', 'INFO'
+    ]
+
+    print("📈 Full training mode - this will take much longer")
+    print("📊 Monitor progress in ./logs/ and ./runs/ directories")
     main()
 
 def main():
@@ -86,11 +107,15 @@ def main():
     if len(sys.argv) > 1:
         mode = sys.argv[1].lower()
     else:
-        print("\nAvailable modes:")
+        print("Available modes:")
         print("  test - Quick test with minimal data (default)")
         print("  dev  - Development mode with 10% data")
-        print("\nUsage: python run_simple.py [test|dev]")
-        mode = input("\nSelect mode (test/dev) [test]: ").lower() or 'test'
+        print("  full - Full training with 100% data")
+        print()
+        print("Usage: python run_simple.py [test|dev|full]")
+        mode = input("Select mode (test/dev/full) [test]: ").strip().lower()
+    if not mode:
+        mode = "test"
 
     try:
         if mode == 'test':
@@ -104,6 +129,10 @@ def main():
             print("📈 Monitoring enabled - check ./logs/training_metrics.json for progress")
             print("⚠️  Training will auto-stop if performance stagnates to save compute")
             run_development()
+        elif mode == 'full':
+            print("🚀 Starting Full Training Mode...")
+            print("📊 Using 100% of available data")
+            run_full_training()
 
         print("\n✅ Training completed successfully!")
 

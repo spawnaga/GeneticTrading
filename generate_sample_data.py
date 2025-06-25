@@ -60,12 +60,15 @@ def generate_sample_ohlcv_data(n_rows=10000, start_price=100.0):
     return df
 
 if __name__ == "__main__":
+    import os
+    os.makedirs('./data_txt', exist_ok=True)
+    
     # Generate sample data
     data = generate_sample_ohlcv_data(10000)  # 10k rows for better training
-    data.to_csv('./data_txt/large_sample_data.txt', index=False)
+    data.to_csv('./data_txt/NQ_full_1min_continuous_absolute_adjusted.txt', index=False, header=False)
     print(f"Generated {len(data)} rows of sample data")
     
     # Also create a smaller test dataset
     test_data = generate_sample_ohlcv_data(2000, start_price=105.0)
-    test_data.to_csv('./data_txt/test_data.txt', index=False)
+    test_data.to_csv('./data_txt/test_data.txt', index=False, header=False)
     print(f"Generated {len(test_data)} rows of test data")
