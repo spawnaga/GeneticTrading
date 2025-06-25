@@ -490,7 +490,7 @@ def main():
             logging.warning(f"Failed to setup email notifications: {e}")
             email_manager = None
         
-        # Initialize adaptive trainer
+        # Initialize adaptive trainer with distributed settings
         adaptive_trainer = AdaptiveTrainer(
             train_env=train_env,
             test_env=test_env,
@@ -498,13 +498,17 @@ def main():
             action_dim=train_env.action_space.n,
             device=str(device),
             models_dir=str(model_dirs['base_dir']),
-            local_rank=local_rank
+            local_rank=local_rank,
+            world_size=world_size,
+            use_distributed=(world_size > 1)
         )
         
-        # Run adaptive training
+        # Run adaptive training with smaller iterations to avoid timeouts
         training_log = adaptive_trainer.adaptive_train(
-            max_iterations=20,  # Number of adaptive iterations
-            evaluation_interval=1
+            max_iterations=10,  # Reduced to avoid timeouts
+            evaluation_interval=1,
+            max_ga_generations=5,  # Shorter GA runs
+            max_ppo_updates=50    # Shorter PPO runs
         )
         
         # Get the best agent from adaptive training
@@ -528,9 +532,39 @@ def main():
         final_cagr, final_sharpe, final_mdd = compute_performance_metrics(final_profits, final_times)
         logging.info(f"Final Best Agent → CAGR: {final_cagr:.4f}, Sharpe: {final_sharpe:.4f}, MDD: {final_mdd:.4f}")
         
+        # Signal completion to other ranks
+        completion_flag = model_dirs['base_dir'] / "training_complete.flag"
+        completion_flag.touch()
+        logging.info("Training completion flag created")
+        
     else:
-        # Non-rank 0 processes just wait
-        logging.info("Non-rank 0 process waiting for adaptive training to complete")
+        # Non-rank 0 processes just wait with regular heartbeat
+        import time
+        heartbeat_count = 0
+        while True:
+            try:
+                # Send heartbeat every 5 minutes to prevent timeout
+                if heartbeat_count % 60 == 0:  # Every 5 minutes (60 * 5 seconds)
+                    logging.info(f"Rank {local_rank} heartbeat - waiting for adaptive training")
+                time.sleep(5)
+                heartbeat_count += 1
+                
+                # Check if training is complete (simple file-based check)
+                if (model_dirs['base_dir'] / "training_complete.flag").exists():
+                    logging.info(f"Rank {local_rank} detected training completion")
+                    break
+                    
+                # Safety timeout - exit after 4 hours
+                if heartbeat_count > 2880:  # 4 hours
+                    logging.warning(f"Rank {local_rank} timeout - exiting after 4 hours")
+                    break
+                    
+            except KeyboardInterrupt:
+                logging.info(f"Rank {local_rank} interrupted")
+                break
+            except Exception as e:
+                logging.warning(f"Rank {local_rank} error in wait loop: {e}")
+                break
     
     if world_size > 1:
         if torch.cuda.is_available():
