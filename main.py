@@ -28,14 +28,19 @@ try_gpu = torch.cuda.is_available() and torch.cuda.device_count() > 0
 
 if try_gpu:
     try:
+        # Test CUDA functionality before importing GPU libraries
+        torch.cuda.current_device()
         import cudf
         import cupy as cp
+        # Test basic cupy operation to ensure driver compatibility
+        test_array = cp.array([1, 2, 3])
+        _ = cp.sum(test_array)
         has_cudf = True
         logging.info(f"cudf loaded successfully with {torch.cuda.device_count()} GPUs available")
-    except (ImportError, AttributeError, RuntimeError) as e:
+    except (ImportError, AttributeError, RuntimeError, Exception) as e:
         # Handle various CUDA-related import errors
-        if "cuda" in str(e).lower() or "numba" in str(e).lower():
-            warnings.warn(f"cudf import failed due to CUDA/numba issues ({e}); falling back to pandas.")
+        if any(keyword in str(e).lower() for keyword in ["cuda", "numba", "driver", "insufficient"]):
+            warnings.warn(f"cudf import failed due to CUDA/driver issues ({e}); falling back to pandas.")
         else:
             warnings.warn(f"cudf import failed ({e}); falling back to pandas.")
         has_cudf = False
@@ -262,14 +267,25 @@ def main():
     # torchrun / torch.distributed sets LOCAL_RANK
     local_rank = int(os.environ.get("LOCAL_RANK", "0"))
 
-    # Only set CUDA device if CUDA is available and we have GPUs
+    # Only set CUDA device if CUDA is available, has GPUs, and drivers are compatible
+    use_cuda = False
     if torch.cuda.is_available() and torch.cuda.device_count() > 0:
-        torch.cuda.set_device(local_rank)
-        backend = "nccl"
-        logging.info(f"Using NCCL backend for GPU {local_rank}/{torch.cuda.device_count()}")
+        try:
+            # Test CUDA functionality
+            torch.cuda.current_device()
+            torch.cuda.set_device(local_rank)
+            backend = "nccl"
+            use_cuda = True
+            logging.info(f"Using NCCL backend for GPU {local_rank}/{torch.cuda.device_count()}")
+        except Exception as e:
+            logging.warning(f"CUDA device initialization failed: {e}")
+            backend = "gloo"
+            logging.info("Falling back to Gloo backend for CPU training")
     else:
         backend = "gloo"
         logging.info("Using Gloo backend for CPU training")
+    
+    device = torch.device(f"cuda:{local_rank}" if use_cuda else "cpu")
 
     # init process group with matching timeout
     try:
@@ -297,7 +313,7 @@ def main():
         logging.info(f"Using {args.data_percentage*100:.1f}% of available data")
         logging.info(f"Models will be saved to: {args.models_dir}")
     
-    device = torch.device(f"cuda:{local_rank}" if torch.cuda.is_available() else "cpu")
+    # Device already set above
     logging.info(f"Rank {local_rank}/{world_size} starting on {device} (has_cudf={has_cudf})")
 
     # ─── DATA PREP ─────────────────────────────────────────────────────────────

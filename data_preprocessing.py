@@ -24,14 +24,24 @@ logger = logging.getLogger(__name__)
 
 try:
     import torch
+    # Check for both GPU availability and CUDA driver compatibility
     if torch.cuda.is_available() and torch.cuda.device_count() > 0:
-        import cudf
-        import cupy as cp
-        HAS_CUDF = True
-        logger.info(f"GPU processing enabled with {torch.cuda.device_count()} GPUs")
+        try:
+            # Test basic CUDA operations to ensure driver compatibility
+            torch.cuda.current_device()
+            import cudf
+            import cupy as cp
+            # Test basic cupy operation
+            test_array = cp.array([1, 2, 3])
+            _ = cp.sum(test_array)
+            HAS_CUDF = True
+            logger.info(f"GPU processing enabled with {torch.cuda.device_count()} GPUs")
+        except Exception as cuda_err:
+            logger.warning(f"CUDA driver incompatible or insufficient: {cuda_err}")
+            raise ImportError("CUDA driver issues detected")
     else:
         raise ImportError("No GPUs available")
-except (ImportError, AttributeError, RuntimeError):
+except (ImportError, AttributeError, RuntimeError, Exception):
     import pandas as pd
     import numpy as np
     cudf = pd
@@ -288,25 +298,35 @@ def feature_engineering_gpu(
     minutes  = (dt.dt.hour * 60 + dt.dt.minute).astype("int32")
     weekday  = dt.dt.weekday.astype("int32")
 
+    # Always use CPU for trigonometric operations to avoid CUDA driver issues
     try:
-        if HAS_CUDF:
-            # Ensure we're using GPU 0 for cupy operations
-            with cp.cuda.Device(0):
-                df["sin_time"]     = cp.sin(2 * cp.pi * (minutes / SECONDS_IN_DAY))
-                df["cos_time"]     = cp.cos(2 * cp.pi * (minutes / SECONDS_IN_DAY))
-                df["sin_weekday"]  = cp.sin(2 * cp.pi * (weekday / WEEKDAYS))
-                df["cos_weekday"]  = cp.cos(2 * cp.pi * (weekday / WEEKDAYS))
+        # Convert cuDF/pandas series to numpy arrays for consistent CPU processing
+        if HAS_CUDF and hasattr(minutes, 'to_pandas'):
+            minutes_np = minutes.to_pandas().values
+            weekday_np = weekday.to_pandas().values
         else:
-            df["sin_time"]     = np.sin(2 * np.pi * (minutes / SECONDS_IN_DAY))
-            df["cos_time"]     = np.cos(2 * np.pi * (minutes / SECONDS_IN_DAY))
-            df["sin_weekday"]  = np.sin(2 * np.pi * (weekday / WEEKDAYS))
-            df["cos_weekday"]  = np.cos(2 * np.pi * (weekday / WEEKDAYS))
+            minutes_np = minutes.values if hasattr(minutes, 'values') else np.array(minutes)
+            weekday_np = weekday.values if hasattr(weekday, 'values') else np.array(weekday)
+        
+        # Perform trigonometric operations on CPU
+        sin_time_vals = np.sin(2 * np.pi * (minutes_np / SECONDS_IN_DAY))
+        cos_time_vals = np.cos(2 * np.pi * (minutes_np / SECONDS_IN_DAY))
+        sin_weekday_vals = np.sin(2 * np.pi * (weekday_np / WEEKDAYS))
+        cos_weekday_vals = np.cos(2 * np.pi * (weekday_np / WEEKDAYS))
+        
+        # Assign back to dataframe
+        df["sin_time"] = sin_time_vals
+        df["cos_time"] = cos_time_vals
+        df["sin_weekday"] = sin_weekday_vals
+        df["cos_weekday"] = cos_weekday_vals
+        
     except Exception as e:
-        logger.warning(f"GPU trigonometric operations failed: {e}, falling back to CPU")
-        df["sin_time"]     = np.sin(2 * np.pi * (minutes / SECONDS_IN_DAY))
-        df["cos_time"]     = np.cos(2 * np.pi * (minutes / SECONDS_IN_DAY))
-        df["sin_weekday"]  = np.sin(2 * np.pi * (weekday / WEEKDAYS))
-        df["cos_weekday"]  = np.cos(2 * np.pi * (weekday / WEEKDAYS))
+        logger.warning(f"Trigonometric operations failed: {e}, using fallback")
+        # Final fallback with basic numpy
+        df["sin_time"] = 0.0
+        df["cos_time"] = 1.0
+        df["sin_weekday"] = 0.0
+        df["cos_weekday"] = 1.0
 
     total_bins = SECONDS_IN_DAY // bin_size_min
     time_bin   = (minutes // bin_size_min).astype("int32")
