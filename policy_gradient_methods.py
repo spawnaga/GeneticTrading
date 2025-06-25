@@ -396,176 +396,176 @@ class PPOTrainer:
 
             # Track action distribution for analysis
             action_counts = np.bincount(acts, minlength=self.env.action_space.n)
-        action_probs = action_counts / len(acts)
-        self.action_distribution_history.append(action_probs)
+            action_probs = action_counts / len(acts)
+            self.action_distribution_history.append(action_probs)
 
-        # Track reward patterns
-        self.reward_trends.extend(rews)
+            # Track reward patterns
+            self.reward_trends.extend(rews)
 
-        # Analyze trading behavior
-        self._analyze_trading_behavior(acts, rews, obs)
+            # Analyze trading behavior
+            self._analyze_trading_behavior(acts, rews, obs)
 
-        # 2) PPO epochs with enhanced tracking
-        policy_losses, value_losses, entropies = [], [], []
-        kl_divergences, clip_fractions = [], []
+            # 2) PPO epochs with enhanced tracking
+            policy_losses, value_losses, entropies = [], [], []
+            kl_divergences, clip_fractions = [], []
 
-        dataset_size = len(obs)
-        
-        # Progress bar for PPO update epochs
-        epoch_pbar = tqdm(range(self.update_epochs), 
-                         desc="PPO Update Epochs", 
-                         leave=False, 
-                         disable=(self.local_rank != 0))
-        
-        for epoch in epoch_pbar:
-            perm = torch.randperm(dataset_size, device=self.device)
+            dataset_size = len(obs)
             
-            # Progress bar for batch processing within each epoch
-            batch_starts = list(range(0, dataset_size, self.batch_size))
-            batch_pbar = tqdm(batch_starts, 
-                             desc=f"Epoch {epoch+1} Batches", 
+            # Progress bar for PPO update epochs
+            epoch_pbar = tqdm(range(self.update_epochs), 
+                             desc="PPO Update Epochs", 
                              leave=False, 
                              disable=(self.local_rank != 0))
             
-            for start in batch_pbar:
-                idx = perm[start:start + self.batch_size]
-                b_obs, b_acts = obs_t[idx], acts_t[idx]
-                b_oldlp, b_adv = oldlp_t[idx], adv_t[idx]
-                b_ret = ret_t[idx]
-
-                logits, value_pred = self.model(b_obs)
-                dist = Categorical(logits=logits)
-                new_lps = dist.log_prob(b_acts)
-                entropy = dist.entropy().mean()
-
-                # Calculate KL divergence and clipping metrics
-                ratio = torch.exp(new_lps - b_oldlp)
-                kl_div = torch.mean(b_oldlp - new_lps)
-                clip_frac = torch.mean((torch.abs(ratio - 1.0) > self.clip_epsilon).float())
-
-                kl_divergences.append(kl_div.item())
-                clip_fractions.append(clip_frac.item())
-
-                # policy loss
-                clipped = torch.clamp(ratio, 1 - self.clip_epsilon, 1 + self.clip_epsilon)
-                policy_loss = -torch.min(ratio * b_adv, clipped * b_adv).mean()
-
-                # value loss (clipped and weighted)
-                value_pred = value_pred.squeeze()
-                with torch.no_grad():
-                    old_vals = torch.tensor(vals, dtype=torch.float32, device=self.device)[idx]
-                v_clipped = old_vals + torch.clamp(
-                    value_pred - old_vals,
-                    -self.clip_epsilon, self.clip_epsilon
-                )
-                value_loss = torch.max(
-                    (value_pred - b_ret) ** 2,
-                    (v_clipped - b_ret) ** 2
-                ).mean()
-
-                loss = policy_loss + value_loss - self.entropy_coef * entropy
-
-                # Check for NaN/infinite values in loss before backward pass
-                if not torch.isfinite(loss):
-                    logger.warning(f"NaN/infinite loss detected: {loss.item()}, skipping update")
-                    continue
+            for epoch in epoch_pbar:
+                perm = torch.randperm(dataset_size, device=self.device)
                 
-                # Check for NaN/infinite values in logits
-                if not torch.all(torch.isfinite(logits)):
-                    logger.warning("NaN/infinite logits detected, skipping update")
-                    continue
+                # Progress bar for batch processing within each epoch
+                batch_starts = list(range(0, dataset_size, self.batch_size))
+                batch_pbar = tqdm(batch_starts, 
+                                 desc=f"Epoch {epoch+1} Batches", 
+                                 leave=False, 
+                                 disable=(self.local_rank != 0))
                 
-                self.optimizer.zero_grad()
-                loss.backward()
+                for start in batch_pbar:
+                    idx = perm[start:start + self.batch_size]
+                    b_obs, b_acts = obs_t[idx], acts_t[idx]
+                    b_oldlp, b_adv = oldlp_t[idx], adv_t[idx]
+                    b_ret = ret_t[idx]
 
-                # Calculate gradient norm with better clipping
-                grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.5)
-                
-                # Check for NaN gradients
-                has_nan_grad = False
-                for param in self.model.parameters():
-                    if param.grad is not None and not torch.all(torch.isfinite(param.grad)):
-                        has_nan_grad = True
-                        break
-                
-                if has_nan_grad:
-                    logger.warning("NaN gradients detected, skipping optimizer step")
+                    logits, value_pred = self.model(b_obs)
+                    dist = Categorical(logits=logits)
+                    new_lps = dist.log_prob(b_acts)
+                    entropy = dist.entropy().mean()
+
+                    # Calculate KL divergence and clipping metrics
+                    ratio = torch.exp(new_lps - b_oldlp)
+                    kl_div = torch.mean(b_oldlp - new_lps)
+                    clip_frac = torch.mean((torch.abs(ratio - 1.0) > self.clip_epsilon).float())
+
+                    kl_divergences.append(kl_div.item())
+                    clip_fractions.append(clip_frac.item())
+
+                    # policy loss
+                    clipped = torch.clamp(ratio, 1 - self.clip_epsilon, 1 + self.clip_epsilon)
+                    policy_loss = -torch.min(ratio * b_adv, clipped * b_adv).mean()
+
+                    # value loss (clipped and weighted)
+                    value_pred = value_pred.squeeze()
+                    with torch.no_grad():
+                        old_vals = torch.tensor(vals, dtype=torch.float32, device=self.device)[idx]
+                    v_clipped = old_vals + torch.clamp(
+                        value_pred - old_vals,
+                        -self.clip_epsilon, self.clip_epsilon
+                    )
+                    value_loss = torch.max(
+                        (value_pred - b_ret) ** 2,
+                        (v_clipped - b_ret) ** 2
+                    ).mean()
+
+                    loss = policy_loss + value_loss - self.entropy_coef * entropy
+
+                    # Check for NaN/infinite values in loss before backward pass
+                    if not torch.isfinite(loss):
+                        logger.warning(f"NaN/infinite loss detected: {loss.item()}, skipping update")
+                        continue
+                    
+                    # Check for NaN/infinite values in logits
+                    if not torch.all(torch.isfinite(logits)):
+                        logger.warning("NaN/infinite logits detected, skipping update")
+                        continue
+                    
                     self.optimizer.zero_grad()
-                    continue
-                
-                if not torch.isfinite(grad_norm):
-                    logger.warning("NaN gradient norm detected, skipping optimizer step")
-                    self.optimizer.zero_grad()
-                    continue
+                    loss.backward()
 
-                self.optimizer.step()
-                
-                # Verify model parameters are still valid after update
-                has_nan_params = False
-                for name, param in self.model.named_parameters():
-                    if not torch.all(torch.isfinite(param)):
-                        logger.error(f"NaN/infinite parameters detected in {name}, reinitializing layer")
-                        has_nan_params = True
-                        # Reinitialize the problematic layer with more conservative values
-                        if hasattr(param, 'data'):
-                            param.data.normal_(0, 0.001)  # Much smaller initialization
-                
-                # If we had NaN parameters, also reset optimizer state
-                if has_nan_params:
-                    logger.info("Resetting optimizer state due to NaN parameters")
-                    self.optimizer.state = {}
-                
-                # Store valid gradient norm
-                if torch.isfinite(grad_norm):
-                    self.gradient_norms.append(grad_norm.item())
+                    # Calculate gradient norm with better clipping
+                    grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.5)
+                    
+                    # Check for NaN gradients
+                    has_nan_grad = False
+                    for param in self.model.parameters():
+                        if param.grad is not None and not torch.all(torch.isfinite(param.grad)):
+                            has_nan_grad = True
+                            break
+                    
+                    if has_nan_grad:
+                        logger.warning("NaN gradients detected, skipping optimizer step")
+                        self.optimizer.zero_grad()
+                        continue
+                    
+                    if not torch.isfinite(grad_norm):
+                        logger.warning("NaN gradient norm detected, skipping optimizer step")
+                        self.optimizer.zero_grad()
+                        continue
 
-                policy_losses.append(policy_loss.item())
-                value_losses.append(value_loss.item())
-                entropies.append(entropy.item())
+                    self.optimizer.step()
+                    
+                    # Verify model parameters are still valid after update
+                    has_nan_params = False
+                    for name, param in self.model.named_parameters():
+                        if not torch.all(torch.isfinite(param)):
+                            logger.error(f"NaN/infinite parameters detected in {name}, reinitializing layer")
+                            has_nan_params = True
+                            # Reinitialize the problematic layer with more conservative values
+                            if hasattr(param, 'data'):
+                                param.data.normal_(0, 0.001)  # Much smaller initialization
+                    
+                    # If we had NaN parameters, also reset optimizer state
+                    if has_nan_params:
+                        logger.info("Resetting optimizer state due to NaN parameters")
+                        self.optimizer.state = {}
+                    
+                    # Store valid gradient norm
+                    if torch.isfinite(grad_norm):
+                        self.gradient_norms.append(grad_norm.item())
+
+                    policy_losses.append(policy_loss.item())
+                    value_losses.append(value_loss.item())
+                    entropies.append(entropy.item())
+                    
+                    # Update batch progress bar
+                    batch_pbar.set_postfix({
+                        'policy_loss': f"{policy_loss.item():.4f}",
+                        'value_loss': f"{value_loss.item():.4f}",
+                        'entropy': f"{entropy.item():.4f}"
+                    })
                 
-                # Update batch progress bar
-                batch_pbar.set_postfix({
-                    'policy_loss': f"{policy_loss.item():.4f}",
-                    'value_loss': f"{value_loss.item():.4f}",
-                    'entropy': f"{entropy.item():.4f}"
+                batch_pbar.close()
+                
+                # Update epoch progress bar
+                epoch_pbar.set_postfix({
+                    'avg_policy_loss': f"{np.mean(policy_losses[-len(batch_starts):]):.4f}",
+                    'avg_value_loss': f"{np.mean(value_losses[-len(batch_starts):]):.4f}",
+                    'kl_div': f"{np.mean(kl_divergences[-len(batch_starts):]):.4f}"
                 })
             
-            batch_pbar.close()
-            
-            # Update epoch progress bar
-            epoch_pbar.set_postfix({
-                'avg_policy_loss': f"{np.mean(policy_losses[-len(batch_starts):]):.4f}",
-                'avg_value_loss': f"{np.mean(value_losses[-len(batch_starts):]):.4f}",
-                'kl_div': f"{np.mean(kl_divergences[-len(batch_starts):]):.4f}"
-            })
-        
-        epoch_pbar.close()
+            epoch_pbar.close()
 
-        # Store loss trends
-        self.loss_trends.extend(policy_losses)
+            # Store loss trends
+            self.loss_trends.extend(policy_losses)
 
-        # Calculate value function accuracy
-        with torch.no_grad():
-            logits, value_preds = self.model(obs_t)
-            value_accuracy = 1.0 - torch.mean(torch.abs(value_preds.squeeze() - ret_t) / (torch.abs(ret_t) + 1e-8))
-            self.value_accuracy.append(value_accuracy.item())
+            # Calculate value function accuracy
+            with torch.no_grad():
+                logits, value_preds = self.model(obs_t)
+                value_accuracy = 1.0 - torch.mean(torch.abs(value_preds.squeeze() - ret_t) / (torch.abs(ret_t) + 1e-8))
+                self.value_accuracy.append(value_accuracy.item())
 
-        # Enhanced logging
-        self._log_comprehensive_metrics(
-            policy_losses, value_losses, entropies, kl_divergences, 
-            clip_fractions, action_probs, rews, vals, rets.numpy()
-        )
+            # Enhanced logging
+            self._log_comprehensive_metrics(
+                policy_losses, value_losses, entropies, kl_divergences, 
+                clip_fractions, action_probs, rews, vals, rets.numpy()
+            )
 
-        # Create advanced visualizations
-        if self.global_step % 50 == 0:
-            self._create_advanced_visualizations()
+            # Create advanced visualizations
+            if self.global_step % 50 == 0:
+                self._create_advanced_visualizations()
 
-        # decay LR & entropy once per train_step
-        if getattr(self, "current_update", 0) % 50 == 0:
-            self.scheduler.step()
-        self.entropy_coef = max(0.001, self.entropy_coef * 0.9995)  # Slower decay with minimum
+            # decay LR & entropy once per train_step
+            if getattr(self, "current_update", 0) % 50 == 0:
+                self.scheduler.step()
+            self.entropy_coef = max(0.001, self.entropy_coef * 0.9995)  # Slower decay with minimum
 
-        # rollout reward: total sum of step rewards
+            # rollout reward: total sum of step rewards
             total_reward = float(rews.sum())
 
         except Exception as e:
