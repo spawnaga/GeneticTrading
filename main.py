@@ -266,7 +266,16 @@ def main():
         os.environ["NCCL_NET_GDR_DISABLE"] = "0"  # Enable GPU Direct RDMA
         os.environ["NCCL_TREE_THRESHOLD"] = "0"  # Use ring for small data
         os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
+        os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"  # Ensure all GPUs visible
+        os.environ["NCCL_DEBUG"] = "INFO"  # Enable NCCL debugging
         logging.info("Enabled NVLink optimizations for 4 GPU setup")
+        
+        # Check if we're in distributed mode
+        if "LOCAL_RANK" not in os.environ:
+            logging.warning("Not running in distributed mode! Use 'torchrun --nproc_per_node=4' to utilize all GPUs")
+            logging.warning("Current single-process mode will only use 1 GPU")
+        else:
+            logging.info(f"Running in distributed mode with {torch.cuda.device_count()} GPUs")
 
     # torchrun / torch.distributed sets LOCAL_RANK
     local_rank = int(os.environ.get("LOCAL_RANK", "0"))
@@ -293,14 +302,19 @@ def main():
 
     # init process group with matching timeout
     try:
-        dist.init_process_group(
-            backend=backend,
-            init_method="env://",
-            timeout=datetime.timedelta(milliseconds=args.nccl_timeout)
-        )
-        world_size = dist.get_world_size()
-    except (RuntimeError, ValueError):
-        logging.warning("Distributed training not available, running in single-process mode")
+        if "LOCAL_RANK" in os.environ and "WORLD_SIZE" in os.environ:
+            dist.init_process_group(
+                backend=backend,
+                init_method="env://",
+                timeout=datetime.timedelta(milliseconds=args.nccl_timeout)
+            )
+            world_size = dist.get_world_size()
+            logging.info(f"Successfully initialized distributed training with {world_size} processes")
+        else:
+            raise RuntimeError("Distributed environment variables not set")
+    except (RuntimeError, ValueError) as e:
+        logging.warning(f"Distributed training not available ({e}), running in single-process mode")
+        logging.warning("To use all 4 GPUs, run with: torchrun --nproc_per_node=4 --nnodes=1 --node_rank=0 --master_addr=127.0.0.1 --master_port=12355 main.py")
         world_size = 1
         local_rank = 0
 
