@@ -457,13 +457,13 @@ def main():
 
     # ─── ENVIRONMENTS ──────────────────────────────────────────────────────────
     base_kwargs = {
-        "value_per_tick": args.value_per_tick, 
-        "tick_size": args.tick_size, 
+        "value_per_tick": 12.5,  # Standard NQ value per tick
+        "tick_size": 0.25,       # Standard NQ tick size
         "fill_probability": 1.0,
-        "execution_cost_per_order": args.commission * 0.1,  # Reduce training costs
+        "execution_cost_per_order": 2.50,  # Realistic commission per side
         "contracts_per_trade": 1,
-        "margin_rate": args.margin_rate * 0.1,  # Reduce margin costs
-        "bid_ask_spread": args.tick_size * 0.5,  # Reduce spread
+        "margin_rate": 0.05,     # 5% margin requirement
+        "bid_ask_spread": 0.25,  # 1 tick spread
         "add_current_position_to_state": True
     }
     train_env = FuturesEnv(states=train_states,

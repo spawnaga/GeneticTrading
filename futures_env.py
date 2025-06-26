@@ -212,7 +212,7 @@ class FuturesEnv(gym.Env):
                 state_idx = min(self.current_index - 1, self.limit - 1)
                 if 0 <= state_idx < len(self.states):
                     reward = self._get_reward(self.states[state_idx])
-                    
+
                     # Validate reward
                     if not np.isfinite(reward):
                         reward = 0.0
@@ -267,10 +267,10 @@ class FuturesEnv(gym.Env):
                 if state.features is not None and len(state.features) > 0:
                     expected_feature_size = len(state.features)
                     break
-            
+
             if expected_feature_size == 0:
                 expected_feature_size = 10  # Default fallback
-                
+
             base_features = np.zeros(expected_feature_size, dtype=np.float32)
         else:
             base_features = np.array(current_state.features, dtype=np.float32)
@@ -286,7 +286,7 @@ class FuturesEnv(gym.Env):
             p95 = np.percentile(np.abs(base_features[np.isfinite(base_features)]), 95) if np.any(np.isfinite(base_features)) else 1.0
             max_val = max(p95, 1.0)  # Ensure at least 1.0 to prevent division by zero
             base_features = np.clip(base_features, -max_val, max_val)
-            
+
             # Additional normalization to [-1, 1] range
             if max_val > 0:
                 base_features = base_features / max_val
@@ -321,7 +321,7 @@ class FuturesEnv(gym.Env):
 
         # Final safety checks
         obs = np.array(obs, dtype=np.float32)
-        
+
         # Ensure all values are finite and in reasonable range
         if not np.all(np.isfinite(obs)):
             logger.warning("Replacing non-finite values in observation with zeros")
@@ -790,7 +790,8 @@ class FuturesEnv(gym.Env):
                 'entry_price': self.entry_price,
                 'exit_price': fill_price,
                 'position_size': self.current_position,
-                'pnl': position_pnl if 'position_pnl' in locals() else 0,
+                'pnl': position_pnl if```python
+ 'position_pnl' in locals() else 0,
                 'total_cost': self.entry_cost + trade_cost
             })
 
@@ -829,3 +830,305 @@ class FuturesEnv(gym.Env):
 
         self.last_position = self.current_position
         self.current_position = target_position
+
+    #def _get_reward(self, state):
+    #    """
+    #    Compute the step reward based on P&L change + position penalties.
+    #    """
+    #    # Validate input state
+    #    if state is None or not hasattr(state, 'close_price'):
+    #        return 0.0
+
+    #    current_price = state.close_price
+    #    if not np.isfinite(current_price) or current_price <= 0:
+    #        return 0.0
+
+    #    # Update unrealized P&L based on current market price
+    #    if self.current_position != 0 and self.entry_price is not None:
+    #        if np.isfinite(self.entry_price) and self.entry_price > 0:
+    #            price_diff = (current_price - self.entry_price) * self.current_position
+    #            unrealized_pnl = price_diff * self.value_per_tick / self.tick_size
+
+    #            # Check for NaN/infinite unrealized PnL
+    #            if not np.isfinite(unrealized_pnl):
+    #                unrealized_pnl = 0.0
+    #        else:
+    #            unrealized_pnl = 0.0
+    #    else:
+    #        unrealized_pnl = 0.0
+
+    #    # Ensure balance is finite
+    #    if not np.isfinite(self.balance):
+    #        self.balance = 0.0
+
+    #    # Total equity = realized balance + unrealized P&L
+    #    current_total = self.balance + unrealized_pnl
+
+    #    # Check for NaN/infinite total
+    #    if not np.isfinite(current_total):
+    #        current_total = 0.0
+
+    #    # Ensure total_reward is finite
+    #    if not np.isfinite(self.total_reward):
+    #        self.total_reward = 0.0
+
+    #    # Reward is the change in total equity from last step
+    #    reward = current_total - self.total_reward
+
+    #    # Check for NaN/infinite reward
+    #    if not np.isfinite(reward):
+    #        reward = 0.0
+
+    #    self.total_reward = current_total
+
+    #    # Add small position holding cost to encourage trading
+    #    if self.current_position != 0:
+    #        holding_cost = abs(self.current_position) * 0.01  # Small holding cost
+    #        if np.isfinite(holding_cost):
+    #            reward -= holding_cost
+
+    #    # Final reward validation
+    #    if not np.isfinite(reward):
+    #        reward = 0.0
+
+    #    # Clamp reward to reasonable range
+    #    reward = np.clip(reward, -1000.0, 1000.0)
+
+    #    return reward
+
+    def _get_reward(self, state):
+        """
+        Compute the step reward based on P&L change + position penalties.
+        """
+        # Validate input state
+        if state is None or not hasattr(state, 'close_price'):
+            return 0.0
+
+        current_price = state.close_price
+        if not np.isfinite(current_price) or current_price <= 0:
+            return 0.0
+
+        # Calculate unrealized P&L with proper scaling
+        if self.current_position != 0 and self.entry_price is not None:
+            price_diff = current_price - self.entry_price
+            # Realistic PnL calculation with proper scaling
+            tick_movement = price_diff / self.tick_size
+            unrealized_pnl = self.current_position * tick_movement * self.value_per_tick
+
+            # Scale down to reasonable reward range (-10 to +10)
+            scaled_pnl = np.clip(unrealized_pnl / 10000.0, -10.0, 10.0)
+            reward = scaled_pnl * 0.1  # Further scale for step reward
+        else:
+            reward = 0.0
+
+        # Add small position holding cost to encourage trading
+        if self.current_position != 0:
+            holding_cost = abs(self.current_position) * 0.01  # Small holding cost
+            if np.isfinite(holding_cost):
+                reward -= holding_cost
+
+        # Ensure balance is finite
+        if not np.isfinite(self.balance):
+            self.balance = 0.0
+
+        # Final reward validation
+        if not np.isfinite(reward):
+            reward = 0.0
+
+        # Clamp reward to reasonable range
+        reward = np.clip(reward, -1000.0, 1000.0)
+
+        return reward
+
+    #def step(self, action):
+    #    """
+    #    Take action in environment and return (obs, reward, done, info).
+    #    """
+    #    if self.done:
+    #        return self._get_observation(), 0.0, True, self._get_info()
+
+    #    current_state = self.states[self.current_index]
+    #    price = current_state.close_price
+
+    #    # Execute trade with improved realism
+    #    if action == 0:  # Hold
+    #        reward = 0.0
+    #    elif action == 1:  # Buy
+    #        if self.position <= 0:  # Can buy when flat or short
+    #            cost = self.execution_cost_per_order + (price * self.bid_ask_spread)
+    #            reward = -cost
+    #            self.position += self.contracts_per_trade
+    #            self.entry_price = price
+    #            self.cash -= (price * self.contracts_per_trade * self.value_per_tick / self.tick_size)
+    #            self.cash -= cost
+    #        else:
+    #            reward = -self.execution_cost_per_order  # Penalty for invalid action
+    #    elif action == 2:  # Sell
+    #        if self.position >= 0:  # Can sell when flat or long
+    #            cost = self.execution_cost_per_order + (price * self.bid_ask_spread)
+    #            reward = -cost
+    #            self.position -= self.contracts_per_trade
+    #            self.entry_price = price
+    #            self.cash += (price * self.contracts_per_trade * self.value_per_tick / self.tick_size)
+    #            self.cash -= cost
+    #        else:
+    #            reward = -self.execution_cost_per_order  # Penalty for invalid action
+
+    #    # Calculate unrealized P&L
+    #    if self.position != 0 and self.entry_price is not None:
+    #        price_diff = current_price - self.entry_price
+    #        unrealized_pnl = self.position * price_diff * self.value_per_tick / self.tick_size
+    #        reward += unrealized_pnl * 0.01  # Small fraction for step reward
+
+    #    # Increment step and return
+    #    self.current_index += 1
+    #    self.total_reward += reward
+    #    terminated = self.current_index >= self.limit
+    #    truncated = False
+    #    info = self._get_info()
+    #    return self._get_observation(), reward, terminated, truncated, info
+
+    def step(self, action):
+        """
+        Take action in environment and return (obs, reward, done, info).
+        """
+        if self.done or self.current_index >= self.limit:
+            obs = self._get_observation()
+            return obs, 0.0, True, self._get_info()
+
+        # Validate action more robustly
+        try:
+            action = int(action)
+            if action < 0 or action >= 3:
+                action = 0  # Default to hold for invalid actions
+        except (ValueError, TypeError):
+            action = 0  # Default to hold for invalid actions
+
+        # Process action with error handling
+        try:
+            if action == 1:  # buy/long
+                if self.current_position <= 0:
+                    self._execute_trade(1)
+            elif action == 2:  # sell/short  
+                if self.current_position >= 0:
+                    self._execute_trade(-1)
+            # action == 0 (hold) requires no processing
+        except Exception as e:
+            logger.warning(f"Error executing trade: {e}")
+            # Continue without executing the trade
+
+        # Move to next state
+        self.current_index += 1
+        if self.current_index >= self.limit:
+            self.done = True
+
+        # Calculate reward with comprehensive error handling
+        reward = 0.0
+        try:
+            if self.current_index > 0:
+                state_idx = min(self.current_index - 1, self.limit - 1)
+                if 0 <= state_idx < len(self.states):
+                    reward = self._get_reward(self.states[state_idx])
+
+                    # Validate reward
+                    if not np.isfinite(reward):
+                        reward = 0.0
+                    else:
+                        # Clamp reward to reasonable range
+                        reward = np.clip(float(reward), -1000.0, 1000.0)
+        except Exception as e:
+            logger.warning(f"Error calculating reward: {e}")
+            reward = 0.0
+
+        # Get updated observation with error handling
+        try:
+            obs = self._get_observation()
+            # Validate observation
+            if not np.all(np.isfinite(obs)):
+                logger.warning("Non-finite observation detected, using zeros")
+                obs = np.zeros(self.observation_space.shape, dtype=np.float32)
+        except Exception as e:
+            logger.warning(f"Error getting observation: {e}")
+            obs = np.zeros(self.observation_space.shape, dtype=np.float32)
+
+        # Get info with error handling
+        try:
+            info = self._get_info()
+        except Exception as e:
+            logger.warning(f"Error getting info: {e}")
+            info = {
+                'current_position': self.current_position,
+                'balance': self.balance,
+                'total_reward': self.total_reward,
+                'current_index': self.current_index,
+                'done': self.done
+            }
+
+        return obs, float(reward), self.done, info
+
+    #def step(self, action):
+    #    """
+    #    Take action in environment and return (obs, reward, done, info).
+    #    """
+    #    if self.done:
+    #        return self._get_observation(), 0.0, True, self._get_info()
+
+    #    current_state = self.states[self.current_index]
+    #    price = current_state.close_price
+
+    #    # Execute trade with realistic constraints and proper scaling
+    #    if action == 0:  # Hold
+    #        reward = 0.0
+    #    elif action == 1:  # Buy
+    #        if self.position <= 0:  # Can buy when flat or short
+    #            # Limit position size to prevent extreme leverage
+    #            max_contracts = min(self.contracts_per_trade, 5)  # Max 5 contracts
+    #            cost = self.execution_cost_per_order + (price * self.bid_ask_spread)
+
+    #            # Calculate realistic reward (scaled down)
+    #            reward = -cost / 1000.0  # Scale down by 1000x
+    #            self.position += max_contracts
+    #            self.entry_price = price
+
+    #            # Realistic cash management
+    #            trade_value = price * max_contracts * self.value_per_tick / self.tick_size
+    #            self.cash -= min(trade_value, self.cash * 0.1)  # Limit to 10% of cash
+    #            self.cash -= cost
+    #        else:
+    #            reward = -self.execution_cost_per_order / 1000.0  # Scaled penalty
+    #    elif action == 2:  # Sell
+    #        if self.position >= 0:  # Can sell when flat or long
+    #            # Limit position size to prevent extreme leverage
+    #            max_contracts = min(self.contracts_per_trade, 5)  # Max 5 contracts
+    #            cost = self.execution_cost_per_order + (price * self.bid_ask_spread)
+
+    #            # Calculate realistic reward (scaled down)
+    #            reward = -cost / 1000.0  # Scale down by 1000x
+    #            self.position -= max_contracts
+    #            self.entry_price = price
+
+    #            # Realistic cash management
+    #            trade_value = price * max_contracts * self.value_per_tick / self.tick_size
+    #            self.cash += trade_value
+    #            self.cash -= cost
+    #        else:
+    #            reward = -self.execution_cost_per_order / 1000.0  # Scaled penalty
+
+    #    # Calculate unrealized P&L with proper scaling
+    #    if self.position != 0 and self.entry_price is not None:
+    #        price_diff = current_price - self.entry_price
+    #        # Realistic PnL calculation with proper scaling
+    #        tick_movement = price_diff / self.tick_size
+    #        unrealized_pnl = self.position * tick_movement * self.value_per_tick
+
+    #        # Scale down to reasonable reward range (-10 to +10)
+    #        scaled_pnl = np.clip(unrealized_pnl / 10000.0, -10.0, 10.0)
+    #        reward += scaled_pnl * 0.1  # Further scale for step reward
+
+    #    # Increment step and return
+    #    self.current_index += 1
+    #    self.total_reward += reward
+    #    terminated = self.current_index >= self.limit
+    #    truncated = False
+    #    info = self._get_info()
+    #    return self._get_observation(), reward, terminated, truncated, info

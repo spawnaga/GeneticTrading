@@ -183,8 +183,8 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
             if total_return > 0:
                 # CAGR calculation with bounds checking
                 cagr = (total_return ** (1 / years) - 1) * 100
-                # Apply more conservative bounds for realistic trading returns
-                cagr = np.clip(cagr, -99.0, 200.0)
+                # Apply realistic bounds for trading returns
+                cagr = np.clip(cagr, -95.0, 50.0)  # More realistic bounds
             else:
                 cagr = -99.0  # Total loss
         else:
@@ -224,8 +224,8 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
                 sharpe = sharpe_period * np.sqrt(periods_per_year)
 
                 # Apply realistic bounds for trading Sharpe ratios
-                # Professional traders rarely exceed 3.0, and -2.0 is quite poor
-                sharpe = np.clip(sharpe, -3.0, 4.0)
+                # Professional traders rarely exceed 2.5, and -2.0 is quite poor
+                sharpe = np.clip(sharpe, -2.0, 2.5)
             else:
                 sharpe = 0.0
         else:
