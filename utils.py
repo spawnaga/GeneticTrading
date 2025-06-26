@@ -111,7 +111,7 @@ def monotonicity(series):
 
 def compute_performance_metrics(profits, times=None):
     """
-    Compute CAGR, Sharpe ratio, and Max Drawdown with enhanced safety checks
+    Compute CAGR, Sharpe ratio, and Max Drawdown with enhanced safety checks for trading environments
     """
     if not profits or len(profits) == 0:
         logger.warning("No profits data provided for metrics calculation")
@@ -130,14 +130,23 @@ def compute_performance_metrics(profits, times=None):
     if len(profits) == 0:
         return 0.0, 0.0, 100.0
 
-    # Calculate equity curve from step profits
-    initial_balance = 100000  # Starting capital
-    equity_curve = [initial_balance]
+    # Handle step rewards vs cumulative profits
+    # If these look like step rewards (small values), accumulate them
+    if np.mean(np.abs(profits)) < 100:  # Likely step rewards
+        # Calculate cumulative equity curve from step rewards
+        initial_balance = 10000  # Starting capital for step-based rewards
+        equity_curve = [initial_balance]
+        
+        for step_reward in profits:
+            # Accumulate step rewards
+            equity_curve.append(equity_curve[-1] + step_reward)
+    else:
+        # These are likely cumulative profit values
+        initial_balance = 10000  # Starting capital  
+        equity_curve = [initial_balance + p for p in profits]
+        equity_curve.insert(0, initial_balance)
 
-    for profit in profits:
-        equity_curve.append(equity_curve[-1] + profit)
-
-    # Calculate daily returns
+    # Calculate returns from equity curve
     returns = []
     for i in range(1, len(equity_curve)):
         prev_value = max(equity_curve[i-1], 1)  # Avoid division by zero
@@ -150,17 +159,18 @@ def compute_performance_metrics(profits, times=None):
 
     returns = np.array(returns)
 
-    # Remove extreme outliers (beyond 5 standard deviations for more stability)
+    # Remove extreme outliers but be less aggressive
     if len(returns) > 10:
         mean_return = np.mean(returns)
         std_return = np.std(returns)
         if std_return > 0:
+            # Use 3 standard deviations for filtering
             z_scores = np.abs((returns - mean_return) / std_return)
-            valid_returns = returns[z_scores <= 5]  # More conservative filtering
-            if len(valid_returns) > len(returns) * 0.5:  # Keep at least 50% of data
+            valid_returns = returns[z_scores <= 3]
+            if len(valid_returns) > len(returns) * 0.7:  # Keep at least 70% of data
                 returns = valid_returns
 
-    # CAGR Calculation - more conservative
+    # CAGR Calculation
     try:
         final_value = equity_curve[-1]
         initial_value = equity_curve[0]
@@ -172,16 +182,16 @@ def compute_performance_metrics(profits, times=None):
 
             if total_return > 0:
                 cagr = (total_return ** (1/periods) - 1) * 100
-                # More reasonable CAGR limits
-                cagr = np.clip(cagr, -50, 100)  # Cap between -50% and 100%
+                # Reasonable CAGR limits
+                cagr = np.clip(cagr, -90, 300)  # Allow for more realistic trading returns
             else:
-                cagr = -50.0  # Total loss
+                cagr = -90.0  # Near total loss
         else:
             cagr = 0.0
     except (ValueError, OverflowError, ZeroDivisionError):
         cagr = 0.0
 
-    # Sharpe Ratio Calculation - more conservative
+    # Sharpe Ratio Calculation
     try:
         if len(returns) > 1:
             mean_return = np.mean(returns)
@@ -189,8 +199,8 @@ def compute_performance_metrics(profits, times=None):
 
             if std_return > 1e-8:  # Avoid division by very small numbers
                 sharpe = (mean_return / std_return) * np.sqrt(252)
-                # More conservative Sharpe limits
-                sharpe = np.clip(sharpe, -5, 5)  # Realistic Sharpe range
+                # More realistic Sharpe limits for trading
+                sharpe = np.clip(sharpe, -10, 10)  # Allow higher Sharpe for good strategies
             else:
                 sharpe = 0.0
         else:
@@ -215,9 +225,9 @@ def compute_performance_metrics(profits, times=None):
     except (ValueError, OverflowError, ZeroDivisionError):
         max_drawdown = 100.0
 
-    # Final validation - ensure realistic ranges
-    cagr = np.clip(cagr, -100, 200)     # CAGR between -100% and 200%
-    sharpe = np.clip(sharpe, -5, 5)     # Sharpe between -5 and 5
+    # Final validation
+    cagr = np.clip(cagr, -100, 500)     # Allow for higher returns in trading
+    sharpe = np.clip(sharpe, -10, 10)   # Wider Sharpe range
     max_drawdown = np.clip(max_drawdown, 0, 100)  # MDD between 0% and 100%
 
     # Final finite check
