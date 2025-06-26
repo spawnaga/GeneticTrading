@@ -22,6 +22,9 @@ import warnings
 # Setup logger first before using it
 logger = logging.getLogger(__name__)
 
+import numpy as np
+import pandas as pd
+
 try:
     import torch
     # Check for both GPU availability and CUDA driver compatibility
@@ -42,8 +45,6 @@ try:
     else:
         raise ImportError("No GPUs available")
 except (ImportError, AttributeError, RuntimeError, Exception):
-    import pandas as pd
-    import numpy as np
     cudf = pd
     cp = np
     HAS_CUDF = False
@@ -417,9 +418,6 @@ def feature_engineering_gpu(
 
     # Always use CPU for trigonometric operations to avoid CUDA driver issues
     try:
-        # Import numpy explicitly for this operation
-        import numpy as np
-
         # Convert cuDF/pandas series to numpy arrays for consistent CPU processing
         if HAS_CUDF and hasattr(minutes, 'to_pandas'):
             minutes_np = minutes.to_pandas().values
