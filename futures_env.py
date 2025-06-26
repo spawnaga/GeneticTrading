@@ -777,7 +777,7 @@ class FuturesEnv(gym.Env):
                 # Calculate P&L: (exit_price - entry_price) * position * value_per_tick / tick_size
                 price_diff = fill_price - self.entry_price
                 tick_movement = price_diff / self.tick_size
-position_pnl = self.current_position * tick_movement * self.value_per_tick
+                position_pnl = self.current_position * tick_movement * self.value_per_tick
 
                 # Deduct exit cost
                 net_pnl = position_pnl - trade_cost
