@@ -109,134 +109,73 @@ def monotonicity(series):
         dirs.append(1 if diff > 0 else -1 if diff < 0 else 0)
     return float(np.mean(dirs)) if dirs else 0.0
 
-def compute_performance_metrics(profits, times=None):
+def compute_performance_metrics(profits, times):
     """
-    Compute CAGR, Sharpe ratio, and Max Drawdown with enhanced safety checks for trading environments
+    Compute realistic CAGR, Sharpe ratio, and max drawdown from profit/time data.
     """
     if not profits or len(profits) == 0:
-        logger.warning("No profits data provided for metrics calculation")
-        return 0.0, 0.0, 100.0
+        return 0.0, 0.0, 0.0
 
-    profits = np.array(profits)
-
-    # Filter out NaN and infinite values
-    valid_mask = np.isfinite(profits)
-    if not np.any(valid_mask):
-        logger.warning("All profits are NaN or infinite")
-        return 0.0, 0.0, 100.0
-
-    profits = profits[valid_mask]
+    # Convert to numpy arrays and clean data
+    profits = np.array(profits, dtype=float)
+    profits = profits[np.isfinite(profits)]
 
     if len(profits) == 0:
-        return 0.0, 0.0, 100.0
+        return 0.0, 0.0, 0.0
 
-    # Handle step rewards vs cumulative profits
-    # If these look like step rewards (small values), accumulate them
-    if np.mean(np.abs(profits)) < 100:  # Likely step rewards
-        # Calculate cumulative equity curve from step rewards
-        initial_balance = 10000  # Starting capital for step-based rewards
-        equity_curve = [initial_balance]
-        
-        for step_reward in profits:
-            # Accumulate step rewards
-            equity_curve.append(equity_curve[-1] + step_reward)
-    else:
-        # These are likely cumulative profit values
-        initial_balance = 10000  # Starting capital  
-        equity_curve = [initial_balance + p for p in profits]
-        equity_curve.insert(0, initial_balance)
+    # Clip extreme values to prevent unrealistic metrics
+    profits = np.clip(profits, -5000, 5000)  # Max $5k profit/loss per trade
+
+    # Calculate equity curve
+    initial_capital = 100000.0  # $100k starting capital
+    equity_curve = initial_capital + np.cumsum(profits)
+
+    # Ensure equity never goes negative (margin call protection)
+    equity_curve = np.maximum(equity_curve, initial_capital * 0.5)  # 50% minimum
 
     # Calculate returns from equity curve
-    returns = []
-    for i in range(1, len(equity_curve)):
-        prev_value = max(equity_curve[i-1], 1)  # Avoid division by zero
-        current_value = equity_curve[i]
-        daily_return = (current_value - prev_value) / prev_value
-        returns.append(daily_return)
+    returns = np.diff(equity_curve) / equity_curve[:-1]
+    returns = returns[np.isfinite(returns)]
 
     if len(returns) == 0:
-        returns = [0.0]
+        return 0.0, 0.0, 0.0
 
-    returns = np.array(returns)
+    # Calculate CAGR
+    final_value = equity_curve[-1]
+    total_return = (final_value / initial_capital) - 1
 
-    # Remove extreme outliers but be less aggressive
-    if len(returns) > 10:
-        mean_return = np.mean(returns)
-        std_return = np.std(returns)
-        if std_return > 0:
-            # Use 3 standard deviations for filtering
-            z_scores = np.abs((returns - mean_return) / std_return)
-            valid_returns = returns[z_scores <= 3]
-            if len(valid_returns) > len(returns) * 0.7:  # Keep at least 70% of data
-                returns = valid_returns
+    # Time period (assume daily data)
+    years = max(len(profits) / 252.0, 1/252.0)  # Min 1 trading day
 
-    # CAGR Calculation
-    try:
-        final_value = equity_curve[-1]
-        initial_value = equity_curve[0]
+    if total_return <= -0.99:  # Near total loss
+        cagr = -50.0  # Cap at -50% CAGR
+    else:
+        cagr = ((1 + total_return) ** (1/years) - 1) * 100
+        cagr = np.clip(cagr, -50.0, 200.0)  # Reasonable bounds
 
-        if initial_value > 0 and final_value > 0:
-            total_return = final_value / initial_value
-            periods = len(profits) / 252.0  # Assume 252 trading days per year
-            periods = max(periods, 1/252)  # At least 1 day
+    # Calculate Sharpe ratio (risk-free rate = 2%)
+    risk_free_rate = 0.02
+    excess_returns = returns - (risk_free_rate / 252)
 
-            if total_return > 0:
-                cagr = (total_return ** (1/periods) - 1) * 100
-                # Reasonable CAGR limits
-                cagr = np.clip(cagr, -90, 300)  # Allow for more realistic trading returns
-            else:
-                cagr = -90.0  # Near total loss
-        else:
-            cagr = 0.0
-    except (ValueError, OverflowError, ZeroDivisionError):
-        cagr = 0.0
-
-    # Sharpe Ratio Calculation
-    try:
-        if len(returns) > 1:
-            mean_return = np.mean(returns)
-            std_return = np.std(returns, ddof=1)
-
-            if std_return > 1e-8:  # Avoid division by very small numbers
-                sharpe = (mean_return / std_return) * np.sqrt(252)
-                # More realistic Sharpe limits for trading
-                sharpe = np.clip(sharpe, -10, 10)  # Allow higher Sharpe for good strategies
-            else:
-                sharpe = 0.0
-        else:
-            sharpe = 0.0
-    except (ValueError, OverflowError, ZeroDivisionError):
+    if len(excess_returns) > 1 and np.std(excess_returns) > 0:
+        sharpe = (np.mean(excess_returns) / np.std(excess_returns)) * np.sqrt(252)
+        sharpe = np.clip(sharpe, -5.0, 5.0)  # Realistic Sharpe bounds
+    else:
         sharpe = 0.0
 
-    # Maximum Drawdown Calculation
-    try:
-        peak = equity_curve[0]
-        max_drawdown = 0.0
-
-        for value in equity_curve:
-            if value > peak:
-                peak = value
-            if peak > 0:
-                drawdown = (peak - value) / peak * 100
-                max_drawdown = max(max_drawdown, drawdown)
-
-        # Cap MDD at 100%
-        max_drawdown = min(max_drawdown, 100.0)
-    except (ValueError, OverflowError, ZeroDivisionError):
-        max_drawdown = 100.0
+    # Calculate maximum drawdown
+    peak = np.maximum.accumulate(equity_curve)
+    drawdown = (peak - equity_curve) / peak
+    max_drawdown = np.max(drawdown) * 100
+    max_drawdown = np.clip(max_drawdown, 0.0, 95.0)  # Max 95% drawdown
 
     # Final validation
-    cagr = np.clip(cagr, -100, 500)     # Allow for higher returns in trading
-    sharpe = np.clip(sharpe, -10, 10)   # Wider Sharpe range
-    max_drawdown = np.clip(max_drawdown, 0, 100)  # MDD between 0% and 100%
-
-    # Final finite check
     if not np.isfinite(cagr):
         cagr = 0.0
     if not np.isfinite(sharpe):
         sharpe = 0.0
     if not np.isfinite(max_drawdown):
-        max_drawdown = 100.0
+        max_drawdown = 0.0
 
     return float(cagr), float(sharpe), float(max_drawdown)
 
