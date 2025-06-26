@@ -280,20 +280,28 @@ def main():
     # torchrun / torch.distributed sets LOCAL_RANK
     local_rank = int(os.environ.get("LOCAL_RANK", "0"))
 
-    # Only set CUDA device if CUDA is available, has GPUs, and drivers are compatible
+    # Force GPU usage if available
     use_cuda = False
     if torch.cuda.is_available() and torch.cuda.device_count() > 0:
         try:
             # Test CUDA functionality
             torch.cuda.current_device()
-            torch.cuda.set_device(local_rank)
+            torch.cuda.set_device(local_rank % torch.cuda.device_count())
             backend = "nccl"
             use_cuda = True
             logging.info(f"Using NCCL backend for GPU {local_rank}/{torch.cuda.device_count()}")
+            # Force CUDA for tensors
+            torch.backends.cudnn.benchmark = True
         except Exception as e:
-            logging.warning(f"CUDA device initialization failed: {e}")
-            backend = "gloo"
-            logging.info("Falling back to Gloo backend for CPU training")
+            logging.error(f"CUDA device initialization failed: {e}")
+            # Still try to use CUDA if available
+            if torch.cuda.is_available():
+                backend = "nccl"
+                use_cuda = True
+                logging.warning("Forcing CUDA despite initialization issues")
+            else:
+                backend = "gloo"
+                logging.info("Falling back to Gloo backend for CPU training")
     else:
         backend = "gloo"
         logging.info("Using Gloo backend for CPU training")

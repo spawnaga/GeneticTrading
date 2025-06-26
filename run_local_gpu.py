@@ -35,17 +35,25 @@ def setup_environment():
     """Setup environment variables for optimal training."""
     env = os.environ.copy()
     
-    # CUDA optimizations
-    env["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
-    env["CUDA_LAUNCH_BLOCKING"] = "0"  # Allow async operations
+    # Force GPU usage
+    if torch.cuda.is_available():
+        gpu_count = torch.cuda.device_count()
+        env["CUDA_VISIBLE_DEVICES"] = ",".join(str(i) for i in range(gpu_count))
+        env["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
+        env["CUDA_LAUNCH_BLOCKING"] = "0"  # Allow async operations
+        env["NCCL_DEBUG"] = "INFO"
+        print(f"🔥 Forcing GPU usage with {gpu_count} GPUs")
+    else:
+        print("⚠️ No GPUs available, using CPU")
     
     # Memory optimizations
     env["OMP_NUM_THREADS"] = "4"
     env["MKL_NUM_THREADS"] = "4"
     
-    # Force CPU fallback for problematic libraries
-    env["CUDF_BACKEND"] = "cpu"
-    env["RAPIDS_NO_INITIALIZE"] = "1"
+    # Keep cuDF enabled for GPU acceleration
+    if torch.cuda.is_available():
+        env.pop("CUDF_BACKEND", None)
+        env.pop("RAPIDS_NO_INITIALIZE", None)
     
     return env
 

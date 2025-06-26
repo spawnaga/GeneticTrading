@@ -161,7 +161,7 @@ class FuturesEnv(gym.Env):
         self.current_position = 0
         self.entry_price = None
         self.trade_count = 0
-        self.current_index = 0
+        self.current_index = start_idx  # Use actual start index
         self.done = False
         self.previous_balance = self.initial_balance  # Initialize for reward calculation
 
@@ -548,39 +548,41 @@ class FuturesEnv(gym.Env):
             return 0.0
 
         reward = 0.0
+        
+        # Store previous balance for reward calculation
+        if not hasattr(self, 'previous_balance'):
+            self.previous_balance = self.balance
 
-        # Calculate realistic position-based reward
-        if self.current_position != 0 and self.entry_price is not None:
-            if np.isfinite(self.entry_price) and self.entry_price > 0:
-                # Calculate actual P&L in ticks (more stable)
-                price_diff = current_price - self.entry_price
-                tick_movement = price_diff / self.tick_size
-                
-                # Reward based on tick movement, not dollar P&L
-                # This prevents extremely large rewards/penalties
-                if self.current_position > 0:  # Long position
-                    reward = np.tanh(tick_movement / 10.0)  # Normalize by 10 ticks
-                else:  # Short position
-                    reward = np.tanh(-tick_movement / 10.0)  # Invert for short
-                
-                # Small bonus/penalty for direction
-                if tick_movement * self.current_position > 0:  # Profitable direction
-                    reward += 0.01
-                elif abs(tick_movement) > 20:  # Large adverse move (20+ ticks)
-                    reward -= 0.05
+        # Calculate change in balance (including unrealized P&L) as reward
+        current_balance = self._calculate_current_balance(current_price)
+        balance_change = current_balance - self.previous_balance
+        
+        # Convert balance change to normalized reward
+        if abs(balance_change) > 1e-6:  # Only if there's meaningful change
+            # Normalize by account size to prevent extreme rewards
+            account_size = max(abs(current_balance), 1000.0)  # Minimum $1000 normalization
+            reward = np.tanh(balance_change / (account_size * 0.01))  # 1% of account as reference
         else:
-            # Very small penalty for being flat (encourage action)
+            # Small penalty for inaction to encourage trading
             reward = -0.001
 
-        # Update tracking
-        self.last_price = current_price
+        # Update previous balance
+        self.previous_balance = current_balance
+
+        # Additional reward shaping
+        if self.current_position != 0 and self.entry_price is not None:
+            # Small bonus for holding winning positions
+            if np.isfinite(self.entry_price) and self.entry_price > 0:
+                price_diff = current_price - self.entry_price
+                if (price_diff > 0 and self.current_position > 0) or (price_diff < 0 and self.current_position < 0):
+                    reward += 0.005  # Small bonus for profitable positions
 
         # Ensure finite result
         if not np.isfinite(reward):
             reward = 0.0
 
-        # Tight bounds to prevent extreme values
-        reward = np.clip(reward, -2.0, 2.0)
+        # Reasonable bounds for RL training
+        reward = np.clip(reward, -1.0, 1.0)
 
         return reward
 
