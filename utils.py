@@ -109,163 +109,126 @@ def monotonicity(series):
         dirs.append(1 if diff > 0 else -1 if diff < 0 else 0)
     return float(np.mean(dirs)) if dirs else 0.0
 
-def compute_performance_metrics(balance_history_or_profits, times=None):
+def compute_performance_metrics(profits, times=None):
     """
-    Compute CAGR, Sharpe ratio, and Maximum Drawdown from balance history or profits.
-
-    Args:
-        balance_history_or_profits: List of balance values or profit values
-        times: Optional list of timestamps (for annualization)
-
-    Returns:
-        tuple: (cagr, sharpe, mdd)
+    Compute CAGR, Sharpe ratio, and Max Drawdown with enhanced safety checks
     """
-    if isinstance(balance_history_or_profits, (list, np.ndarray)):
-        profits = list(balance_history_or_profits)
-    else:
-        profits = balance_history_or_profits
+    if not profits or len(profits) == 0:
+        logger.warning("No profits data provided for metrics calculation")
+        return 0.0, 0.0, 100.0
 
-    # Need sufficient data for meaningful calculations
-    if len(profits) < 10:
-        return 0.0, 0.0, 0.0
+    profits = np.array(profits)
 
-    profits = np.array(profits, dtype=np.float64)
+    # Filter out NaN and infinite values
+    valid_mask = np.isfinite(profits)
+    if not np.any(valid_mask):
+        logger.warning("All profits are NaN or infinite")
+        return 0.0, 0.0, 100.0
 
-    # Remove infinite and NaN values
-    profits = profits[np.isfinite(profits)]
-    if len(profits) < 10:
-        return 0.0, 0.0, 0.0
+    profits = profits[valid_mask]
 
-    # Time-based calculations
-    if times is not None and len(times) >= 2:
-        # Filter out None values from times
-        valid_times = [t for t in times if t is not None]
-        if len(valid_times) >= 2:
-            # Calculate actual time period
-            total_time_days = max((valid_times[-1] - valid_times[0]).total_seconds() / (24 * 3600), 1)
-            years = max(total_time_days / 365.25, 1/252)  # Minimum 1 trading day
-        else:
-            # Fallback if no valid times
-            trading_periods_per_day = 24  # Assuming 24 periods per day (15-min bars)
-            trading_days = len(profits) / trading_periods_per_day
-            years = max(trading_days / 252, 1/252)  # 252 trading days per year
-    else:
-        # Estimate time period from number of data points
-        # Assume intraday data (e.g., 15-minute bars during trading hours)
-        trading_periods_per_day = 24  # Assuming 24 periods per day (15-min bars)
-        trading_days = len(profits) / trading_periods_per_day
-        years = max(trading_days / 252, 1/252)  # 252 trading days per year
+    if len(profits) == 0:
+        return 0.0, 0.0, 100.0
 
-    # Calculate CAGR with realistic starting capital
-    cumulative_profits = np.cumsum(profits)
-    if len(cumulative_profits) > 0:
-        # Use fixed starting capital for consistency
-        starting_capital = 100000.0  # Standard $100K starting capital
-        
-        total_pnl = cumulative_profits[-1]
-        ending_capital = starting_capital + total_pnl
+    # Calculate equity curve from step profits
+    initial_balance = 100000  # Starting capital
+    equity_curve = [initial_balance]
 
-        # Only calculate CAGR if we have sufficient time period and positive ending capital
-        if years >= (7/365.25) and ending_capital > 0:  # At least 1 week of data
-            total_return = ending_capital / starting_capital
+    for profit in profits:
+        equity_curve.append(equity_curve[-1] + profit)
+
+    # Calculate daily returns
+    returns = []
+    for i in range(1, len(equity_curve)):
+        prev_value = max(equity_curve[i-1], 1)  # Avoid division by zero
+        current_value = equity_curve[i]
+        daily_return = (current_value - prev_value) / prev_value
+        returns.append(daily_return)
+
+    if len(returns) == 0:
+        returns = [0.0]
+
+    returns = np.array(returns)
+
+    # Remove extreme outliers (beyond 5 standard deviations for more stability)
+    if len(returns) > 10:
+        mean_return = np.mean(returns)
+        std_return = np.std(returns)
+        if std_return > 0:
+            z_scores = np.abs((returns - mean_return) / std_return)
+            valid_returns = returns[z_scores <= 5]  # More conservative filtering
+            if len(valid_returns) > len(returns) * 0.5:  # Keep at least 50% of data
+                returns = valid_returns
+
+    # CAGR Calculation - more conservative
+    try:
+        final_value = equity_curve[-1]
+        initial_value = equity_curve[0]
+
+        if initial_value > 0 and final_value > 0:
+            total_return = final_value / initial_value
+            periods = len(profits) / 252.0  # Assume 252 trading days per year
+            periods = max(periods, 1/252)  # At least 1 day
+
             if total_return > 0:
-                # CAGR calculation with bounds checking
-                cagr = (total_return ** (1 / years) - 1) * 100
-                # Apply realistic bounds for trading returns
-                cagr = np.clip(cagr, -99.0, 100.0)  # Realistic bounds: -99% to +100%
+                cagr = (total_return ** (1/periods) - 1) * 100
+                # More reasonable CAGR limits
+                cagr = np.clip(cagr, -50, 100)  # Cap between -50% and 100%
             else:
-                cagr = -99.0  # Total loss
+                cagr = -50.0  # Total loss
         else:
-            # For insufficient data, use simple annualized return
-            if years > 0:
-                simple_annual_return = (total_pnl / starting_capital) / years * 100
-                cagr = np.clip(simple_annual_return, -99.0, 100.0)
-            else:
-                cagr = 0.0
-    else:
+            cagr = 0.0
+    except (ValueError, OverflowError, ZeroDivisionError):
         cagr = 0.0
 
-    # Sharpe ratio calculation with realistic scaling
-    if len(profits) > 5:
-        # Clean profits of any remaining invalid values
-        valid_profits = profits[np.isfinite(profits)]
+    # Sharpe Ratio Calculation - more conservative
+    try:
+        if len(returns) > 1:
+            mean_return = np.mean(returns)
+            std_return = np.std(returns, ddof=1)
 
-        if len(valid_profits) >= 5:
-            mean_profit = np.mean(valid_profits)
-            std_profit = np.std(valid_profits, ddof=1)
-
-            if std_profit > 0:
-                # Convert to returns for proper Sharpe calculation
-                starting_capital = 100000.0
-                returns = valid_profits / starting_capital
-                
-                mean_return = np.mean(returns)
-                std_return = np.std(returns, ddof=1)
-                
-                if std_return > 0:
-                    # Estimate periods per year
-                    periods_per_year = len(valid_profits) / max(years, 1/252)
-                    
-                    # Risk-free rate (2% annually)
-                    risk_free_rate_annual = 0.02
-                    risk_free_per_period = risk_free_rate_annual / periods_per_year
-                    
-                    # Calculate excess return
-                    excess_return = mean_return - risk_free_per_period
-                    
-                    # Period Sharpe ratio
-                    sharpe_period = excess_return / std_return
-                    
-                    # Annualize using square root of time rule
-                    sharpe = sharpe_period * np.sqrt(periods_per_year)
-                    
-                    # Apply realistic bounds for trading Sharpe ratios
-                    sharpe = np.clip(sharpe, -3.0, 3.0)
-                else:
-                    sharpe = 0.0
+            if std_return > 1e-8:  # Avoid division by very small numbers
+                sharpe = (mean_return / std_return) * np.sqrt(252)
+                # More conservative Sharpe limits
+                sharpe = np.clip(sharpe, -5, 5)  # Realistic Sharpe range
             else:
                 sharpe = 0.0
         else:
             sharpe = 0.0
-    else:
+    except (ValueError, OverflowError, ZeroDivisionError):
         sharpe = 0.0
 
-    # Maximum drawdown calculation with fixed starting capital
-    cumulative_profits = np.cumsum(profits)
-    if len(cumulative_profits) > 0:
-        # Use fixed starting capital for consistency
-        initial_capital = 100000.0
-        
-        equity_curve = initial_capital + cumulative_profits
+    # Maximum Drawdown Calculation
+    try:
+        peak = equity_curve[0]
+        max_drawdown = 0.0
 
-        # Calculate running maximum (peak equity)
-        running_max = np.maximum.accumulate(equity_curve)
+        for value in equity_curve:
+            if value > peak:
+                peak = value
+            if peak > 0:
+                drawdown = (peak - value) / peak * 100
+                max_drawdown = max(max_drawdown, drawdown)
 
-        # Calculate drawdowns as absolute dollar amounts
-        dollar_drawdowns = running_max - equity_curve
+        # Cap MDD at 100%
+        max_drawdown = min(max_drawdown, 100.0)
+    except (ValueError, OverflowError, ZeroDivisionError):
+        max_drawdown = 100.0
 
-        # Convert to percentage drawdowns
-        drawdowns = np.where(running_max > 0, (dollar_drawdowns / running_max) * 100, 0)
+    # Final validation - ensure realistic ranges
+    cagr = np.clip(cagr, -100, 200)     # CAGR between -100% and 200%
+    sharpe = np.clip(sharpe, -5, 5)     # Sharpe between -5 and 5
+    max_drawdown = np.clip(max_drawdown, 0, 100)  # MDD between 0% and 100%
 
-        # Maximum drawdown is the largest percentage drop from peak
-        mdd = np.max(drawdowns) if len(drawdowns) > 0 else 0.0
+    # Final finite check
+    if not np.isfinite(cagr):
+        cagr = 0.0
+    if not np.isfinite(sharpe):
+        sharpe = 0.0
+    if not np.isfinite(max_drawdown):
+        max_drawdown = 100.0
 
-        # Handle edge cases - ensure MDD is reasonable
-        if np.isnan(mdd) or np.isinf(mdd):
-            mdd = 0.0
-        
-        # For very small losses, ensure minimum realistic MDD
-        if mdd == 0.0 and len(profits) > 10:
-            profit_volatility = np.std(profits)
-            if profit_volatility > 0:
-                # Estimate minimum MDD based on volatility
-                mdd = min((profit_volatility / initial_capital) * 100 * 2, 1.0)  # At least small drawdown
-
-        mdd = np.clip(mdd, 0.0, 100.0)
-    else:
-        mdd = 0.0
-
-    return float(cagr), float(sharpe), float(mdd)
+    return float(cagr), float(sharpe), float(max_drawdown)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Environment and State Building Utilities

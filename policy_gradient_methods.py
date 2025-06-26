@@ -343,6 +343,14 @@ class PPOTrainer:
 
             # *** USE STEP-LEVEL reward (not cumulative total_profit) ***
             next_state, reward, done, info = _unpack_step(self.env.step(action.item()))
+            
+            # Ensure reward is reasonable and finite
+            if not np.isfinite(reward):
+                reward = 0.0
+            
+            # Clip extreme rewards to prevent training instability
+            reward = np.clip(reward, -10.0, 10.0)
+            
             rew_buf.append(float(reward))
             done_buf.append(done)
 

@@ -155,6 +155,19 @@ class FuturesEnv(gym.Env):
         self.last_ts = self.states[start_idx].ts if self.limit > 0 else None
         self.last_price = self.states[start_idx].close_price if self.limit > 0 else None
         self.last_action_was_close = False
+        self.initial_balance = 10000.0  # Setting initial balance to 10000
+        self.balance = self.initial_balance
+        self.total_profit = 0.0
+        self.current_position = 0
+        self.entry_price = None
+        self.trade_count = 0
+        self.current_index = 0
+        self.done = False
+        self.previous_balance = self.initial_balance  # Initialize for reward calculation
+
+        # Reset tracking variables
+        self.max_balance = self.initial_balance
+        self.min_balance = self.initial_balance
 
         if self.limit == 0:
             # no data case
@@ -534,49 +547,28 @@ class FuturesEnv(gym.Env):
         if not np.isfinite(current_price) or current_price <= 0:
             return 0.0
 
-        # Update unrealized P&L based on current market price
+        # Calculate unrealized P&L with proper scaling
         if self.current_position != 0 and self.entry_price is not None:
-            if np.isfinite(self.entry_price) and self.entry_price > 0:
-                price_diff = (current_price - self.entry_price) * self.current_position
-                unrealized_pnl = price_diff * self.value_per_tick / self.tick_size
+            price_diff = current_price - self.entry_price
+            # Realistic PnL calculation with proper scaling
+            tick_movement = price_diff / self.tick_size
+            unrealized_pnl = self.current_position * tick_movement * self.value_per_tick
 
-                # Check for NaN/infinite unrealized PnL
-                if not np.isfinite(unrealized_pnl):
-                    unrealized_pnl = 0.0
-            else:
-                unrealized_pnl = 0.0
+            # Scale down to reasonable reward range (-10 to +10)
+            scaled_pnl = np.clip(unrealized_pnl / 10000.0, -10.0, 10.0)
+            reward = scaled_pnl * 0.1  # Further scale for step reward
         else:
-            unrealized_pnl = 0.0
-
-        # Ensure balance is finite
-        if not np.isfinite(self.balance):
-            self.balance = 0.0
-
-        # Total equity = realized balance + unrealized P&L
-        current_total = self.balance + unrealized_pnl
-
-        # Check for NaN/infinite total
-        if not np.isfinite(current_total):
-            current_total = 0.0
-
-        # Ensure total_reward is finite
-        if not np.isfinite(self.total_reward):
-            self.total_reward = 0.0
-
-        # Reward is the change in total equity from last step
-        reward = current_total - self.total_reward
-
-        # Check for NaN/infinite reward
-        if not np.isfinite(reward):
             reward = 0.0
-
-        self.total_reward = current_total
 
         # Add small position holding cost to encourage trading
         if self.current_position != 0:
             holding_cost = abs(self.current_position) * 0.01  # Small holding cost
             if np.isfinite(holding_cost):
                 reward -= holding_cost
+
+        # Ensure balance is finite
+        if not np.isfinite(self.balance):
+            self.balance = 0.0
 
         # Final reward validation
         if not np.isfinite(reward):
@@ -1031,14 +1023,23 @@ class FuturesEnv(gym.Env):
             if self.current_index > 0:
                 state_idx = min(self.current_index - 1, self.limit - 1)
                 if 0 <= state_idx < len(self.states):
+                    # Calculate step reward (change in balance from this action)
                     reward = self._get_reward(self.states[state_idx])
 
-                    # Validate reward
+                    # Track total profit separately (not part of reward)
+                    current_balance = self._calculate_current_balance(self.states[state_idx].close_price)
+                    self.total_profit = current_balance - self.initial_balance
+
+                    # Ensure balance is finite
+                    if not np.isfinite(self.balance):
+                        self.balance = self.initial_balance
+
+                    # Final reward validation
                     if not np.isfinite(reward):
                         reward = 0.0
-                    else:
-                        # Clamp reward to reasonable range
-                        reward = np.clip(float(reward), -1000.0, 1000.0)
+
+                    # Rewards should be small step changes, not large cumulative values
+                    reward = np.clip(reward, -10.0, 10.0)
         except Exception as e:
             logger.warning(f"Error calculating reward: {e}")
             reward = 0.0
@@ -1135,3 +1136,104 @@ class FuturesEnv(gym.Env):
     #    truncated = False
     #    info = self._get_info()
     #    return self._get_observation(), reward, terminated, truncated, info
+
+    def step(self, action):
+        """
+        Take action in environment and return (obs, reward, done, info).
+        """
+        if self.done or self.current_index >= self.limit:
+            obs = self._get_observation()
+            return obs, 0.0, True, self._get_info()
+
+        # Validate action more robustly
+        try:
+            action = int(action)
+            if action < 0 or action >= 3:
+                action = 0  # Default to hold for invalid actions
+        except (ValueError, TypeError):
+            action = 0  # Default to hold for invalid actions
+
+        # Process action with error handling
+        try:
+            if action == 1:  # buy/long
+                if self.current_position <= 0:
+                    self._execute_trade(1)
+            elif action == 2:  # sell/short  
+                if self.current_position >= 0:
+                    self._execute_trade(-1)
+            # action == 0 (hold) requires no processing
+        except Exception as e:
+            logger.warning(f"Error executing trade: {e}")
+            # Continue without executing the trade
+
+        # Move to next state
+        self.current_index += 1
+        if self.current_index >= self.limit:
+            self.done = True
+
+        # Calculate reward with comprehensive error handling
+        reward = 0.0
+        try:
+            if self.current_index > 0:
+                state_idx = min(self.current_index - 1, self.limit - 1)
+                if 0 <= state_idx < len(self.states):
+                    # Calculate step reward (change in balance from this action)
+                    reward = self._get_reward(self.states[state_idx])
+
+                    # Track total profit separately (not part of reward)
+                    current_balance = self._calculate_current_balance(self.states[state_idx].close_price)
+                    self.total_profit = current_balance - self.initial_balance
+
+                    # Ensure balance is finite
+                    if not np.isfinite(self.balance):
+                        self.balance = self.initial_balance
+
+                    # Final reward validation
+                    if not np.isfinite(reward):
+                        reward = 0.0
+
+                    # Rewards should be small step changes, not large cumulative values
+                    reward = np.clip(reward, -10.0, 10.0)
+        except Exception as e:
+            logger.warning(f"Error calculating reward: {e}")
+            reward = 0.0
+
+        # Get updated observation with error handling
+        try:
+            obs = self._get_observation()
+            # Validate observation
+            if not np.all(np.isfinite(obs)):
+                logger.warning("Non-finite observation detected, using zeros")
+                obs = np.zeros(self.observation_space.shape, dtype=np.float32)
+        except Exception as e:
+            logger.warning(f"Error getting observation: {e}")
+            obs = np.zeros(self.observation_space.shape, dtype=np.float32)
+
+        # Get info with error handling
+        try:
+            info = self._get_info()
+        except Exception as e:
+            logger.warning(f"Error getting info: {e}")
+            info = {
+                'current_position': self.current_position,
+                'balance': self.balance,
+                'total_reward': self.total_reward,
+                'current_index': self.current_index,
+                'done': self.done
+            }
+
+        return obs, float(reward), self.done, info
+    
+    def _calculate_current_balance(self, current_price):
+        """Calculate current balance including unrealized P&L."""
+        # Start with the base balance
+        current_balance = self.balance
+
+        # Calculate unrealized P&L if in a position
+        if self.current_position != 0 and self.entry_price is not None:
+            price_diff = current_price - self.entry_price
+            tick_movement = price_diff / self.tick_size
+            unrealized_pnl = self.current_position * tick_movement * self.value_per_tick
+            current_balance += unrealized_pnl
+
+        return current_balance
