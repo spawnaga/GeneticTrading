@@ -156,48 +156,36 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
         trading_days = len(profits) / trading_periods_per_day
         years = max(trading_days / 252, 1/252)  # 252 trading days per year
 
-    # Calculate CAGR with more realistic approach
+    # Calculate CAGR with realistic starting capital
     cumulative_profits = np.cumsum(profits)
     if len(cumulative_profits) > 0:
-        # Use a more reasonable starting capital estimation
-        profit_magnitude = np.percentile(np.abs(profits), 95)  # 95th percentile for outlier resistance
-
-        # Estimate starting capital based on profit scale and typical risk management
-        if profit_magnitude > 10000:
-            starting_capital = 1000000.0  # Large institutional scale
-        elif profit_magnitude > 1000:
-            starting_capital = 100000.0   # Professional trader scale  
-        elif profit_magnitude > 100:
-            starting_capital = 50000.0    # Small account scale
-        elif profit_magnitude > 10:
-            starting_capital = 10000.0    # Very small account
-        else:
-            starting_capital = 5000.0     # Micro account
-
+        # Use fixed starting capital for consistency
+        starting_capital = 100000.0  # Standard $100K starting capital
+        
         total_pnl = cumulative_profits[-1]
         ending_capital = starting_capital + total_pnl
 
         # Only calculate CAGR if we have sufficient time period and positive ending capital
-        if years >= (30/365.25) and ending_capital > 0:  # At least 30 days of data
+        if years >= (7/365.25) and ending_capital > 0:  # At least 1 week of data
             total_return = ending_capital / starting_capital
             if total_return > 0:
                 # CAGR calculation with bounds checking
                 cagr = (total_return ** (1 / years) - 1) * 100
                 # Apply realistic bounds for trading returns
-                cagr = np.clip(cagr, -95.0, 50.0)  # More realistic bounds
+                cagr = np.clip(cagr, -99.0, 100.0)  # Realistic bounds: -99% to +100%
             else:
                 cagr = -99.0  # Total loss
         else:
-            # For insufficient data or losses, use simple annualized return
+            # For insufficient data, use simple annualized return
             if years > 0:
                 simple_annual_return = (total_pnl / starting_capital) / years * 100
-                cagr = np.clip(simple_annual_return, -99.0, 200.0)
+                cagr = np.clip(simple_annual_return, -99.0, 100.0)
             else:
                 cagr = 0.0
     else:
         cagr = 0.0
 
-    # Sharpe ratio calculation with proper risk-free rate consideration
+    # Sharpe ratio calculation with realistic scaling
     if len(profits) > 5:
         # Clean profits of any remaining invalid values
         valid_profits = profits[np.isfinite(profits)]
@@ -207,25 +195,34 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
             std_profit = np.std(valid_profits, ddof=1)
 
             if std_profit > 0:
-                # Estimate periods per year more accurately
-                periods_per_year = len(valid_profits) / max(years, 1/252)  # Minimum 1 trading day
-
-                # Apply risk-free rate (approximate 2% annually for recent years)
-                risk_free_rate_annual = 0.02
-                risk_free_per_period = risk_free_rate_annual / periods_per_year
-
-                # Calculate excess return
-                excess_return = mean_profit - risk_free_per_period
-
-                # Period Sharpe ratio
-                sharpe_period = excess_return / std_profit
-
-                # Annualize using square root of time rule
-                sharpe = sharpe_period * np.sqrt(periods_per_year)
-
-                # Apply realistic bounds for trading Sharpe ratios
-                # Professional traders rarely exceed 2.5, and -2.0 is quite poor
-                sharpe = np.clip(sharpe, -2.0, 2.5)
+                # Convert to returns for proper Sharpe calculation
+                starting_capital = 100000.0
+                returns = valid_profits / starting_capital
+                
+                mean_return = np.mean(returns)
+                std_return = np.std(returns, ddof=1)
+                
+                if std_return > 0:
+                    # Estimate periods per year
+                    periods_per_year = len(valid_profits) / max(years, 1/252)
+                    
+                    # Risk-free rate (2% annually)
+                    risk_free_rate_annual = 0.02
+                    risk_free_per_period = risk_free_rate_annual / periods_per_year
+                    
+                    # Calculate excess return
+                    excess_return = mean_return - risk_free_per_period
+                    
+                    # Period Sharpe ratio
+                    sharpe_period = excess_return / std_return
+                    
+                    # Annualize using square root of time rule
+                    sharpe = sharpe_period * np.sqrt(periods_per_year)
+                    
+                    # Apply realistic bounds for trading Sharpe ratios
+                    sharpe = np.clip(sharpe, -3.0, 3.0)
+                else:
+                    sharpe = 0.0
             else:
                 sharpe = 0.0
         else:
@@ -233,20 +230,12 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
     else:
         sharpe = 0.0
 
-    # Maximum drawdown calculation from cumulative profits
+    # Maximum drawdown calculation with fixed starting capital
     cumulative_profits = np.cumsum(profits)
     if len(cumulative_profits) > 0:
-        # Use realistic starting capital based on profit scale
-        profit_scale = np.max(np.abs(cumulative_profits))
-        if profit_scale > 50000:
-            initial_capital = 500000.0
-        elif profit_scale > 10000:
-            initial_capital = 100000.0
-        elif profit_scale > 1000:
-            initial_capital = 50000.0
-        else:
-            initial_capital = 10000.0
-
+        # Use fixed starting capital for consistency
+        initial_capital = 100000.0
+        
         equity_curve = initial_capital + cumulative_profits
 
         # Calculate running maximum (peak equity)
@@ -261,40 +250,16 @@ def compute_performance_metrics(balance_history_or_profits, times=None):
         # Maximum drawdown is the largest percentage drop from peak
         mdd = np.max(drawdowns) if len(drawdowns) > 0 else 0.0
 
-        # Additional check: if there are losses, ensure MDD is not zero
-        if mdd == 0.0 and np.any(profits < 0):
-            # Calculate MDD from consecutive losses
-            consecutive_losses = []
-            current_loss = 0
-            for profit in profits:
-                if profit < 0:
-                    current_loss += profit
-                else:
-                    if current_loss < 0:
-                        consecutive_losses.append(abs(current_loss))
-                    current_loss = 0
-            if current_loss < 0:
-                consecutive_losses.append(abs(current_loss))
-
-            if consecutive_losses:
-                max_loss = max(consecutive_losses)
-                mdd = min((max_loss / initial_capital) * 100, 100.0)
-
-        # Handle edge cases
-        if np.isnan(mdd) or np.isinf(mdd) or mdd == 0.0:
-            # Ensure MDD reflects actual risk
-            if len(profits) > 1:
-                negative_profits = profits[profits < 0]
-                if len(negative_profits) > 0:
-                    # Use worst single loss as baseline MDD
-                    worst_loss = abs(np.min(negative_profits))
-                    mdd = min((worst_loss / initial_capital) * 100, 50.0)
-                else:
-                    # Even with all profits, assume some risk
-                    profit_volatility = np.std(profits)
-                    mdd = min((profit_volatility * 2 / initial_capital) * 100, 5.0)
-            else:
-                mdd = 0.0
+        # Handle edge cases - ensure MDD is reasonable
+        if np.isnan(mdd) or np.isinf(mdd):
+            mdd = 0.0
+        
+        # For very small losses, ensure minimum realistic MDD
+        if mdd == 0.0 and len(profits) > 10:
+            profit_volatility = np.std(profits)
+            if profit_volatility > 0:
+                # Estimate minimum MDD based on volatility
+                mdd = min((profit_volatility / initial_capital) * 100 * 2, 1.0)  # At least small drawdown
 
         mdd = np.clip(mdd, 0.0, 100.0)
     else:

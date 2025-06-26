@@ -751,10 +751,10 @@ class FuturesEnv(gym.Env):
             if not np.isfinite(fill_price) or fill_price <= 0:
                 return  # Skip trade if price is invalid
 
-        # Calculate trade cost
+        # Calculate realistic trade cost (e.g., $2.50 per contract per side)
         trade_cost = abs(trade_size) * self.execution_cost_per_order
         if not np.isfinite(trade_cost):
-            trade_cost = 0.0
+            trade_cost = 2.50  # Default commission
 
         # Update position and costs
         if self.current_position == 0:
@@ -762,71 +762,74 @@ class FuturesEnv(gym.Env):
             self.entry_price = fill_price
             self.entry_time = current_state.ts
             self.entry_cost = trade_cost
+            self.balance -= trade_cost  # Deduct entry cost immediately
+
         elif target_position == 0:
             # Closing position
             if self.entry_price is not None and np.isfinite(self.entry_price):
-                position_pnl = (
-                    (fill_price - self.entry_price) * self.current_position
-                    * self.value_per_tick / self.tick_size
-                )
+                # Calculate P&L: (exit_price - entry_price) * position * value_per_tick / tick_size
+                price_diff = fill_price - self.entry_price
+                tick_movement = price_diff / self.tick_size
+                position_pnl = self.current_position * tick_movement * self.value_per_tick
+
+                # Deduct exit cost
+                net_pnl = position_pnl - trade_cost
 
                 # Validate PnL calculation
-                if np.isfinite(position_pnl):
-                    self.balance += position_pnl - self.entry_cost - trade_cost
+                if np.isfinite(net_pnl):
+                    self.balance += net_pnl
 
                     # Ensure balance remains finite
                     if not np.isfinite(self.balance):
                         self.balance = 0.0
-            else:
-                position_pnl = 0.0
 
             self.exit_price = fill_price
             self.exit_time = current_state.ts
 
-            # Record trade
-            self.trades.append({
-                'entry_time': self.entry_time,
-                'exit_time': self.exit_time,
-                'entry_price': self.entry_price,
-                'exit_price': fill_price,
-                'position_size': self.current_position,
-                'pnl': position_pnl if```python
- 'position_pnl' in locals() else 0,
-                'total_cost': self.entry_cost + trade_cost
-            })
+            # Record completed trade with realistic values
+            if hasattr(self, 'entry_time') and self.entry_time:
+                trade_pnl = position_pnl - trade_cost if 'position_pnl' in locals() else -trade_cost
+                self.trades.append([
+                    str(uuid4()),  # trade_id
+                    "long" if self.current_position > 0 else "short",  # trade_type
+                    self.entry_price,  # entry_price
+                    fill_price,  # exit_price
+                    trade_pnl,  # profit (including costs)
+                    (current_state.ts - self.entry_time).total_seconds()  # duration
+                ])
 
             # Reset position tracking
             self.entry_price = None
             self.entry_time = None
             self.entry_cost = 0.0
+
         else:
-            # Position reversal - close old, open new
+            # Position reversal - close old position, open new
             if self.entry_price is not None and np.isfinite(self.entry_price):
-                position_pnl = (
-                    (fill_price - self.entry_price) * self.current_position
-                    * self.value_per_tick / self.tick_size
-                )
+                # Close existing position
+                price_diff = fill_price - self.entry_price
+                tick_movement = price_diff / self.tick_size
+                position_pnl = self.current_position * tick_movement * self.value_per_tick
 
-                # Validate PnL calculation
-                if np.isfinite(position_pnl):
-                    self.balance += position_pnl - self.entry_cost - trade_cost
+                # Deduct costs for closing old position
+                net_pnl = position_pnl - trade_cost
 
-                    # Ensure balance remains finite
-                    if not np.isfinite(self.balance):
-                        self.balance = 0.0
+                if np.isfinite(net_pnl):
+                    self.balance += net_pnl
 
+            # Open new position
             self.entry_price = fill_price
             self.entry_time = current_state.ts
             self.entry_cost = trade_cost
+            self.balance -= trade_cost  # Deduct entry cost for new position
 
-        # Record the order
-        self.orders.append({
-            'time': current_state.ts,
-            'action': 'buy' if trade_size > 0 else 'sell',
-            'size': abs(trade_size),
-            'price': fill_price,
-            'cost': trade_cost
-        })
+        # Record the order with UUID
+        self.orders.append([
+            str(uuid4()),  # order_id
+            str(current_state.ts),  # timestamp
+            fill_price,  # price
+            trade_size  # size (positive for buy, negative for sell)
+        ])
 
         self.last_position = self.current_position
         self.current_position = target_position
