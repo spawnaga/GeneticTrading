@@ -549,45 +549,48 @@ class FuturesEnv(gym.Env):
 
         reward = 0.0
 
-        # Calculate position-based reward
+        # Calculate position-based reward using actual P&L
         if self.current_position != 0 and self.entry_price is not None:
             if np.isfinite(self.entry_price) and self.entry_price > 0:
-                # Calculate price change percentage
-                price_change_pct = (current_price - self.entry_price) / self.entry_price
+                # Calculate price movement in ticks
+                price_diff = current_price - self.entry_price
+                tick_movement = price_diff / self.tick_size
 
-                # Position direction reward (positive for correct direction)
-                directional_reward = self.current_position * price_change_pct * 100.0
+                # Calculate P&L based on position direction
+                position_pnl = self.current_position * tick_movement * self.value_per_tick
 
-                # Scale to meaningful range
-                reward = directional_reward
+                # Scale to reasonable reward range (divide by 100 to make rewards in range -10 to +10)
+                reward = position_pnl / 100.0
 
-                # Add volatility bonus for significant moves
-                if abs(price_change_pct) > 0.001:  # 0.1% move
-                    volatility_bonus = abs(price_change_pct) * 50.0
-                    reward += volatility_bonus if directional_reward > 0 else -volatility_bonus * 0.5
-
-        # Small penalty for inaction when opportunities exist
-        if self.current_position == 0:
-            # Calculate recent price movement to detect trading opportunities
+                # Add small momentum bonus for favorable moves
+                if (self.current_position > 0 and price_diff > 0) or (self.current_position < 0 and price_diff < 0):
+                    momentum_bonus = abs(tick_movement) * 0.1
+                    reward += momentum_bonus
+        else:
+            # No position rewards/penalties
             if hasattr(self, 'last_price') and self.last_price is not None:
-                price_movement = abs(current_price - self.last_price) / self.last_price
-                if price_movement > 0.002:  # 0.2% movement without position
-                    reward -= 0.5  # Small opportunity cost
+                # Small penalty for missing opportunities
+                price_change = abs(current_price - self.last_price) / self.last_price
+                if price_change > 0.005:  # 0.5% move without position
+                    reward = -1.0  # Missed opportunity penalty
 
-        # Position holding cost (encourage position management)
+            # Small exploration bonus to encourage taking positions
+            reward += 0.1
+
+        # Small holding cost to encourage active trading
         if self.current_position != 0:
-            holding_cost = abs(self.current_position) * 0.1
-            reward -= holding_cost
+            holding_penalty = abs(self.current_position) * 0.05
+            reward -= holding_penalty
 
         # Update last price for next calculation
         self.last_price = current_price
 
-        # Ensure reward is meaningful and finite
+        # Ensure reward is finite and in reasonable range
         if not np.isfinite(reward):
             reward = 0.0
 
-        # Clamp to reasonable range but allow meaningful values
-        reward = np.clip(reward, -50.0, 50.0)
+        # Clamp to meaningful range
+        reward = np.clip(reward, -10.0, 10.0)
 
         return reward
 
@@ -774,10 +777,9 @@ class FuturesEnv(gym.Env):
                 # Calculate P&L: (exit_price - entry_price) * position * value_per_tick / tick_size
                 price_diff = fill_price - self.entry_price
                 tick_movement = price_diff / self.tick_size
-                position_pnl = self.current_position * tick_movement * self.value_per_tick
+position_pnl = self.current_position * tick_movement * self.value_per_tick
 
                 # Deduct exit cost
-```python
                 net_pnl = position_pnl - trade_cost
 
                 # Validate PnL calculation
@@ -918,45 +920,48 @@ class FuturesEnv(gym.Env):
 
         reward = 0.0
 
-        # Calculate position-based reward
+        # Calculate position-based reward using actual P&L
         if self.current_position != 0 and self.entry_price is not None:
             if np.isfinite(self.entry_price) and self.entry_price > 0:
-                # Calculate price change percentage
-                price_change_pct = (current_price - self.entry_price) / self.entry_price
+                # Calculate price movement in ticks
+                price_diff = current_price - self.entry_price
+                tick_movement = price_diff / self.tick_size
 
-                # Position direction reward (positive for correct direction)
-                directional_reward = self.current_position * price_change_pct * 100.0
+                # Calculate P&L based on position direction
+                position_pnl = self.current_position * tick_movement * self.value_per_tick
 
-                # Scale to meaningful range
-                reward = directional_reward
+                # Scale to reasonable reward range (divide by 100 to make rewards in range -10 to +10)
+                reward = position_pnl / 100.0
 
-                # Add volatility bonus for significant moves
-                if abs(price_change_pct) > 0.001:  # 0.1% move
-                    volatility_bonus = abs(price_change_pct) * 50.0
-                    reward += volatility_bonus if directional_reward > 0 else -volatility_bonus * 0.5
-
-        # Small penalty for inaction when opportunities exist
-        if self.current_position == 0:
-            # Calculate recent price movement to detect trading opportunities
+                # Add small momentum bonus for favorable moves
+                if (self.current_position > 0 and price_diff > 0) or (self.current_position < 0 and price_diff < 0):
+                    momentum_bonus = abs(tick_movement) * 0.1
+                    reward += momentum_bonus
+        else:
+            # No position rewards/penalties
             if hasattr(self, 'last_price') and self.last_price is not None:
-                price_movement = abs(current_price - self.last_price) / self.last_price
-                if price_movement > 0.002:  # 0.2% movement without position
-                    reward -= 0.5  # Small opportunity cost
+                # Small penalty for missing opportunities
+                price_change = abs(current_price - self.last_price) / self.last_price
+                if price_change > 0.005:  # 0.5% move without position
+                    reward = -1.0  # Missed opportunity penalty
 
-        # Position holding cost (encourage position management)
+            # Small exploration bonus to encourage taking positions
+            reward += 0.1
+
+        # Small holding cost to encourage active trading
         if self.current_position != 0:
-            holding_cost = abs(self.current_position) * 0.1
-            reward -= holding_cost
+            holding_penalty = abs(self.current_position) * 0.05
+            reward -= holding_penalty
 
         # Update last price for next calculation
         self.last_price = current_price
 
-        # Ensure reward is meaningful and finite
+        # Ensure reward is finite and in reasonable range
         if not np.isfinite(reward):
             reward = 0.0
 
-        # Clamp to reasonable range but allow meaningful values
-        reward = np.clip(reward, -50.0, 50.0)
+        # Clamp to meaningful range
+        reward = np.clip(reward, -10.0, 10.0)
 
         return reward
 
@@ -1029,7 +1034,7 @@ class FuturesEnv(gym.Env):
             if action == 1:  # buy/long
                 if self.current_position <= 0:
                     self._execute_trade(1)
-            elif action == 2:  # sell/short  
+            elif action == 2:  # sell/short
                 if self.current_position >= 0:
                     self._execute_trade(-1)
             # action == 0 (hold) requires no processing
@@ -1183,7 +1188,7 @@ class FuturesEnv(gym.Env):
             if action == 1:  # buy/long
                 if self.current_position <= 0:
                     self._execute_trade(1)
-            elif action == 2:  # sell/short  
+            elif action == 2:  # sell/short
                 if self.current_position >= 0:
                     self._execute_trade(-1)
             # action == 0 (hold) requires no processing
