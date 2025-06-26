@@ -539,6 +539,7 @@ def main():
         # Non-rank 0 processes just wait with regular heartbeat
         import time
         heartbeat_count = 0
+        timeout_occurred = False
         while True:
             try:
                 # Send heartbeat every 5 minutes to prevent timeout
@@ -554,7 +555,9 @@ def main():
                     
                 # Safety timeout - exit after 4 hours
                 if heartbeat_count > 2880:  # 4 hours
-                    logging.warning(f"Rank {local_rank} timeout - exiting after 4 hours")
+                    logging.warning(
+                        f"Rank {local_rank} timeout - exiting after 4 hours")
+                    timeout_occurred = True
                     break
                     
             except KeyboardInterrupt:
@@ -565,10 +568,14 @@ def main():
                 break
     
     if world_size > 1:
-        if torch.cuda.is_available():
-            dist.barrier(device_ids=[local_rank])
+        if not timeout_occurred:
+            if torch.cuda.is_available():
+                dist.barrier(device_ids=[local_rank])
+            else:
+                dist.barrier()
         else:
-            dist.barrier()
+            logging.warning(
+                f"Rank {local_rank} exiting without barrier due to timeout")
 
     if world_size > 1:
         dist.destroy_process_group()
