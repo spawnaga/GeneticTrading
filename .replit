@@ -37,3 +37,19 @@ args = "torchrun --nproc_per_node=4 --nnodes=1 --node_rank=0 --master_addr=127.0
 [[ports]]
 localPort = 12355
 externalPort = 80
+
+[[ports]]
+localPort = 33901
+externalPort = 3001
+
+[[ports]]
+localPort = 34103
+externalPort = 3000
+
+[[ports]]
+localPort = 35367
+externalPort = 3003
+
+[[ports]]
+localPort = 41059
+externalPort = 3002
