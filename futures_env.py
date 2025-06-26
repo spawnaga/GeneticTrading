@@ -552,26 +552,25 @@ class FuturesEnv(gym.Env):
         # Calculate realistic position-based reward
         if self.current_position != 0 and self.entry_price is not None:
             if np.isfinite(self.entry_price) and self.entry_price > 0:
-                # Calculate actual P&L in dollars
+                # Calculate actual P&L in ticks (more stable)
                 price_diff = current_price - self.entry_price
                 tick_movement = price_diff / self.tick_size
-                position_pnl = self.current_position * tick_movement * self.value_per_tick
-
-                # Convert to realistic reward scale (normalize by typical trade size)
-                # For NQ futures: $12.50 per tick, so $125 per 10 ticks is reasonable
-                reward = np.tanh(position_pnl / 1000.0)  # Scale and bound between -1 and 1
-
-                # Small bonus for profitable positions
-                if position_pnl > 0:
-                    reward += 0.1
-                elif position_pnl < -500:  # Penalty for large losses
-                    reward -= 0.2
+                
+                # Reward based on tick movement, not dollar P&L
+                # This prevents extremely large rewards/penalties
+                if self.current_position > 0:  # Long position
+                    reward = np.tanh(tick_movement / 10.0)  # Normalize by 10 ticks
+                else:  # Short position
+                    reward = np.tanh(-tick_movement / 10.0)  # Invert for short
+                
+                # Small bonus/penalty for direction
+                if tick_movement * self.current_position > 0:  # Profitable direction
+                    reward += 0.01
+                elif abs(tick_movement) > 20:  # Large adverse move (20+ ticks)
+                    reward -= 0.05
         else:
-            # Small penalty for being flat during market moves
-            if hasattr(self, 'last_price') and self.last_price is not None:
-                price_change = abs(current_price - self.last_price)
-                if price_change > self.tick_size * 2:  # 2+ tick move
-                    reward = -0.05  # Small opportunity cost
+            # Very small penalty for being flat (encourage action)
+            reward = -0.001
 
         # Update tracking
         self.last_price = current_price
@@ -580,8 +579,8 @@ class FuturesEnv(gym.Env):
         if not np.isfinite(reward):
             reward = 0.0
 
-        # Final bounds check
-        reward = np.clip(reward, -1.0, 1.0)
+        # Tight bounds to prevent extreme values
+        reward = np.clip(reward, -2.0, 2.0)
 
         return reward
 
@@ -770,12 +769,18 @@ class FuturesEnv(gym.Env):
                 tick_movement = price_diff / self.tick_size
                 position_pnl = self.current_position * tick_movement * self.value_per_tick
 
+                # Cap P&L to prevent extreme values
+                position_pnl = np.clip(position_pnl, -10000, 10000)  # Max $10k per trade
+
                 # Deduct exit cost
                 net_pnl = position_pnl - trade_cost
 
                 # Validate PnL calculation
                 if np.isfinite(net_pnl):
                     self.balance += net_pnl
+
+                    # Prevent balance from going too negative (margin call simulation)
+                    self.balance = max(self.balance, -50000)  # Max $50k drawdown
 
                     # Ensure balance remains finite
                     if not np.isfinite(self.balance):
@@ -787,6 +792,8 @@ class FuturesEnv(gym.Env):
             # Record completed trade with realistic values
             if hasattr(self, 'entry_time') and self.entry_time:
                 trade_pnl = position_pnl - trade_cost if 'position_pnl' in locals() else -trade_cost
+                # Cap trade P&L for recording
+                trade_pnl = np.clip(trade_pnl, -10000, 10000)
                 self.trades.append([
                     str(uuid4()),  # trade_id
                     "long" if self.current_position > 0 else "short",  # trade_type
@@ -809,11 +816,16 @@ class FuturesEnv(gym.Env):
                 tick_movement = price_diff / self.tick_size
                 position_pnl = self.current_position * tick_movement * self.value_per_tick
 
+                # Cap P&L to prevent extreme values
+                position_pnl = np.clip(position_pnl, -10000, 10000)
+
                 # Deduct costs for closing old position
                 net_pnl = position_pnl - trade_cost
 
                 if np.isfinite(net_pnl):
                     self.balance += net_pnl
+                    # Prevent balance from going too negative
+                    self.balance = max(self.balance, -50000)
 
             # Open new position
             self.entry_price = fill_price
