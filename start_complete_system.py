@@ -62,12 +62,17 @@ class SystemManager:
         logger.info("🧠 Starting training process...")
         
         cmd = [
-            sys.executable, "main.py",
+            "torchrun", "--nproc_per_node=4", "--nnodes=1", 
+            "--node_rank=0", "--master_addr=127.0.0.1", "--master_port=12355",
+            "main.py",
             "--data-folder", "./data_txt",
-            "--max-rows", "50000",
-            "--adaptive-iterations", "10",
+            "--max-rows", "0",  # Use all data
+            "--data-percentage", "1.0",  # 100% of data
+            "--adaptive-iterations", "20",
             "--log-level", "INFO",
-            "--training-mode", "adaptive"
+            "--training-mode", "adaptive",
+            "--max-train-per-rank", "5000000",  # Allow up to 5M rows per GPU
+            "--max-test-per-rank", "1000000"   # Allow up to 1M test rows per GPU
         ]
         
         try:
