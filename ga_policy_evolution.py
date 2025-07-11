@@ -169,26 +169,39 @@ def evaluate_fitness(param_vector, env, device="cpu", metric="comprehensive", ma
         profitable_trades = sum(1 for p in trade_profits if p > 0)
 
     # Calculate profit metrics with robust trade structure handling
+    win_rate = 0
+    profit_factor = 0
+    
     if hasattr(env, 'trades') and env.trades:
         try:
-            # Try different possible indices for profit in trade structure
-            if len(env.trades[0]) > 4:
-                trade_profits = [trade[4] for trade in env.trades]  # 5th element
-            elif len(env.trades[0]) > 3:
-                trade_profits = [trade[3] for trade in env.trades]  # 4th element
-            else:
-                # Fallback: assume last element is profit
-                trade_profits = [trade[-1] for trade in env.trades]
+            trade_profits = []
+            for trade in env.trades:
+                # Handle different trade structure types
+                if isinstance(trade, (list, tuple)):
+                    if len(trade) > 4:
+                        trade_profits.append(trade[4])  # 5th element
+                    elif len(trade) > 3:
+                        trade_profits.append(trade[3])  # 4th element
+                    elif len(trade) > 0:
+                        trade_profits.append(trade[-1])  # Last element
+                elif isinstance(trade, dict):
+                    # Handle dictionary-based trade structure
+                    profit = trade.get('profit', trade.get('pnl', trade.get('return', 0)))
+                    trade_profits.append(profit)
+                else:
+                    # Single value trade
+                    trade_profits.append(float(trade) if trade is not None else 0)
 
-            win_rate = sum(1 for p in trade_profits if p > 0) / len(trade_profits) if trade_profits else 0
-            profit_factor = sum(p for p in trade_profits if p > 0) / abs(sum(p for p in trade_profits if p < 0)) if any(p < 0 for p in trade_profits) else float('inf')
-        except (IndexError, KeyError) as e:
-            ga_logger.warning(f"Trade structure issue: {e}, using fallback metrics")
+            if trade_profits:
+                win_rate = sum(1 for p in trade_profits if p > 0) / len(trade_profits)
+                positive_profits = sum(p for p in trade_profits if p > 0)
+                negative_profits = abs(sum(p for p in trade_profits if p < 0))
+                profit_factor = positive_profits / negative_profits if negative_profits > 0 else float('inf')
+                
+        except Exception as e:
+            ga_logger.warning(f"Trade structure processing error: {e}, using default metrics")
             win_rate = 0
             profit_factor = 0
-    else:
-        win_rate = 0
-        profit_factor = 0
 
     #```python
     # Simple, stable fitness
