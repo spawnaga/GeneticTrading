@@ -701,6 +701,9 @@ class FuturesEnv(gym.Env):
         """Log trading activity to structured table format."""
         try:
             from datetime import datetime
+            import fcntl
+            import tempfile
+            import os
 
             # Create structured log entry
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -737,26 +740,57 @@ class FuturesEnv(gym.Env):
             table_file = Path(self.log_dir) / "trading_table.json"
             table_file.parent.mkdir(parents=True, exist_ok=True)
 
-            try:
-                if table_file.exists():
-                    with open(table_file, 'r') as f:
-                        trading_table = json.load(f)
-                else:
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    # Try to read existing data
                     trading_table = []
+                    if table_file.exists():
+                        try:
+                            with open(table_file, 'r') as f:
+                                # Try to acquire file lock
+                                try:
+                                    fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
+                                except:
+                                    # If can't lock, skip this logging attempt
+                                    return
+                                
+                                content = f.read().strip()
+                                if content:  # Only parse if file has content
+                                    trading_table = json.loads(content)
+                        except (json.JSONDecodeError, ValueError) as e:
+                            # If JSON is corrupted, start fresh
+                            logger.warning(f"Corrupted trading table, starting fresh: {e}")
+                            trading_table = []
 
-                # Add new entry
-                trading_table.append(table_entry)
+                    # Add new entry
+                    trading_table.append(table_entry)
 
-                # Keep only last 10000 entries to prevent huge files
-                if len(trading_table) > 10000:
-                    trading_table = trading_table[-10000:]
+                    # Keep only last 5000 entries to prevent huge files
+                    if len(trading_table) > 5000:
+                        trading_table = trading_table[-5000:]
 
-                # Save back to file
-                with open(table_file, 'w') as f:
-                    json.dump(trading_table, f, indent=2)
+                    # Write atomically using temporary file
+                    with tempfile.NamedTemporaryFile(mode='w', dir=table_file.parent, 
+                                                   prefix='.trading_table_tmp_', 
+                                                   suffix='.json', delete=False) as tmp_f:
+                        json.dump(trading_table, tmp_f, indent=2)
+                        tmp_f.flush()
+                        os.fsync(tmp_f.fileno())
+                        temp_path = tmp_f.name
 
-            except Exception as e:
-                logger.error(f"Failed to save trading table: {e}")
+                    # Atomic rename
+                    os.rename(temp_path, table_file)
+                    break  # Success, exit retry loop
+
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        logger.error(f"Failed to save trading table after {max_retries} attempts: {e}")
+                    else:
+                        # Brief delay before retry
+                        import time
+                        time.sleep(0.01)
 
         except Exception as e:
-            logger.error(f"Failed to log to trading table: {e}")
+            # Silent failure - don't spam logs
+            pass
