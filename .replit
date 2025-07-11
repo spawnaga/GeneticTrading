@@ -53,6 +53,10 @@ task = "shell.exec"
 args = "python main.py --data-folder ./data_txt --max-rows 50000 --adaptive-iterations 3 --log-level INFO --training-mode adaptive"
 
 [[ports]]
+localPort = 5000
+externalPort = 6800
+
+[[ports]]
 localPort = 12355
 externalPort = 80
 
