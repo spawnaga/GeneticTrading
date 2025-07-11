@@ -700,6 +700,8 @@ class FuturesEnv(gym.Env):
     def _log_to_trading_table(self, action, price, position, balance, reward, pnl):
         """Log trading activity to structured table format."""
         try:
+            from datetime import datetime
+            
             # Create structured log entry
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             action_name = {0: "HOLD", 1: "BUY", 2: "SELL"}.get(action, "UNKNOWN")
@@ -712,7 +714,11 @@ class FuturesEnv(gym.Env):
                         position_change = f"+{position - self._last_position}"
                     else:
                         position_change = f"{position - self._last_position}"
-            self._last_position = position
+            else:
+                self._last_position = 0
+                
+            if not hasattr(self, '_last_position') or position != self._last_position:
+                self._last_position = position
 
             # Create table entry
             table_entry = {
@@ -721,23 +727,25 @@ class FuturesEnv(gym.Env):
                 "action": action_name,
                 "price": f"${price:.2f}",
                 "position": position,
-                "pos_change": position_change,
+                "pos_change": position_change if position_change else "0",
                 "balance": f"${balance:,.2f}",
-                "pnl": f"${pnl:+.2f}" if pnl != 0 else "-",
+                "pnl": f"${pnl:+.2f}" if abs(pnl) > 0.01 else "-",
                 "reward": f"{reward:.4f}",
                 "status": "PROFIT" if pnl > 0 else "LOSS" if pnl < 0 else "NEUTRAL"
             }
 
             # Save to trading table file
             table_file = Path("./logs/trading_table.json")
-            table_file.parent.mkdir(exist_ok=True)
+            table_file.parent.mkdir(parents=True, exist_ok=True)
 
             # Load existing data
+            existing_data = []
             if table_file.exists():
-                with open(table_file, 'r') as f:
-                    existing_data = json.load(f)
-            else:
-                existing_data = []
+                try:
+                    with open(table_file, 'r') as f:
+                        existing_data = json.load(f)
+                except (json.JSONDecodeError, FileNotFoundError):
+                    existing_data = []
 
             # Add new entry
             existing_data.append(table_entry)
@@ -746,9 +754,19 @@ class FuturesEnv(gym.Env):
             if len(existing_data) > 1000:
                 existing_data = existing_data[-1000:]
 
-            # Save updated data
-            with open(table_file, 'w') as f:
-                json.dump(existing_data, f, indent=2)
+            # Save updated data with error handling
+            try:
+                with open(table_file, 'w') as f:
+                    json.dump(existing_data, f, indent=2)
+                
+                # Log success occasionally
+                if self.current_index % 100 == 0:
+                    logger.info(f"✅ Trading table updated: {len(existing_data)} entries")
+                    
+            except Exception as save_error:
+                logger.error(f"Failed to save trading table: {save_error}")
 
         except Exception as e:
-            logger.debug(f"Error logging to trading table: {e}")
+            logger.error(f"Error in trading table logging: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
