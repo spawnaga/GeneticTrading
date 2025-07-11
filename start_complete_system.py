@@ -62,7 +62,7 @@ class SystemManager:
 
         cmd = [
             "torchrun", "--nproc_per_node=4", "--nnodes=1", 
-            "--node_rank=0", "--master_addr=127.0.0.1", "--master_port=12355",
+            "--node_rank=0", "--master_addr=127.0.0.1", "--master_port=12356",
             "main.py",
             "--data-folder", "./data_txt",
             "--max-rows", "0",  # Use all data
@@ -264,4 +264,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-```
