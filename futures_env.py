@@ -22,6 +22,13 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from utils import round_to_nearest_increment, monotonicity
 
+# Import trading monitor
+try:
+    from trading_activity_monitor import log_trading_action, log_position_change
+    MONITOR_AVAILABLE = True
+except ImportError:
+    MONITOR_AVAILABLE = False
+
 logger = logging.getLogger("FUTURES_ENV")
 
 
@@ -269,8 +276,30 @@ class FuturesEnv(gym.Env):
         reward = 0.0
         info = {"message": "hold"}
 
+        # Log the action being taken
+        action_names = {0: "HOLD", 1: "BUY", 2: "SELL"}
+        current_action = action_names.get(action, f"UNKNOWN({action})")
+        
+        # Log to trading monitor
+        if MONITOR_AVAILABLE:
+            log_trading_action(
+                self.current_index, action, current_state.close_price, 
+                self.current_position, self.account_balance
+            )
+        
+        # Log current state before action
+        logger.info(f"📊 Step {self.current_index} | Action: {current_action} | "
+                   f"Price: ${current_state.close_price:.2f} | "
+                   f"Position: {self.current_position} | "
+                   f"Account: ${self.account_balance:,.2f}")
+
         if action != 0:  # Not hold
             reward, info = self._execute_trade(action, current_state)
+            
+            # Log trade execution result
+            logger.info(f"🔄 Trade Result: {info.get('message', 'Unknown')} | "
+                       f"Reward: {reward:.4f} | "
+                       f"New Position: {self.current_position}")
 
         # Update position valuation
         self._update_position_value(current_state.close_price)
@@ -287,6 +316,15 @@ class FuturesEnv(gym.Env):
         # Update performance tracking and metrics
         self._update_performance_tracking()
         self._update_realtime_metrics()
+        
+        # Log account status every 100 steps
+        if self.current_index % 100 == 0:
+            total_equity = self.account_balance + self.unrealized_pnl
+            logger.info(f"💰 ACCOUNT STATUS | Step: {self.current_index} | "
+                       f"Balance: ${self.account_balance:,.2f} | "
+                       f"Unrealized P&L: ${self.unrealized_pnl:,.2f} | "
+                       f"Total Equity: ${total_equity:,.2f} | "
+                       f"Total Trades: {len(self.trades)}")
 
         return self._get_observation(), step_reward, self.done, False, self._get_info()
 
@@ -321,24 +359,35 @@ class FuturesEnv(gym.Env):
         # Execute the trade
         reward = 0.0
         info = {}
+        
+        # Determine position type for logging
+        position_type = "LONG" if actual_trade_size > 0 else "SHORT"
 
         if self.current_position == 0:
             # Opening new position
             self.position_entry_price = execution_price
             self.position_entry_time = state.ts
-            info = {"message": f"opened position: {actual_trade_size} contracts at {execution_price:.2f}"}
+            info = {"message": f"OPENED {position_type}: {abs(actual_trade_size)} contracts at ${execution_price:.2f}"}
+            logger.info(f"🟢 NEW POSITION | {position_type} {abs(actual_trade_size)} contracts | "
+                       f"Entry: ${execution_price:.2f} | Time: {state.ts}")
 
         elif new_position == 0:
             # Closing position
             reward = self._close_position(execution_price, state.ts)
-            info = {"message": f"closed position: pnl={reward:.2f}"}
+            prev_type = "LONG" if self.current_position > 0 else "SHORT"
+            info = {"message": f"CLOSED {prev_type}: P&L=${reward:.2f}"}
+            logger.info(f"🔴 CLOSED POSITION | {prev_type} | "
+                       f"Exit: ${execution_price:.2f} | P&L: ${reward:.2f}")
 
         elif np.sign(new_position) != np.sign(self.current_position):
             # Reversing position
+            prev_type = "LONG" if self.current_position > 0 else "SHORT"
             reward = self._close_position(execution_price, state.ts)
             self.position_entry_price = execution_price
             self.position_entry_time = state.ts
-            info = {"message": f"reversed position: pnl={reward:.2f}"}
+            info = {"message": f"REVERSED {prev_type}→{position_type}: P&L=${reward:.2f}"}
+            logger.info(f"🔄 REVERSED POSITION | {prev_type} → {position_type} | "
+                       f"P&L: ${reward:.2f} | New Entry: ${execution_price:.2f}")
 
         else:
             # Adding to existing position
@@ -350,9 +399,17 @@ class FuturesEnv(gym.Env):
                 (self.position_entry_price * existing_size + execution_price * new_size) / 
                 total_size
             )
-            info = {"message": f"added to position: {actual_trade_size} contracts"}
+            current_type = "LONG" if new_position > 0 else "SHORT"
+            info = {"message": f"ADDED TO {current_type}: +{abs(actual_trade_size)} contracts"}
+            logger.info(f"🔵 ADDED TO POSITION | {current_type} +{abs(actual_trade_size)} | "
+                       f"Total: {abs(new_position)} contracts | Avg Entry: ${self.position_entry_price:.2f}")
 
+        # Log position change
+        if MONITOR_AVAILABLE:
+            log_position_change(self.current_position, new_position, reward)
+            
         # Update position
+        old_position = self.current_position
         self.current_position = new_position
 
         # Deduct commission
