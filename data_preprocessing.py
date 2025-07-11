@@ -66,6 +66,8 @@ except (ImportError, AttributeError, RuntimeError) as e:
     HAS_CUML = False
 
 from utils import hash_files
+from pathlib import Path
+from typing import Tuple
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Logger setup (moved to top of file)
@@ -996,3 +998,109 @@ def feature_engineering(df, has_cudf):
 
     logging.info("NaN cleaning completed")
     return df
+
+def generate_sample_data(num_rows: int = 10000) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Generate sample OHLCV data for testing.
+
+    Args:
+        num_rows: Number of rows to generate.
+
+    Returns:
+        Tuple of (train_data, test_data)
+    """
+    logger.info("Generating sample data...")
+    date_rng = pd.date_range(start='2023-01-01', end='2023-12-31', freq='15Min')
+    data = {
+        'date_time': date_rng[:num_rows],
+        'Open': np.random.rand(num_rows) * 100,
+        'High': np.random.rand(num_rows) * 100 + 1,
+        'Low': np.random.rand(num_rows) * 100 - 1,
+        'Close': np.random.rand(num_rows) * 100,
+        'Volume': np.random.randint(100, 1000, num_rows)
+    }
+    df = pd.DataFrame(data)
+    train_size = int(len(df) * 0.8)
+    train_data = df[:train_size]
+    test_data = df[train_size:]
+    logger.info("Sample data generated.")
+    return train_data, test_data
+
+def load_and_preprocess_data(data_folder: str = "./data", max_rows: int = 0, data_percentage: float = 1.0) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Load and preprocess trading data with multiple format support.
+
+    Args:
+        data_folder: Path to data directory
+        max_rows: Maximum number of rows to load (0 = all)
+        data_percentage: Percentage of data to use (0.0-1.0)
+
+    Returns:
+        Tuple of (train_data, test_data)
+    """
+    logger.info(f"🔸 Loading data from: {data_folder}")
+
+    # Create data folder if it doesn't exist
+    Path(data_folder).mkdir(parents=True, exist_ok=True)
+
+    # Look for data files - check for NQ.txt first
+    nq_file = Path("NQ.txt")
+    formatted_nq = Path(data_folder) / "NQ_formatted.csv"
+
+    if nq_file.exists():
+        logger.info("Found NQ.txt file - processing...")
+        try:
+            # Read NQ.txt with proper format
+            df = pd.read_csv(nq_file, header=None, names=['datetime', 'open', 'high', 'low', 'close', 'volume'])
+            df['datetime'] = pd.to_datetime(df['datetime'])
+            df.columns = ['date_time', 'Open', 'High', 'Low', 'Close', 'Volume']
+
+            # Convert to numeric
+            for col in ['Open', 'High', 'Low', 'Close', 'Volume']:
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+
+            df = df.dropna().sort_values('date_time').reset_index(drop=True)
+            logger.info(f"Successfully loaded {len(df)} rows from NQ.txt")
+
+        except Exception as e:
+            logger.error(f"Error loading NQ.txt: {e}")
+            logger.warning("Generating sample data instead...")
+            return generate_sample_data(max_rows if max_rows > 0 else 10000)
+
+    elif formatted_nq.exists():
+        logger.info("Found formatted NQ data...")
+        if HAS_CUDF:
+            df = cudf.read_csv(formatted_nq)
+        else:
+            df = pd.read_csv(formatted_nq)
+    else:
+        # Look for other data files
+        data_files = []
+        for ext in ['*.csv', '*.txt', '*.parquet']:
+            data_files.extend(Path(data_folder).glob(ext))
+
+        if not data_files:
+            logger.warning("No data files found! Generating sample data...")
+            return generate_sample_data(max_rows if max_rows > 0 else 10000)
+
+        # Load the first available file
+        file_path = data_files[0]
+        logger.info(f"Loading data from: {file_path}")
+
+        try:
+            if file_path.suffix.lower() == '.parquet':
+                if HAS_CUDF:
+                    df = cudf.read_parquet(file_path)
+                else:
+                    df = pd.read_parquet(file_path)
+            else:
+                # CSV or TXT file
+                if HAS_CUDF:
+                    df = cudf.read_csv(file_path)
+                else:
+                    df = pd.read_csv(file_path)
+
+        except Exception as e:
+            logger.error(f"Error loading {file_path}: {e}")
+            logger.warning("Generating sample data instead...")
+            return generate_sample_data(max_rows if max_rows > 0 else 10000)
