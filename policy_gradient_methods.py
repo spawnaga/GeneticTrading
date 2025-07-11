@@ -348,8 +348,12 @@ class PPOTrainer:
             if not np.isfinite(reward):
                 reward = 0.0
             
-            # Clip extreme rewards to prevent training instability
-            reward = np.clip(reward, -10.0, 10.0)
+            # Don't clip rewards so aggressively - allow meaningful signals
+            reward = np.clip(reward, -100.0, 100.0)
+            
+            # Add small exploration bonus if reward is exactly 0
+            if reward == 0.0 and np.random.random() < 0.1:
+                reward = np.random.normal(0, 0.01)  # Small random reward for exploration
             
             rew_buf.append(float(reward))
             done_buf.append(done)
@@ -408,9 +412,15 @@ class PPOTrainer:
           adv_t: torch.Tensor [T] on self.device
           ret_t: torch.Tensor [T] on self.device
         """
-        # Ensure inputs are finite and scale rewards to reasonable range
-        rewards = np.nan_to_num(rewards, nan=0.0, posinf=1.0, neginf=-1.0)
-        rewards = np.clip(rewards, -10.0, 10.0)  # Clip rewards to prevent explosion
+        # Ensure inputs are finite but preserve reward magnitude
+        rewards = np.nan_to_num(rewards, nan=0.0, posinf=10.0, neginf=-10.0)
+        
+        # Only clip extreme outliers, preserve meaningful reward signals
+        rewards = np.clip(rewards, -1000.0, 1000.0)
+        
+        # Log reward statistics for debugging
+        if len(rewards) > 0:
+            logger.info(f"Reward stats: mean={np.mean(rewards):.4f}, std={np.std(rewards):.4f}, min={np.min(rewards):.4f}, max={np.max(rewards):.4f}")
 
         values = np.nan_to_num(values, nan=0.0, posinf=1.0, neginf=-1.0)
         values = np.clip(values, -100.0, 100.0)  # Allow larger range for values
@@ -555,8 +565,8 @@ class PPOTrainer:
                     with torch.no_grad():
                         old_vals = torch.tensor(vals, dtype=torch.float32, device=self.device)[idx]
 
-                    # Use raw returns but scale them appropriately
-                    returns_scaled = b_ret * 0.1  # Scale down returns to reasonable range
+                    # Use returns with minimal scaling to preserve signal
+                    returns_scaled = b_ret * 1.0  # Keep original scale
 
                     # Clamp predictions to reasonable range
                     value_pred = torch.clamp(value_pred, -5.0, 5.0)
@@ -572,8 +582,8 @@ class PPOTrainer:
                     value_loss2 = F.mse_loss(v_clipped, returns_scaled)
                     value_loss = torch.max(value_loss1, value_loss2)
 
-                    # Scale value loss to be comparable to policy loss (much smaller coefficient)
-                    value_loss = value_loss * 0.01
+                    # Use reasonable value loss coefficient
+                    value_loss = value_loss * 0.5
 
                     loss = policy_loss + value_loss - self.entropy_coef * entropy
 
