@@ -34,6 +34,15 @@ mode = "sequential"
 task = "shell.exec"
 args = "torchrun --nproc_per_node=4 --nnodes=1 --node_rank=0 --master_addr=127.0.0.1 --master_port=12355 main.py --data-percentage 1.0 --max-rows 0 --adaptive-iterations 20 --log-level INFO"
 
+[[workflows.workflow]]
+name = "Run Enhanced Hybrid System"
+author = 33211024
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python run_hybrid_system.py --max-iterations 20 --enable-visualization --max-rows 10000"
+
 [[ports]]
 localPort = 12355
 externalPort = 80
