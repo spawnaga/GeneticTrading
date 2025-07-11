@@ -1,53 +1,47 @@
 
 #!/usr/bin/env python
 """
-Run Complete Dashboard System
-============================
+Run Trading Dashboard
+====================
 
-Simple script to start the comprehensive trading dashboard
-with proper data formatting and TensorBoard integration.
+Starts the web dashboard at http://0.0.0.0:5000
+All trading logs will be displayed in the web interface only.
 """
 
 import os
 import sys
-import logging
+import subprocess
+import signal
+import time
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-def main():
-    """Run the complete dashboard system."""
-    logger.info("🚀 Starting Revolutionary NQ Futures Trading Dashboard")
+def start_dashboard():
+    """Start the dashboard server"""
+    print("🚀 Starting Trading Dashboard...")
+    print("📊 Dashboard will be available at: http://0.0.0.0:5000")
+    print("🔕 All trading output will be shown in the web interface only")
+    print("\n" + "="*60)
     
-    # Step 1: Fix data formatting
-    logger.info("📊 Step 1: Checking and fixing data format...")
     try:
-        import fix_nq_format
-        fix_nq_format.fix_nq_data_format()
-        logger.info("✅ Data formatting complete")
-    except Exception as e:
-        logger.warning(f"Data formatting had issues: {e}")
-        logger.info("Creating sample data...")
-        fix_nq_format.create_sample_nq_data()
-    
-    # Step 2: Start the comprehensive dashboard
-    logger.info("🌐 Step 2: Starting comprehensive dashboard...")
-    try:
-        from start_dashboard import main as start_main
-        start_main()
-    except KeyboardInterrupt:
-        logger.info("Dashboard stopped by user")
-    except Exception as e:
-        logger.error(f"Dashboard error: {e}")
+        # Start the dashboard server
+        process = subprocess.Popen([sys.executable, "dashboard_server.py"])
         
-        # Fallback: start simple dashboard
-        logger.info("🔄 Starting fallback dashboard...")
-        from standalone_dashboard import main as dashboard_main
-        dashboard_main()
+        # Wait a moment for server to start
+        time.sleep(3)
+        
+        print("✅ Dashboard server is running!")
+        print("🌐 Open http://0.0.0.0:5000 in your browser")
+        print("📈 Trading logs will appear in the web dashboard")
+        print("\nPress Ctrl+C to stop the dashboard")
+        
+        # Keep running
+        process.wait()
+        
+    except KeyboardInterrupt:
+        print("\n🛑 Stopping dashboard server...")
+        process.terminate()
+        print("✅ Dashboard stopped")
+    except Exception as e:
+        print(f"❌ Error starting dashboard: {e}")
 
 if __name__ == "__main__":
-    main()
+    start_dashboard()
