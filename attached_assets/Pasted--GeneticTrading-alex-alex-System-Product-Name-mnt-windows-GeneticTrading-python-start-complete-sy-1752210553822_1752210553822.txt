@@ -1,0 +1,269 @@
+(GeneticTrading) alex@alex-System-Product-Name:/mnt/windows/GeneticTrading$ python start_complete_system.py
+INFO:__main__:🚀 Starting Complete NQ Trading System
+INFO:__main__:============================================================
+INFO:__main__:🚀 Starting TensorBoard...
+INFO:__main__:✅ TensorBoard started on http://0.0.0.0:6006
+INFO:__main__:⏳ Waiting for TensorBoard... (1/30)
+INFO:__main__:✅ TensorBoard is ready!
+INFO:__main__:🧠 Starting training process...
+INFO:__main__:✅ Training started
+INFO:__main__:⏳ Waiting for training to initialize...
+[TRAINING] W0710 22:04:17.855000 28319 site-packages/torch/distributed/run.py:766]
+[TRAINING] W0710 22:04:17.855000 28319 site-packages/torch/distributed/run.py:766] *****************************************
+[TRAINING] W0710 22:04:17.855000 28319 site-packages/torch/distributed/run.py:766] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed.
+[TRAINING] W0710 22:04:17.855000 28319 site-packages/torch/distributed/run.py:766] *****************************************
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 22:04:20.090342
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 💻 Process rank: 0
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_0.log
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 MAIN           : 🚀 Revolutionary Trading System Started
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 MAIN           : NCCL_TIMEOUT = 1800000 ms
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 MAIN           : Using 100.0% of available data
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 MAIN           : Models directory: ./models
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 MAIN           : Training mode: adaptive
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 MAIN           : Device configuration: cuda:0
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 MAIN           : World size: 4, Local rank: 0
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Rank 0/4 starting on cuda:0 (has_cudf=True)
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Data loading parameters: max_rows=None, data_percentage=1.0
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : No row limit specified, using 1M row chunks for memory efficiency
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Parquet cache found; skipping preprocessing.
+[TRAINING] alex-System-Product-Name:28353:28353 [0] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:28353:28353 [0] NCCL INFO cudaDriverVersion 12020
+[TRAINING] alex-System-Product-Name:28353:28353 [0] NCCL INFO NCCL version 2.26.2+cuda12.2
+[TRAINING] alex-System-Product-Name:28353:28353 [0] NCCL INFO Comm config Blocking set to 1
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO NET/IB : No device found.
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so.
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO Using network Socket
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO ncclCommInitRankConfig comm 0x6329636d67d0 rank 0 nranks 4 cudaDev 0 nvmlDev 0 busId 1000 commId 0x5a414978268db56c - Init START
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 22:04:20.243788
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 💻 Process rank: 1
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_1.log
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Rank 1/4 starting on cuda:1 (has_cudf=True)
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Data loading parameters: max_rows=None, data_percentage=1.0
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : No row limit specified, using 1M row chunks for memory efficiency
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 22:04:20.244531
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 💻 Process rank: 3
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_3.log
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Rank 3/4 starting on cuda:3 (has_cudf=True)
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Data loading parameters: max_rows=None, data_percentage=1.0
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : No row limit specified, using 1M row chunks for memory efficiency
+[TRAINING] alex-System-Product-Name:28354:28354 [1] NCCL INFO cudaDriverVersion 12020
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+[TRAINING] alex-System-Product-Name:28356:28356 [3] NCCL INFO cudaDriverVersion 12020
+[TRAINING] alex-System-Product-Name:28354:28354 [1] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:28354:28354 [1] NCCL INFO NCCL version 2.26.2+cuda12.2
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 22:04:20.250158
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 💻 Process rank: 2
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_2.log
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Rank 2/4 starting on cuda:2 (has_cudf=True)
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Data loading parameters: max_rows=None, data_percentage=1.0
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : No row limit specified, using 1M row chunks for memory efficiency
+[TRAINING] alex-System-Product-Name:28356:28356 [3] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:28356:28356 [3] NCCL INFO NCCL version 2.26.2+cuda12.2
+[TRAINING] alex-System-Product-Name:28354:28354 [1] NCCL INFO Comm config Blocking set to 1
+[TRAINING] alex-System-Product-Name:28356:28356 [3] NCCL INFO Comm config Blocking set to 1
+[TRAINING] alex-System-Product-Name:28355:28355 [2] NCCL INFO cudaDriverVersion 12020
+[TRAINING] alex-System-Product-Name:28355:28355 [2] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:28355:28355 [2] NCCL INFO NCCL version 2.26.2+cuda12.2
+[TRAINING] alex-System-Product-Name:28355:28355 [2] NCCL INFO Comm config Blocking set to 1
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO NET/IB : No device found.
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so.
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO Using network Socket
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO ncclCommInitRankConfig comm 0x55e74690efe0 rank 1 nranks 4 cudaDev 1 nvmlDev 1 busId 5000 commId 0x5a414978268db56c - Init START
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO NET/IB : No device found.
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so.
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO Using network Socket
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO ncclCommInitRankConfig comm 0x5d0413d26f00 rank 3 nranks 4 cudaDev 3 nvmlDev 3 busId 9000 commId 0x5a414978268db56c - Init START
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO NET/IB : No device found.
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so.
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO Using network Socket
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO ncclCommInitRankConfig comm 0x635b246730d0 rank 2 nranks 4 cudaDev 2 nvmlDev 2 busId 8000 commId 0x5a414978268db56c - Init START
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO Bootstrap timings total 0.000257 (create 0.000011, send 0.000055, recv 0.000062, ring 0.000025, delay 0.000000)
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO Bootstrap timings total 0.018114 (create 0.000008, send 0.000044, recv 0.000014, ring 0.000022, delay 0.000000)
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO Bootstrap timings total 0.019237 (create 0.000014, send 0.000067, recv 0.019014, ring 0.000032, delay 0.000000)
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO Bootstrap timings total 0.094377 (create 0.000015, send 0.000068, recv 0.075203, ring 0.012787, delay 0.000000)
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO NVLS multicast support is not available on dev 2
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO NVLS multicast support is not available on dev 1
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO NVLS multicast support is not available on dev 0
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO NVLS multicast support is not available on dev 3
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO comm 0x55e74690efe0 rank 1 nRanks 4 nNodes 1 localRanks 4 localRank 1 MNNVL 0
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO comm 0x635b246730d0 rank 2 nRanks 4 nNodes 1 localRanks 4 localRank 2 MNNVL 0
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO comm 0x6329636d67d0 rank 0 nRanks 4 nNodes 1 localRanks 4 localRank 0 MNNVL 0
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO Trees [0] 2/-1/-1->1->0 [1] 3/-1/-1->1->-1 [2] 2/-1/-1->1->0 [3] 3/-1/-1->1->-1
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO Trees [0] 3/-1/-1->2->1 [1] -1/-1/-1->2->0 [2] 3/-1/-1->2->1 [3] -1/-1/-1->2->0
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO comm 0x5d0413d26f00 rank 3 nRanks 4 nNodes 1 localRanks 4 localRank 3 MNNVL 0
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO P2P Chunksize set to 131072
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO P2P Chunksize set to 131072
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO Channel 00/04 : 0 2 3 1
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO Channel 01/04 : 0 1 3 2
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO Channel 02/04 : 0 2 3 1
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO Channel 03/04 : 0 1 3 2
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO Trees [0] 1/-1/-1->0->-1 [1] 2/-1/-1->0->3 [2] 1/-1/-1->0->-1 [3] 2/-1/-1->0->3
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO Trees [0] -1/-1/-1->3->2 [1] 0/-1/-1->3->1 [2] -1/-1/-1->3->2 [3] 0/-1/-1->3->1
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO P2P Chunksize set to 131072
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO P2P Chunksize set to 131072
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO Check P2P Type intraNodeP2pSupport 0 directMode 0
+[TRAINING] alex-System-Product-Name:28355:28425 [2] NCCL INFO [Proxy Service] Device 2 CPU core 2
+[TRAINING] alex-System-Product-Name:28356:28430 [3] NCCL INFO [Proxy Service UDS] Device 3 CPU core 20
+[TRAINING] alex-System-Product-Name:28356:28426 [3] NCCL INFO [Proxy Service] Device 3 CPU core 23
+[TRAINING] alex-System-Product-Name:28354:28423 [1] NCCL INFO [Proxy Service] Device 1 CPU core 26
+[TRAINING] alex-System-Product-Name:28353:28429 [0] NCCL INFO [Proxy Service UDS] Device 0 CPU core 25
+[TRAINING] alex-System-Product-Name:28354:28428 [1] NCCL INFO [Proxy Service UDS] Device 1 CPU core 21
+[TRAINING] alex-System-Product-Name:28355:28427 [2] NCCL INFO [Proxy Service UDS] Device 2 CPU core 28
+[TRAINING] alex-System-Product-Name:28353:28424 [0] NCCL INFO [Proxy Service] Device 0 CPU core 24
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO CC Off, workFifoBytes 1048576
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO ncclCommInitRankConfig comm 0x55e74690efe0 rank 1 nranks 4 cudaDev 1 nvmlDev 1 busId 5000 commId 0x5a414978268db56c - Init COMPLETE
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO ncclCommInitRankConfig comm 0x6329636d67d0 rank 0 nranks 4 cudaDev 0 nvmlDev 0 busId 1000 commId 0x5a414978268db56c - Init COMPLETE
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO ncclCommInitRankConfig comm 0x635b246730d0 rank 2 nranks 4 cudaDev 2 nvmlDev 2 busId 8000 commId 0x5a414978268db56c - Init COMPLETE
+[TRAINING] alex-System-Product-Name:28353:28405 [0] NCCL INFO Init timings - ncclCommInitRankConfig: rank 0 nranks 4 total 0.24 (kernels 0.12, alloc 0.00, bootstrap 0.09, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+[TRAINING] alex-System-Product-Name:28354:28416 [1] NCCL INFO Init timings - ncclCommInitRankConfig: rank 1 nranks 4 total 0.11 (kernels 0.07, alloc 0.00, bootstrap 0.02, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+[TRAINING] alex-System-Product-Name:28355:28418 [2] NCCL INFO Init timings - ncclCommInitRankConfig: rank 2 nranks 4 total 0.10 (kernels 0.08, alloc 0.00, bootstrap 0.00, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO ncclCommInitRankConfig comm 0x5d0413d26f00 rank 3 nranks 4 cudaDev 3 nvmlDev 3 busId 9000 commId 0x5a414978268db56c - Init COMPLETE
+[TRAINING] alex-System-Product-Name:28356:28417 [3] NCCL INFO Init timings - ncclCommInitRankConfig: rank 3 nranks 4 total 0.11 (kernels 0.07, alloc 0.00, bootstrap 0.02, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+[TRAINING] alex-System-Product-Name:28353:28431 [0] NCCL INFO Channel 01 : 0[0] -> 1[1] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:28355:28432 [2] NCCL INFO Channel 00 : 2[2] -> 3[3] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:28353:28431 [0] NCCL INFO Channel 03 : 0[0] -> 1[1] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:28355:28432 [2] NCCL INFO Channel 02 : 2[2] -> 3[3] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:28355:28432 [2] NCCL INFO Channel 01/0 : 2[2] -> 0[0] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:28354:28434 [1] NCCL INFO Channel 01/0 : 1[1] -> 3[3] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:28356:28433 [3] NCCL INFO Channel 00/0 : 3[3] -> 1[1] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:28353:28431 [0] NCCL INFO Channel 00/0 : 0[0] -> 2[2] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:28355:28432 [2] NCCL INFO Channel 03/0 : 2[2] -> 0[0] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:28354:28434 [1] NCCL INFO Channel 03/0 : 1[1] -> 3[3] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:28356:28433 [3] NCCL INFO Channel 02/0 : 3[3] -> 1[1] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:28353:28431 [0] NCCL INFO Channel 02/0 : 0[0] -> 2[2] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:28354:28434 [1] NCCL INFO Channel 00 : 1[1] -> 0[0] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:28356:28433 [3] NCCL INFO Channel 01 : 3[3] -> 2[2] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:28354:28434 [1] NCCL INFO Channel 02 : 1[1] -> 0[0] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:28356:28433 [3] NCCL INFO Channel 03 : 3[3] -> 2[2] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:28355:28432 [2] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+[TRAINING] alex-System-Product-Name:28354:28434 [1] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+[TRAINING] alex-System-Product-Name:28353:28431 [0] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+[TRAINING] alex-System-Product-Name:28356:28433 [3] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Using full dataset: 1077950 train rows, 269487 test rows per GPU
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Using full dataset: 1077950 train rows, 269487 test rows per GPU
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Using full dataset: 1077950 train rows, 269487 test rows per GPU
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 root           : Using full dataset: 1077950 train rows, 269487 test rows per GPU
+[TRAINING] 2025-07-10 22:04:20 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+INFO:__main__:📊 Starting dashboard...
+INFO:__main__:✅ Dashboard started on http://0.0.0.0:5000
+INFO:__main__:🎉 System startup complete!
+INFO:__main__:📊 Dashboard: http://0.0.0.0:5000
+INFO:__main__:📈 TensorBoard: http://0.0.0.0:6006
+INFO:__main__:🧠 Training: Active
+INFO:__main__:============================================================
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+[TRAINING] 2025-07-10 22:04:41 [INFO    ] 🔸 VISUALIZATION  : 🎨 Visualization system initialized on port 5000
+[TRAINING] 2025-07-10 22:04:41 [ERROR   ] 🔸 VISUALIZATION  : ❌ Failed to start web server: [Errno 98] Address already in use
+[TRAINING] 2025-07-10 22:04:41 [INFO    ] 🔸 email_notifications: Email notifications configured for ali.aloraibi@outlook.com
+[TRAINING] 2025-07-10 22:04:41 [INFO    ] 🔸 email_notifications: Notifications will be sent every 6 hours
+[TRAINING] 2025-07-10 22:04:41 [INFO    ] 🔸 email_notifications: No training metrics available for progress update
+[TRAINING] 2025-07-10 22:04:41 [INFO    ] 🔸 email_notifications: Training monitoring started
+[TRAINING] 2025-07-10 22:04:41 [INFO    ] 🔸 root           : 📧 Email notifications enabled
+[TRAINING] 2025-07-10 22:04:41 [INFO    ] 🔸 root           : Rank 3 heartbeat - waiting for adaptive training
+[TRAINING] 2025-07-10 22:04:41 [INFO    ] 🔸 adaptive_trainer: Removed old TensorBoard run: ./runs/ga_experiment
+[TRAINING] 2025-07-10 22:04:41 [INFO    ] 🔸 adaptive_trainer: Starting adaptive training
+[TRAINING] 2025-07-10 22:04:41 [INFO    ] 🔸 adaptive_trainer:
+[TRAINING] === Adaptive Training Iteration 1/3 ===
+[TRAINING] 2025-07-10 22:04:41 [INFO    ] 🔸 root           : Rank 1 heartbeat - waiting for adaptive training
+[TRAINING] 2025-07-10 22:04:41 [INFO    ] 🔸 root           : Rank 2 heartbeat - waiting for adaptive training
+[TRAINING] 2025-07-10 22:04:46 [INFO    ] 🔸 root           : Rank 3 detected training completion
+[TRAINING] 2025-07-10 22:04:46 [INFO    ] 🔸 root           : Rank 1 detected training completion
+[TRAINING] 2025-07-10 22:04:46 [INFO    ] 🔸 root           : Rank 2 detected training completion
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+[TRAINING] 2025-07-10 22:08:44 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 149304 profits, total=0.0000
+[TRAINING] 2025-07-10 22:08:44 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=0.0000
+[TRAINING] 2025-07-10 22:08:44 [INFO    ] 🔸 adaptive_trainer: Current performance: -0.2500 (best: -0.2500)
+[TRAINING] 2025-07-10 22:08:44 [INFO    ] 🔸 adaptive_trainer: Stagnation: 0, Poor performance: 0
+[TRAINING] 2025-07-10 22:08:44 [INFO    ] 🔸 adaptive_trainer: Method: GA, Entropy: 1.9459
+[TRAINING] 2025-07-10 22:08:44 [INFO    ] 🔸 adaptive_trainer: Switching to PPO due to: ga_solution_refinement
+[TRAINING] 2025-07-10 22:08:44 [INFO    ] 🔸 adaptive_trainer: Switching from GA to PPO
+[TRAINING] 2025-07-10 22:08:44 [INFO    ] 🔸 adaptive_trainer: Starting PPO phase: 150 updates
+[TRAINING] 2025-07-10 22:08:44 [INFO    ] 🔸 policy_gradient_methods: Loaded model from models/ppo_models/adaptive_ppo_model.pth
+[TRAINING] Removed old TensorBoard run: ./runs/ppo_rank_0
+[TRAINING] 2025-07-10 22:08:44 [INFO    ] 🔸 policy_gradient_methods: Loaded model from models/ppo_models/adaptive_ppo_model.pth
+^AINFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+
+
