@@ -1,0 +1,992 @@
+(GeneticTrading) alex@alex-System-Product-Name:/mnt/windows/GeneticTrading$ export CUDA_VISIBLE_DEVICES=0,1,2,3 export NCCL_P2P_DISABLE=0 export NCCL_NET_GDR_DISABLE=0 export NCCL_TREE_THRESHOLD=0 export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128 export NCCL_TIMEOUT=3600000
+(GeneticTrading) alex@alex-System-Product-Name:/mnt/windows/GeneticTrading$ torchrun --nproc_per_node=4 --nnodes=1 --node_rank=0 --master_addr=127.0.0.1 --master_port=12355 main.py --data-folder ./data_txt --max-rows 50000 --adaptive-iterations 3 --log-level INFO --training-mode adaptive
+W0710 19:44:10.006000 7572 site-packages/torch/distributed/run.py:766] 
+W0710 19:44:10.006000 7572 site-packages/torch/distributed/run.py:766] *****************************************
+W0710 19:44:10.006000 7572 site-packages/torch/distributed/run.py:766] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0710 19:44:10.006000 7572 site-packages/torch/distributed/run.py:766] *****************************************
+Traceback (most recent call last):
+  File "/mnt/windows/GeneticTrading/main.py", line 75, in <module>
+Traceback (most recent call last):
+  File "/mnt/windows/GeneticTrading/main.py", line 75, in <module>
+    from data_preprocessing import create_environment_data
+    from data_preprocessing import create_environment_data  File "/mnt/windows/GeneticTrading/data_preprocessing.py", line 1128
+
+    except FileNotFoundError:
+                             ^
+IndentationError  File "/mnt/windows/GeneticTrading/data_preprocessing.py", line 1128
+: unindent does not match any outer indentation level    
+except FileNotFoundError:
+                             ^
+IndentationError: unindent does not match any outer indentation level
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/mnt/windows/GeneticTrading/main.py", line 75, in <module>
+  File "/mnt/windows/GeneticTrading/main.py", line 75, in <module>
+        from data_preprocessing import create_environment_datafrom data_preprocessing import create_environment_data
+
+  File "/mnt/windows/GeneticTrading/data_preprocessing.py", line 1128
+  File "/mnt/windows/GeneticTrading/data_preprocessing.py", line 1128
+        except FileNotFoundError:
+except FileNotFoundError:
+                                                          ^^
+
+IndentationErrorIndentationError: : unindent does not match any outer indentation levelunindent does not match any outer indentation level
+
+E0710 19:44:15.623000 7572 site-packages/torch/distributed/elastic/multiprocessing/api.py:874] failed (exitcode: 1) local_rank: 0 (pid: 7611) of binary: /home/alex/miniconda3/envs/GeneticTrading/bin/python3.12
+Traceback (most recent call last):
+  File "/home/alex/miniconda3/envs/GeneticTrading/bin/torchrun", line 8, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/run.py", line 892, in main
+    run(args)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/run.py", line 883, in run
+    elastic_launch(
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/launcher/api.py", line 139, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/launcher/api.py", line 270, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+main.py FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2025-07-10_19:44:15
+  host      : alex-System-Product-Name
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 7612)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[2]:
+  time      : 2025-07-10_19:44:15
+  host      : alex-System-Product-Name
+  rank      : 2 (local_rank: 2)
+  exitcode  : 1 (pid: 7613)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[3]:
+  time      : 2025-07-10_19:44:15
+  host      : alex-System-Product-Name
+  rank      : 3 (local_rank: 3)
+  exitcode  : 1 (pid: 7614)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-07-10_19:44:15
+  host      : alex-System-Product-Name
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 7611)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+(GeneticTrading) alex@alex-System-Product-Name:/mnt/windows/GeneticTrading$ torchrun --nproc_per_node=4 --nnodes=1 --node_rank=0 --master_addr=127.0.0.1 --master_port=12355 main.py --data-folder ./data_txt --max-rows 50000 --adaptive-iterations 3 --log-level INFO --training-mode adaptive
+W0710 19:47:57.221000 8078 site-packages/torch/distributed/run.py:766] 
+W0710 19:47:57.221000 8078 site-packages/torch/distributed/run.py:766] *****************************************
+W0710 19:47:57.221000 8078 site-packages/torch/distributed/run.py:766] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0710 19:47:57.221000 8078 site-packages/torch/distributed/run.py:766] *****************************************
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 19:47:59.772773
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 💻 Process rank: 0
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_0.log
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:47:59 [INFO    ] 🔸 MAIN           : 🚀 Revolutionary Trading System Started
+2025-07-10 19:47:59 [INFO    ] 🔸 MAIN           : NCCL_TIMEOUT = 1800000 ms
+2025-07-10 19:47:59 [INFO    ] 🔸 MAIN           : Using 100.0% of available data
+2025-07-10 19:47:59 [INFO    ] 🔸 MAIN           : Models directory: ./models
+2025-07-10 19:47:59 [INFO    ] 🔸 MAIN           : Training mode: adaptive
+2025-07-10 19:47:59 [INFO    ] 🔸 MAIN           : Device configuration: cuda:0
+2025-07-10 19:47:59 [INFO    ] 🔸 MAIN           : World size: 4, Local rank: 0
+2025-07-10 19:47:59 [INFO    ] 🔸 root           : Rank 0/4 starting on cuda:0 (has_cudf=True)
+2025-07-10 19:47:59 [INFO    ] 🔸 root           : Data loading parameters: max_rows=50000, data_percentage=1.0
+2025-07-10 19:47:59 [INFO    ] 🔸 root           : Parquet cache found; skipping preprocessing.
+alex-System-Product-Name:8111:8111 [0] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8111:8111 [0] NCCL INFO cudaDriverVersion 12020
+alex-System-Product-Name:8111:8111 [0] NCCL INFO NCCL version 2.26.2+cuda12.2
+alex-System-Product-Name:8111:8111 [0] NCCL INFO Comm config Blocking set to 1
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 19:47:59.912388
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 💻 Process rank: 3
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_3.log
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:47:59 [INFO    ] 🔸 root           : Rank 3/4 starting on cuda:3 (has_cudf=True)
+2025-07-10 19:47:59 [INFO    ] 🔸 root           : Data loading parameters: max_rows=50000, data_percentage=1.0
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 19:47:59.919250
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 💻 Process rank: 1
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_1.log
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:47:59 [INFO    ] 🔸 root           : Rank 1/4 starting on cuda:1 (has_cudf=True)
+2025-07-10 19:47:59 [INFO    ] 🔸 root           : Data loading parameters: max_rows=50000, data_percentage=1.0
+alex-System-Product-Name:8114:8114 [3] NCCL INFO cudaDriverVersion 12020
+alex-System-Product-Name:8114:8114 [3] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8114:8114 [3] NCCL INFO NCCL version 2.26.2+cuda12.2
+alex-System-Product-Name:8114:8114 [3] NCCL INFO Comm config Blocking set to 1
+alex-System-Product-Name:8112:8112 [1] NCCL INFO cudaDriverVersion 12020
+alex-System-Product-Name:8112:8112 [1] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8112:8112 [1] NCCL INFO NCCL version 2.26.2+cuda12.2
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 19:47:59.925710
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 💻 Process rank: 2
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_2.log
+2025-07-10 19:47:59 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:47:59 [INFO    ] 🔸 root           : Rank 2/4 starting on cuda:2 (has_cudf=True)
+2025-07-10 19:47:59 [INFO    ] 🔸 root           : Data loading parameters: max_rows=50000, data_percentage=1.0
+alex-System-Product-Name:8112:8112 [1] NCCL INFO Comm config Blocking set to 1
+alex-System-Product-Name:8111:8164 [0] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+alex-System-Product-Name:8113:8113 [2] NCCL INFO cudaDriverVersion 12020
+alex-System-Product-Name:8113:8113 [2] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8113:8113 [2] NCCL INFO NCCL version 2.26.2+cuda12.2
+alex-System-Product-Name:8113:8113 [2] NCCL INFO Comm config Blocking set to 1
+alex-System-Product-Name:8111:8164 [0] NCCL INFO NET/IB : No device found.
+alex-System-Product-Name:8111:8164 [0] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8111:8164 [0] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+alex-System-Product-Name:8111:8164 [0] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so. 
+alex-System-Product-Name:8111:8164 [0] NCCL INFO Using network Socket
+alex-System-Product-Name:8111:8164 [0] NCCL INFO ncclCommInitRankConfig comm 0x5c0a91c99b50 rank 0 nranks 4 cudaDev 0 nvmlDev 0 busId 1000 commId 0xd99a8171d70365a5 - Init START
+alex-System-Product-Name:8114:8172 [3] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+alex-System-Product-Name:8114:8172 [3] NCCL INFO NET/IB : No device found.
+alex-System-Product-Name:8114:8172 [3] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8114:8172 [3] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+alex-System-Product-Name:8114:8172 [3] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so. 
+alex-System-Product-Name:8114:8172 [3] NCCL INFO Using network Socket
+alex-System-Product-Name:8114:8172 [3] NCCL INFO ncclCommInitRankConfig comm 0x6109a0302be0 rank 3 nranks 4 cudaDev 3 nvmlDev 3 busId 9000 commId 0xd99a8171d70365a5 - Init START
+alex-System-Product-Name:8112:8175 [1] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+alex-System-Product-Name:8112:8175 [1] NCCL INFO NET/IB : No device found.
+alex-System-Product-Name:8112:8175 [1] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8112:8175 [1] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+alex-System-Product-Name:8112:8175 [1] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so. 
+alex-System-Product-Name:8112:8175 [1] NCCL INFO Using network Socket
+alex-System-Product-Name:8112:8175 [1] NCCL INFO ncclCommInitRankConfig comm 0x5e1883861b30 rank 1 nranks 4 cudaDev 1 nvmlDev 1 busId 5000 commId 0xd99a8171d70365a5 - Init START
+alex-System-Product-Name:8111:8164 [0] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+alex-System-Product-Name:8113:8176 [2] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+alex-System-Product-Name:8113:8176 [2] NCCL INFO NET/IB : No device found.
+alex-System-Product-Name:8113:8176 [2] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8113:8176 [2] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+alex-System-Product-Name:8113:8176 [2] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so. 
+alex-System-Product-Name:8113:8176 [2] NCCL INFO Using network Socket
+alex-System-Product-Name:8113:8176 [2] NCCL INFO ncclCommInitRankConfig comm 0x64969d171c80 rank 2 nranks 4 cudaDev 2 nvmlDev 2 busId 8000 commId 0xd99a8171d70365a5 - Init START
+alex-System-Product-Name:8113:8176 [2] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+alex-System-Product-Name:8112:8175 [1] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+alex-System-Product-Name:8114:8172 [3] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+alex-System-Product-Name:8112:8175 [1] NCCL INFO Bootstrap timings total 0.019124 (create 0.000009, send 0.000048, recv 0.018907, ring 0.000034, delay 0.000000)
+alex-System-Product-Name:8114:8172 [3] NCCL INFO Bootstrap timings total 0.024666 (create 0.000017, send 0.000068, recv 0.000151, ring 0.000031, delay 0.000000)
+alex-System-Product-Name:8111:8164 [0] NCCL INFO Bootstrap timings total 0.069418 (create 0.000013, send 0.000069, recv 0.050328, ring 0.009490, delay 0.000000)
+alex-System-Product-Name:8113:8176 [2] NCCL INFO Bootstrap timings total 0.000311 (create 0.000017, send 0.000070, recv 0.000075, ring 0.000030, delay 0.000000)
+alex-System-Product-Name:8114:8172 [3] NCCL INFO NVLS multicast support is not available on dev 3
+alex-System-Product-Name:8113:8176 [2] NCCL INFO NVLS multicast support is not available on dev 2
+alex-System-Product-Name:8111:8164 [0] NCCL INFO NVLS multicast support is not available on dev 0
+alex-System-Product-Name:8112:8175 [1] NCCL INFO NVLS multicast support is not available on dev 1
+alex-System-Product-Name:8112:8175 [1] NCCL INFO comm 0x5e1883861b30 rank 1 nRanks 4 nNodes 1 localRanks 4 localRank 1 MNNVL 0
+alex-System-Product-Name:8114:8172 [3] NCCL INFO comm 0x6109a0302be0 rank 3 nRanks 4 nNodes 1 localRanks 4 localRank 3 MNNVL 0
+alex-System-Product-Name:8113:8176 [2] NCCL INFO comm 0x64969d171c80 rank 2 nRanks 4 nNodes 1 localRanks 4 localRank 2 MNNVL 0
+alex-System-Product-Name:8111:8164 [0] NCCL INFO comm 0x5c0a91c99b50 rank 0 nRanks 4 nNodes 1 localRanks 4 localRank 0 MNNVL 0
+alex-System-Product-Name:8112:8175 [1] NCCL INFO Trees [0] 2/-1/-1->1->0 [1] 3/-1/-1->1->-1 [2] 2/-1/-1->1->0 [3] 3/-1/-1->1->-1
+alex-System-Product-Name:8114:8172 [3] NCCL INFO Trees [0] -1/-1/-1->3->2 [1] 0/-1/-1->3->1 [2] -1/-1/-1->3->2 [3] 0/-1/-1->3->1
+alex-System-Product-Name:8111:8164 [0] NCCL INFO Channel 00/04 : 0 2 3 1
+alex-System-Product-Name:8113:8176 [2] NCCL INFO Trees [0] 3/-1/-1->2->1 [1] -1/-1/-1->2->0 [2] 3/-1/-1->2->1 [3] -1/-1/-1->2->0
+alex-System-Product-Name:8112:8175 [1] NCCL INFO P2P Chunksize set to 131072
+alex-System-Product-Name:8114:8172 [3] NCCL INFO P2P Chunksize set to 131072
+alex-System-Product-Name:8111:8164 [0] NCCL INFO Channel 01/04 : 0 1 3 2
+alex-System-Product-Name:8113:8176 [2] NCCL INFO P2P Chunksize set to 131072
+alex-System-Product-Name:8111:8164 [0] NCCL INFO Channel 02/04 : 0 2 3 1
+alex-System-Product-Name:8111:8164 [0] NCCL INFO Channel 03/04 : 0 1 3 2
+alex-System-Product-Name:8111:8164 [0] NCCL INFO Trees [0] 1/-1/-1->0->-1 [1] 2/-1/-1->0->3 [2] 1/-1/-1->0->-1 [3] 2/-1/-1->0->3
+alex-System-Product-Name:8111:8164 [0] NCCL INFO P2P Chunksize set to 131072
+alex-System-Product-Name:8111:8164 [0] NCCL INFO Check P2P Type intraNodeP2pSupport 0 directMode 0
+alex-System-Product-Name:8111:8191 [0] NCCL INFO [Proxy Service] Device 0 CPU core 17
+alex-System-Product-Name:8113:8195 [2] NCCL INFO [Proxy Service UDS] Device 2 CPU core 0
+alex-System-Product-Name:8114:8197 [3] NCCL INFO [Proxy Service UDS] Device 3 CPU core 24
+alex-System-Product-Name:8113:8190 [2] NCCL INFO [Proxy Service] Device 2 CPU core 17
+alex-System-Product-Name:8114:8192 [3] NCCL INFO [Proxy Service] Device 3 CPU core 19
+alex-System-Product-Name:8111:8194 [0] NCCL INFO [Proxy Service UDS] Device 0 CPU core 6
+alex-System-Product-Name:8112:8196 [1] NCCL INFO [Proxy Service UDS] Device 1 CPU core 14
+alex-System-Product-Name:8112:8193 [1] NCCL INFO [Proxy Service] Device 1 CPU core 16
+alex-System-Product-Name:8111:8164 [0] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+alex-System-Product-Name:8111:8164 [0] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+alex-System-Product-Name:8113:8176 [2] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+alex-System-Product-Name:8113:8176 [2] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+alex-System-Product-Name:8111:8164 [0] NCCL INFO CC Off, workFifoBytes 1048576
+alex-System-Product-Name:8114:8172 [3] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+alex-System-Product-Name:8114:8172 [3] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+alex-System-Product-Name:8112:8175 [1] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+alex-System-Product-Name:8112:8175 [1] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+alex-System-Product-Name:8111:8164 [0] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+alex-System-Product-Name:8113:8176 [2] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+alex-System-Product-Name:8111:8164 [0] NCCL INFO ncclCommInitRankConfig comm 0x5c0a91c99b50 rank 0 nranks 4 cudaDev 0 nvmlDev 0 busId 1000 commId 0xd99a8171d70365a5 - Init COMPLETE
+alex-System-Product-Name:8113:8176 [2] NCCL INFO ncclCommInitRankConfig comm 0x64969d171c80 rank 2 nranks 4 cudaDev 2 nvmlDev 2 busId 8000 commId 0xd99a8171d70365a5 - Init COMPLETE
+alex-System-Product-Name:8111:8164 [0] NCCL INFO Init timings - ncclCommInitRankConfig: rank 0 nranks 4 total 0.23 (kernels 0.12, alloc 0.02, bootstrap 0.07, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+alex-System-Product-Name:8113:8176 [2] NCCL INFO Init timings - ncclCommInitRankConfig: rank 2 nranks 4 total 0.11 (kernels 0.08, alloc 0.00, bootstrap 0.00, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+alex-System-Product-Name:8114:8172 [3] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+alex-System-Product-Name:8114:8172 [3] NCCL INFO ncclCommInitRankConfig comm 0x6109a0302be0 rank 3 nranks 4 cudaDev 3 nvmlDev 3 busId 9000 commId 0xd99a8171d70365a5 - Init COMPLETE
+alex-System-Product-Name:8114:8172 [3] NCCL INFO Init timings - ncclCommInitRankConfig: rank 3 nranks 4 total 0.12 (kernels 0.07, alloc 0.00, bootstrap 0.02, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+alex-System-Product-Name:8112:8175 [1] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+alex-System-Product-Name:8112:8175 [1] NCCL INFO ncclCommInitRankConfig comm 0x5e1883861b30 rank 1 nranks 4 cudaDev 1 nvmlDev 1 busId 5000 commId 0xd99a8171d70365a5 - Init COMPLETE
+alex-System-Product-Name:8112:8175 [1] NCCL INFO Init timings - ncclCommInitRankConfig: rank 1 nranks 4 total 0.11 (kernels 0.07, alloc 0.00, bootstrap 0.02, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+alex-System-Product-Name:8111:8199 [0] NCCL INFO Channel 01 : 0[0] -> 1[1] via SHM/direct/direct
+alex-System-Product-Name:8113:8198 [2] NCCL INFO Channel 00 : 2[2] -> 3[3] via SHM/direct/direct
+alex-System-Product-Name:8111:8199 [0] NCCL INFO Channel 03 : 0[0] -> 1[1] via SHM/direct/direct
+alex-System-Product-Name:8113:8198 [2] NCCL INFO Channel 02 : 2[2] -> 3[3] via SHM/direct/direct
+alex-System-Product-Name:8113:8198 [2] NCCL INFO Channel 01/0 : 2[2] -> 0[0] via P2P/CUMEM
+alex-System-Product-Name:8114:8200 [3] NCCL INFO Channel 00/0 : 3[3] -> 1[1] via P2P/CUMEM
+alex-System-Product-Name:8113:8198 [2] NCCL INFO Channel 03/0 : 2[2] -> 0[0] via P2P/CUMEM
+alex-System-Product-Name:8111:8199 [0] NCCL INFO Channel 00/0 : 0[0] -> 2[2] via P2P/CUMEM
+alex-System-Product-Name:8112:8201 [1] NCCL INFO Channel 01/0 : 1[1] -> 3[3] via P2P/CUMEM
+alex-System-Product-Name:8114:8200 [3] NCCL INFO Channel 02/0 : 3[3] -> 1[1] via P2P/CUMEM
+alex-System-Product-Name:8111:8199 [0] NCCL INFO Channel 02/0 : 0[0] -> 2[2] via P2P/CUMEM
+alex-System-Product-Name:8112:8201 [1] NCCL INFO Channel 03/0 : 1[1] -> 3[3] via P2P/CUMEM
+alex-System-Product-Name:8114:8200 [3] NCCL INFO Channel 01 : 3[3] -> 2[2] via SHM/direct/direct
+alex-System-Product-Name:8112:8201 [1] NCCL INFO Channel 00 : 1[1] -> 0[0] via SHM/direct/direct
+alex-System-Product-Name:8114:8200 [3] NCCL INFO Channel 03 : 3[3] -> 2[2] via SHM/direct/direct
+alex-System-Product-Name:8112:8201 [1] NCCL INFO Channel 02 : 1[1] -> 0[0] via SHM/direct/direct
+alex-System-Product-Name:8112:8201 [1] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+alex-System-Product-Name:8114:8200 [3] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+alex-System-Product-Name:8111:8199 [0] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+alex-System-Product-Name:8113:8198 [2] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+2025-07-10 19:48:00 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+2025-07-10 19:48:00 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+2025-07-10 19:48:00 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+2025-07-10 19:48:00 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+2025-07-10 19:48:00 [INFO    ] 🔸 root           : Rank 0: Sampled 100000 train rows from 4311800 total
+2025-07-10 19:48:00 [INFO    ] 🔸 root           : Rank 2: Sampled 100000 train rows from 4311800 total
+2025-07-10 19:48:00 [INFO    ] 🔸 root           : Rank 1: Sampled 100000 train rows from 4311800 total
+2025-07-10 19:48:00 [INFO    ] 🔸 root           : Rank 3: Sampled 100000 train rows from 4311800 total
+2025-07-10 19:48:00 [INFO    ] 🔸 root           : Rank 0: Sampled 20000 test rows from 1077950 total
+2025-07-10 19:48:00 [INFO    ] 🔸 root           : Rank 3: Sampled 20000 test rows from 1077950 total
+2025-07-10 19:48:00 [INFO    ] 🔸 root           : Rank 1: Sampled 20000 test rows from 1077950 total
+2025-07-10 19:48:00 [INFO    ] 🔸 root           : Rank 2: Sampled 20000 test rows from 1077950 total
+2025-07-10 19:48:00 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+2025-07-10 19:48:00 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+2025-07-10 19:48:00 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+2025-07-10 19:48:00 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+2025-07-10 19:48:02 [INFO    ] 🔸 root           : Rank 1 heartbeat - waiting for adaptive training
+2025-07-10 19:48:02 [INFO    ] 🔸 root           : Rank 2 heartbeat - waiting for adaptive training
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/mnt/windows/GeneticTrading/main.py", line 677, in <module>
+[rank0]:     main()
+[rank0]:   File "/mnt/windows/GeneticTrading/main.py", line 569, in main
+[rank0]:     from visualization_system import TradingVisualizationSystem
+[rank0]:   File "/mnt/windows/GeneticTrading/visualization_system.py", line 8, in <module>
+[rank0]:     import plotly.graph_objects as go
+[rank0]: ModuleNotFoundError: No module named 'plotly'
+2025-07-10 19:48:02 [INFO    ] 🔸 root           : Rank 3 heartbeat - waiting for adaptive training
+[rank0]:[W710 19:48:03.017774358 ProcessGroupNCCL.cpp:1476] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+alex-System-Product-Name:8111:8226 [0] NCCL INFO misc/socket.cc:64 -> 3
+alex-System-Product-Name:8111:8226 [0] NCCL INFO misc/socket.cc:80 -> 3
+alex-System-Product-Name:8111:8226 [0] NCCL INFO misc/socket.cc:829 -> 3
+alex-System-Product-Name:8111:8226 [0] NCCL INFO misc/socket.cc:64 -> 3
+alex-System-Product-Name:8111:8226 [0] NCCL INFO misc/socket.cc:80 -> 3
+alex-System-Product-Name:8111:8226 [0] NCCL INFO misc/socket.cc:829 -> 3
+alex-System-Product-Name:8111:8191 [0] NCCL INFO misc/socket.cc:881 -> 3
+^CW0710 19:48:10.145000 8078 site-packages/torch/distributed/elastic/agent/server/api.py:719] Received 2 death signal, shutting down workers
+W0710 19:48:10.146000 8078 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 8111 closing signal SIGINT
+W0710 19:48:10.147000 8078 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 8112 closing signal SIGINT
+2025-07-10 19:48:10 [INFO    ] 🔸 root           : Rank 1 interrupted
+W0710 19:48:10.148000 8078 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 8113 closing signal SIGINT
+2025-07-10 19:48:10 [INFO    ] 🔸 root           : Rank 2 interrupted
+W0710 19:48:10.148000 8078 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 8114 closing signal SIGINT
+2025-07-10 19:48:10 [INFO    ] 🔸 root           : Rank 3 interrupted
+^CW0710 19:48:10.340000 8078 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 8112 closing signal SIGTERM
+W0710 19:48:10.340000 8078 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 8113 closing signal SIGTERM
+W0710 19:48:10.341000 8078 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 8114 closing signal SIGTERM
+^CTraceback (most recent call last):
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/api.py", line 711, in run
+    result = self._invoke_run(role)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/api.py", line 870, in _invoke_run
+    time.sleep(monitor_interval)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 84, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 8078 got signal: 2
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/api.py", line 720, in run
+    self._shutdown(e.sigval)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/local_elastic_agent.py", line 372, in _shutdown
+    self._pcontext.close(death_sig)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 577, in close
+    self._close(death_sig=death_sig, timeout=timeout)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 912, in _close
+    handler.proc.wait(time_to_wait)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/subprocess.py", line 1266, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/subprocess.py", line 2055, in _wait
+    time.sleep(delay)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 84, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 8078 got signal: 2
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/alex/miniconda3/envs/GeneticTrading/bin/torchrun", line 8, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/run.py", line 892, in main
+    run(args)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/run.py", line 883, in run
+    elastic_launch(
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/launcher/api.py", line 139, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/launcher/api.py", line 261, in launch_agent
+    result = agent.run()
+             ^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/metrics/api.py", line 138, in wrapper
+    result = f(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/api.py", line 725, in run
+    self._shutdown()
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/local_elastic_agent.py", line 372, in _shutdown
+    self._pcontext.close(death_sig)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 577, in close
+    self._close(death_sig=death_sig, timeout=timeout)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 912, in _close
+    handler.proc.wait(time_to_wait)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/subprocess.py", line 1266, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/subprocess.py", line 2055, in _wait
+    time.sleep(delay)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 84, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 8078 got signal: 2
+(GeneticTrading) alex@alex-System-Product-Name:/mnt/windows/GeneticTrading$ ^C
+(GeneticTrading) alex@alex-System-Product-Name:/mnt/windows/GeneticTrading$ ^C
+(GeneticTrading) alex@alex-System-Product-Name:/mnt/windows/GeneticTrading$ pip install plotly
+Collecting plotly
+  Downloading plotly-6.2.0-py3-none-any.whl.metadata (8.5 kB)
+Collecting narwhals>=1.15.1 (from plotly)
+  Downloading narwhals-1.46.0-py3-none-any.whl.metadata (11 kB)
+Requirement already satisfied: packaging in /home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages (from plotly) (24.2)
+Downloading plotly-6.2.0-py3-none-any.whl (9.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9.6/9.6 MB 27.0 MB/s eta 0:00:00
+Downloading narwhals-1.46.0-py3-none-any.whl (373 kB)
+Installing collected packages: narwhals, plotly
+Successfully installed narwhals-1.46.0 plotly-6.2.0
+(GeneticTrading) alex@alex-System-Product-Name:/mnt/windows/GeneticTrading$ torchrun --nproc_per_node=4 --nnodes=1 --node_rank=0 --master_addr=127.0.0.1 --master_port=12355 main.py --data-folder ./data_txt --max-rows 50000 --adaptive-iterations 3 --log-level INFO --training-mode adaptive
+W0710 19:48:23.021000 8309 site-packages/torch/distributed/run.py:766] 
+W0710 19:48:23.021000 8309 site-packages/torch/distributed/run.py:766] *****************************************
+W0710 19:48:23.021000 8309 site-packages/torch/distributed/run.py:766] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0710 19:48:23.021000 8309 site-packages/torch/distributed/run.py:766] *****************************************
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 19:48:26.128373
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 💻 Process rank: 0
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_0.log
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:48:26 [INFO    ] 🔸 MAIN           : 🚀 Revolutionary Trading System Started
+2025-07-10 19:48:26 [INFO    ] 🔸 MAIN           : NCCL_TIMEOUT = 1800000 ms
+2025-07-10 19:48:26 [INFO    ] 🔸 MAIN           : Using 100.0% of available data
+2025-07-10 19:48:26 [INFO    ] 🔸 MAIN           : Models directory: ./models
+2025-07-10 19:48:26 [INFO    ] 🔸 MAIN           : Training mode: adaptive
+2025-07-10 19:48:26 [INFO    ] 🔸 MAIN           : Device configuration: cuda:0
+2025-07-10 19:48:26 [INFO    ] 🔸 MAIN           : World size: 4, Local rank: 0
+2025-07-10 19:48:26 [INFO    ] 🔸 root           : Rank 0/4 starting on cuda:0 (has_cudf=True)
+2025-07-10 19:48:26 [INFO    ] 🔸 root           : Data loading parameters: max_rows=50000, data_percentage=1.0
+2025-07-10 19:48:26 [INFO    ] 🔸 root           : Parquet cache found; skipping preprocessing.
+alex-System-Product-Name:8344:8344 [0] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8344:8344 [0] NCCL INFO cudaDriverVersion 12020
+alex-System-Product-Name:8344:8344 [0] NCCL INFO NCCL version 2.26.2+cuda12.2
+alex-System-Product-Name:8344:8344 [0] NCCL INFO Comm config Blocking set to 1
+alex-System-Product-Name:8344:8408 [0] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+alex-System-Product-Name:8344:8408 [0] NCCL INFO NET/IB : No device found.
+alex-System-Product-Name:8344:8408 [0] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8344:8408 [0] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+alex-System-Product-Name:8344:8408 [0] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so. 
+alex-System-Product-Name:8344:8408 [0] NCCL INFO Using network Socket
+alex-System-Product-Name:8344:8408 [0] NCCL INFO ncclCommInitRankConfig comm 0x5954d7fc2060 rank 0 nranks 4 cudaDev 0 nvmlDev 0 busId 1000 commId 0xb5ea65e8b20fef2d - Init START
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 19:48:26.416958
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 💻 Process rank: 1
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_1.log
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:48:26 [INFO    ] 🔸 root           : Rank 1/4 starting on cuda:1 (has_cudf=True)
+2025-07-10 19:48:26 [INFO    ] 🔸 root           : Data loading parameters: max_rows=50000, data_percentage=1.0
+alex-System-Product-Name:8345:8345 [1] NCCL INFO cudaDriverVersion 12020
+alex-System-Product-Name:8345:8345 [1] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8345:8345 [1] NCCL INFO NCCL version 2.26.2+cuda12.2
+alex-System-Product-Name:8345:8345 [1] NCCL INFO Comm config Blocking set to 1
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 19:48:26.434820
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 💻 Process rank: 2
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_2.log
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:48:26 [INFO    ] 🔸 root           : Rank 2/4 starting on cuda:2 (has_cudf=True)
+2025-07-10 19:48:26 [INFO    ] 🔸 root           : Data loading parameters: max_rows=50000, data_percentage=1.0
+alex-System-Product-Name:8346:8346 [2] NCCL INFO cudaDriverVersion 12020
+alex-System-Product-Name:8346:8346 [2] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8346:8346 [2] NCCL INFO NCCL version 2.26.2+cuda12.2
+alex-System-Product-Name:8346:8346 [2] NCCL INFO Comm config Blocking set to 1
+alex-System-Product-Name:8346:8418 [2] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+alex-System-Product-Name:8346:8418 [2] NCCL INFO NET/IB : No device found.
+alex-System-Product-Name:8346:8418 [2] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8346:8418 [2] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+alex-System-Product-Name:8346:8418 [2] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so. 
+alex-System-Product-Name:8346:8418 [2] NCCL INFO Using network Socket
+alex-System-Product-Name:8346:8418 [2] NCCL INFO ncclCommInitRankConfig comm 0x6538b00e88f0 rank 2 nranks 4 cudaDev 2 nvmlDev 2 busId 8000 commId 0xb5ea65e8b20fef2d - Init START
+alex-System-Product-Name:8345:8415 [1] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+alex-System-Product-Name:8345:8415 [1] NCCL INFO NET/IB : No device found.
+alex-System-Product-Name:8345:8415 [1] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8345:8415 [1] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+alex-System-Product-Name:8345:8415 [1] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so. 
+alex-System-Product-Name:8345:8415 [1] NCCL INFO Using network Socket
+alex-System-Product-Name:8345:8415 [1] NCCL INFO ncclCommInitRankConfig comm 0x556767f2af90 rank 1 nranks 4 cudaDev 1 nvmlDev 1 busId 5000 commId 0xb5ea65e8b20fef2d - Init START
+alex-System-Product-Name:8345:8415 [1] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 19:48:26.646294
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 💻 Process rank: 3
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_3.log
+2025-07-10 19:48:26 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:48:26 [INFO    ] 🔸 root           : Rank 3/4 starting on cuda:3 (has_cudf=True)
+2025-07-10 19:48:26 [INFO    ] 🔸 root           : Data loading parameters: max_rows=50000, data_percentage=1.0
+alex-System-Product-Name:8347:8347 [3] NCCL INFO cudaDriverVersion 12020
+alex-System-Product-Name:8347:8347 [3] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8347:8347 [3] NCCL INFO NCCL version 2.26.2+cuda12.2
+alex-System-Product-Name:8347:8347 [3] NCCL INFO Comm config Blocking set to 1
+alex-System-Product-Name:8347:8425 [3] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+alex-System-Product-Name:8347:8425 [3] NCCL INFO NET/IB : No device found.
+alex-System-Product-Name:8347:8425 [3] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:8347:8425 [3] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+alex-System-Product-Name:8347:8425 [3] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so. 
+alex-System-Product-Name:8347:8425 [3] NCCL INFO Using network Socket
+alex-System-Product-Name:8347:8425 [3] NCCL INFO ncclCommInitRankConfig comm 0x5fa55c1c84a0 rank 3 nranks 4 cudaDev 3 nvmlDev 3 busId 9000 commId 0xb5ea65e8b20fef2d - Init START
+alex-System-Product-Name:8347:8425 [3] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+alex-System-Product-Name:8346:8418 [2] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+alex-System-Product-Name:8344:8408 [0] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+alex-System-Product-Name:8347:8425 [3] NCCL INFO Bootstrap timings total 0.019159 (create 0.000018, send 0.000084, recv 0.000123, ring 0.018770, delay 0.000000)
+alex-System-Product-Name:8346:8418 [2] NCCL INFO Bootstrap timings total 0.216711 (create 0.000025, send 0.000107, recv 0.197617, ring 0.018770, delay 0.000000)
+alex-System-Product-Name:8345:8415 [1] NCCL INFO Bootstrap timings total 0.205831 (create 0.000019, send 0.000070, recv 0.000107, ring 0.205437, delay 0.000000)
+alex-System-Product-Name:8344:8408 [0] NCCL INFO Bootstrap timings total 0.419146 (create 0.000025, send 0.000110, recv 0.213374, ring 0.001454, delay 0.000000)
+alex-System-Product-Name:8347:8425 [3] NCCL INFO NVLS multicast support is not available on dev 3
+alex-System-Product-Name:8346:8418 [2] NCCL INFO NVLS multicast support is not available on dev 2
+alex-System-Product-Name:8344:8408 [0] NCCL INFO NVLS multicast support is not available on dev 0
+alex-System-Product-Name:8345:8415 [1] NCCL INFO NVLS multicast support is not available on dev 1
+alex-System-Product-Name:8344:8408 [0] NCCL INFO comm 0x5954d7fc2060 rank 0 nRanks 4 nNodes 1 localRanks 4 localRank 0 MNNVL 0
+alex-System-Product-Name:8347:8425 [3] NCCL INFO comm 0x5fa55c1c84a0 rank 3 nRanks 4 nNodes 1 localRanks 4 localRank 3 MNNVL 0
+alex-System-Product-Name:8344:8408 [0] NCCL INFO Channel 00/04 : 0 2 3 1
+alex-System-Product-Name:8345:8415 [1] NCCL INFO comm 0x556767f2af90 rank 1 nRanks 4 nNodes 1 localRanks 4 localRank 1 MNNVL 0
+alex-System-Product-Name:8344:8408 [0] NCCL INFO Channel 01/04 : 0 1 3 2
+alex-System-Product-Name:8344:8408 [0] NCCL INFO Channel 02/04 : 0 2 3 1
+alex-System-Product-Name:8346:8418 [2] NCCL INFO comm 0x6538b00e88f0 rank 2 nRanks 4 nNodes 1 localRanks 4 localRank 2 MNNVL 0
+alex-System-Product-Name:8346:8418 [2] NCCL INFO Trees [0] 3/-1/-1->2->1 [1] -1/-1/-1->2->0 [2] 3/-1/-1->2->1 [3] -1/-1/-1->2->0
+alex-System-Product-Name:8346:8418 [2] NCCL INFO P2P Chunksize set to 131072
+alex-System-Product-Name:8346:8430 [2] NCCL INFO [Proxy Service UDS] Device 2 CPU core 0
+alex-System-Product-Name:8346:8429 [2] NCCL INFO [Proxy Service] Device 2 CPU core 10
+alex-System-Product-Name:8347:8425 [3] NCCL INFO Trees [0] -1/-1/-1->3->2 [1] 0/-1/-1->3->1 [2] -1/-1/-1->3->2 [3] 0/-1/-1->3->1
+alex-System-Product-Name:8347:8425 [3] NCCL INFO P2P Chunksize set to 131072
+alex-System-Product-Name:8347:8431 [3] NCCL INFO [Proxy Service] Device 3 CPU core 12
+alex-System-Product-Name:8347:8432 [3] NCCL INFO [Proxy Service UDS] Device 3 CPU core 4
+alex-System-Product-Name:8344:8408 [0] NCCL INFO Channel 03/04 : 0 1 3 2
+alex-System-Product-Name:8344:8408 [0] NCCL INFO Trees [0] 1/-1/-1->0->-1 [1] 2/-1/-1->0->3 [2] 1/-1/-1->0->-1 [3] 2/-1/-1->0->3
+alex-System-Product-Name:8344:8408 [0] NCCL INFO P2P Chunksize set to 131072
+alex-System-Product-Name:8344:8408 [0] NCCL INFO Check P2P Type intraNodeP2pSupport 0 directMode 0
+alex-System-Product-Name:8346:8418 [2] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+alex-System-Product-Name:8346:8418 [2] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+alex-System-Product-Name:8344:8433 [0] NCCL INFO [Proxy Service] Device 0 CPU core 4
+alex-System-Product-Name:8347:8425 [3] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+alex-System-Product-Name:8347:8425 [3] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+alex-System-Product-Name:8344:8434 [0] NCCL INFO [Proxy Service UDS] Device 0 CPU core 14
+alex-System-Product-Name:8344:8408 [0] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+alex-System-Product-Name:8344:8408 [0] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+alex-System-Product-Name:8344:8408 [0] NCCL INFO CC Off, workFifoBytes 1048576
+alex-System-Product-Name:8345:8415 [1] NCCL INFO Trees [0] 2/-1/-1->1->0 [1] 3/-1/-1->1->-1 [2] 2/-1/-1->1->0 [3] 3/-1/-1->1->-1
+alex-System-Product-Name:8345:8415 [1] NCCL INFO P2P Chunksize set to 131072
+alex-System-Product-Name:8345:8435 [1] NCCL INFO [Proxy Service] Device 1 CPU core 14
+alex-System-Product-Name:8345:8415 [1] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+alex-System-Product-Name:8345:8415 [1] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+alex-System-Product-Name:8345:8436 [1] NCCL INFO [Proxy Service UDS] Device 1 CPU core 12
+alex-System-Product-Name:8347:8425 [3] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+alex-System-Product-Name:8347:8425 [3] NCCL INFO ncclCommInitRankConfig comm 0x5fa55c1c84a0 rank 3 nranks 4 cudaDev 3 nvmlDev 3 busId 9000 commId 0xb5ea65e8b20fef2d - Init COMPLETE
+alex-System-Product-Name:8347:8425 [3] NCCL INFO Init timings - ncclCommInitRankConfig: rank 3 nranks 4 total 0.15 (kernels 0.10, alloc 0.00, bootstrap 0.02, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+alex-System-Product-Name:8344:8408 [0] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+alex-System-Product-Name:8345:8415 [1] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+alex-System-Product-Name:8344:8408 [0] NCCL INFO ncclCommInitRankConfig comm 0x5954d7fc2060 rank 0 nranks 4 cudaDev 0 nvmlDev 0 busId 1000 commId 0xb5ea65e8b20fef2d - Init COMPLETE
+alex-System-Product-Name:8346:8418 [2] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+alex-System-Product-Name:8345:8415 [1] NCCL INFO ncclCommInitRankConfig comm 0x556767f2af90 rank 1 nranks 4 cudaDev 1 nvmlDev 1 busId 5000 commId 0xb5ea65e8b20fef2d - Init COMPLETE
+alex-System-Product-Name:8344:8408 [0] NCCL INFO Init timings - ncclCommInitRankConfig: rank 0 nranks 4 total 0.66 (kernels 0.21, alloc 0.00, bootstrap 0.42, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+alex-System-Product-Name:8346:8418 [2] NCCL INFO ncclCommInitRankConfig comm 0x6538b00e88f0 rank 2 nranks 4 cudaDev 2 nvmlDev 2 busId 8000 commId 0xb5ea65e8b20fef2d - Init COMPLETE
+alex-System-Product-Name:8345:8415 [1] NCCL INFO Init timings - ncclCommInitRankConfig: rank 1 nranks 4 total 0.38 (kernels 0.14, alloc 0.00, bootstrap 0.21, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+alex-System-Product-Name:8346:8418 [2] NCCL INFO Init timings - ncclCommInitRankConfig: rank 2 nranks 4 total 0.36 (kernels 0.11, alloc 0.01, bootstrap 0.22, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+alex-System-Product-Name:8344:8439 [0] NCCL INFO Channel 01 : 0[0] -> 1[1] via SHM/direct/direct
+alex-System-Product-Name:8346:8440 [2] NCCL INFO Channel 00 : 2[2] -> 3[3] via SHM/direct/direct
+alex-System-Product-Name:8344:8439 [0] NCCL INFO Channel 03 : 0[0] -> 1[1] via SHM/direct/direct
+alex-System-Product-Name:8346:8440 [2] NCCL INFO Channel 02 : 2[2] -> 3[3] via SHM/direct/direct
+alex-System-Product-Name:8347:8438 [3] NCCL INFO Channel 00/0 : 3[3] -> 1[1] via P2P/CUMEM
+alex-System-Product-Name:8347:8438 [3] NCCL INFO Channel 02/0 : 3[3] -> 1[1] via P2P/CUMEM
+alex-System-Product-Name:8346:8440 [2] NCCL INFO Channel 01/0 : 2[2] -> 0[0] via P2P/CUMEM
+alex-System-Product-Name:8346:8440 [2] NCCL INFO Channel 03/0 : 2[2] -> 0[0] via P2P/CUMEM
+alex-System-Product-Name:8345:8437 [1] NCCL INFO Channel 01/0 : 1[1] -> 3[3] via P2P/CUMEM
+alex-System-Product-Name:8344:8439 [0] NCCL INFO Channel 00/0 : 0[0] -> 2[2] via P2P/CUMEM
+alex-System-Product-Name:8345:8437 [1] NCCL INFO Channel 03/0 : 1[1] -> 3[3] via P2P/CUMEM
+alex-System-Product-Name:8345:8437 [1] NCCL INFO Channel 00 : 1[1] -> 0[0] via SHM/direct/direct
+alex-System-Product-Name:8345:8437 [1] NCCL INFO Channel 02 : 1[1] -> 0[0] via SHM/direct/direct
+alex-System-Product-Name:8344:8439 [0] NCCL INFO Channel 02/0 : 0[0] -> 2[2] via P2P/CUMEM
+alex-System-Product-Name:8347:8438 [3] NCCL INFO Channel 01 : 3[3] -> 2[2] via SHM/direct/direct
+alex-System-Product-Name:8347:8438 [3] NCCL INFO Channel 03 : 3[3] -> 2[2] via SHM/direct/direct
+alex-System-Product-Name:8344:8439 [0] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+alex-System-Product-Name:8345:8437 [1] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+alex-System-Product-Name:8347:8438 [3] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+alex-System-Product-Name:8346:8440 [2] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+2025-07-10 19:48:27 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+2025-07-10 19:48:27 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+2025-07-10 19:48:27 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+2025-07-10 19:48:27 [INFO    ] 🔸 root           : Rank 3: Sampled 100000 train rows from 4311800 total
+2025-07-10 19:48:27 [INFO    ] 🔸 root           : Rank 1: Sampled 100000 train rows from 4311800 total
+2025-07-10 19:48:27 [INFO    ] 🔸 root           : Rank 3: Sampled 20000 test rows from 1077950 total
+2025-07-10 19:48:27 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+2025-07-10 19:48:27 [INFO    ] 🔸 root           : Rank 1: Sampled 20000 test rows from 1077950 total
+2025-07-10 19:48:27 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+2025-07-10 19:48:27 [INFO    ] 🔸 root           : Rank 0: Sampled 100000 train rows from 4311800 total
+2025-07-10 19:48:27 [INFO    ] 🔸 root           : Rank 0: Sampled 20000 test rows from 1077950 total
+2025-07-10 19:48:27 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+2025-07-10 19:48:27 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+2025-07-10 19:48:27 [INFO    ] 🔸 root           : Rank 2: Sampled 100000 train rows from 4311800 total
+2025-07-10 19:48:27 [INFO    ] 🔸 root           : Rank 2: Sampled 20000 test rows from 1077950 total
+2025-07-10 19:48:27 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+2025-07-10 19:48:29 [INFO    ] 🔸 root           : Rank 3 heartbeat - waiting for adaptive training
+2025-07-10 19:48:29 [INFO    ] 🔸 root           : Rank 1 heartbeat - waiting for adaptive training
+2025-07-10 19:48:29 [INFO    ] 🔸 root           : Rank 2 heartbeat - waiting for adaptive training
+2025-07-10 19:48:29 [INFO    ] 🔸 VISUALIZATION  : 🎨 Visualization system initialized on port 5000
+2025-07-10 19:48:29 [INFO    ] 🔸 VISUALIZATION  : 🌐 Dashboard server started at http://0.0.0.0:5000
+2025-07-10 19:48:29 [INFO    ] 🔸 VISUALIZATION  : 🔗 View dashboard at: http://0.0.0.0:5000/trading_dashboard.html
+2025-07-10 19:48:29 [INFO    ] 🔸 root           : 🌐 Real-time dashboard available at http://0.0.0.0:5000/trading_dashboard.html
+2025-07-10 19:48:29 [INFO    ] 🔸 email_notifications: Email notifications configured for ali.aloraibi@outlook.com
+2025-07-10 19:48:29 [INFO    ] 🔸 email_notifications: Notifications will be sent every 6 hours
+2025-07-10 19:48:29 [INFO    ] 🔸 email_notifications: No training metrics available for progress update
+2025-07-10 19:48:29 [INFO    ] 🔸 email_notifications: Training monitoring started
+2025-07-10 19:48:29 [INFO    ] 🔸 root           : 📧 Email notifications enabled
+2025-07-10 19:48:29 [INFO    ] 🔸 adaptive_trainer: Removed old TensorBoard run: ./runs/ga_experiment
+2025-07-10 19:48:29 [INFO    ] 🔸 adaptive_trainer: Starting adaptive training
+2025-07-10 19:48:29 [INFO    ] 🔸 adaptive_trainer: 
+=== Adaptive Training Iteration 1/5 ===
+2025-07-10 19:48:38 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 11501 profits, total=0.0000
+2025-07-10 19:48:38 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=0.0000
+2025-07-10 19:48:38 [INFO    ] 🔸 adaptive_trainer: Current performance: -0.2500 (best: -0.2500)
+2025-07-10 19:48:38 [INFO    ] 🔸 adaptive_trainer: Stagnation: 0, Poor performance: 0
+2025-07-10 19:48:38 [INFO    ] 🔸 adaptive_trainer: Method: GA, Entropy: 1.9459
+2025-07-10 19:48:38 [INFO    ] 🔸 adaptive_trainer: Switching to PPO due to: ga_solution_refinement
+2025-07-10 19:48:38 [INFO    ] 🔸 adaptive_trainer: Switching from GA to PPO
+2025-07-10 19:48:38 [INFO    ] 🔸 adaptive_trainer: Starting PPO phase: 150 updates
+2025-07-10 19:48:38 [INFO    ] 🔸 policy_gradient_methods: No model file at models/ppo_models/adaptive_ppo_model.pth, starting from scratch
+Removed old TensorBoard run: ./runs/ppo_rank_0
+2025-07-10 19:48:49 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 15214 profits, total=0.0000
+2025-07-10 19:48:49 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=0.0000
+2025-07-10 19:50:06 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 1772 profits, total=0.0000                                                                                                                         
+2025-07-10 19:50:06 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=0.0000, MDD=0.0000
+2025-07-10 19:50:06 [INFO    ] 🔸 adaptive_trainer: PPO Update 50: Performance=0.0000, Entropy=1.9459
+2025-07-10 19:51:40 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 18050 profits, total=0.0000                                                                                                                        
+2025-07-10 19:51:40 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=0.0000
+2025-07-10 19:51:40 [INFO    ] 🔸 adaptive_trainer: PPO Update 100: Performance=-0.2500, Entropy=1.9459
+2025-07-10 19:51:40 [WARNING ] 🔸 adaptive_trainer: PPO early stopping due to lack of improvement (patience: 3)
+2025-07-10 19:51:40 [INFO    ] 🔸 policy_gradient_methods: Saved model to models/ppo_models/adaptive_ppo_model.pth at 2025-07-10 19:51:40.374579
+2025-07-10 19:51:46 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 9857 profits, total=0.0000
+2025-07-10 19:51:46 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=0.0000
+2025-07-10 19:51:46 [INFO    ] 🔸 adaptive_trainer: PPO phase completed with performance: -0.2500
+2025-07-10 19:51:46 [INFO    ] 🔸 adaptive_trainer: 
+=== Adaptive Training Iteration 2/5 ===
+2025-07-10 19:51:57 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 15976 profits, total=0.0000
+2025-07-10 19:51:57 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=0.0000
+2025-07-10 19:51:57 [INFO    ] 🔸 adaptive_trainer: Current performance: -0.2500 (best: -0.2500)
+2025-07-10 19:51:57 [INFO    ] 🔸 adaptive_trainer: Stagnation: 1, Poor performance: 1
+2025-07-10 19:51:57 [INFO    ] 🔸 adaptive_trainer: Method: PPO, Entropy: 1.8562
+2025-07-10 19:51:57 [INFO    ] 🔸 adaptive_trainer: Switching to GA due to: exploration_phase
+2025-07-10 19:51:57 [INFO    ] 🔸 adaptive_trainer: Switching from PPO to GA
+2025-07-10 19:51:57 [INFO    ] 🔸 adaptive_trainer: Starting GA phase: 30 generations, population 30
+[GA] No model file at models/ga_models/adaptive_ga_model.pth, starting from scratch                                     
+[GA gens]:   0%|                                                                                 | 0/10 [00:00<?, ?it/s]2025-07-10 19:53:29 [INFO    ] 🔸 root           : Rank 1 heartbeat - waiting for adaptive training
+2025-07-10 19:53:29 [INFO    ] 🔸 root           : Rank 3 heartbeat - waiting for adaptive training
+2025-07-10 19:53:29 [INFO    ] 🔸 root           : Rank 2 heartbeat - waiting for adaptive training
+2025-07-10 19:58:29 [INFO    ] 🔸 root           : Rank 1 heartbeat - waiting for adaptive training
+2025-07-10 19:58:29 [INFO    ] 🔸 root           : Rank 3 heartbeat - waiting for adaptive training
+2025-07-10 19:58:29 [INFO    ] 🔸 root           : Rank 2 heartbeat - waiting for adaptive training
+^CW0710 19:59:50.400000 8309 site-packages/torch/distributed/elastic/agent/server/api.py:719] Received 2 death signal, shutting down workers
+W0710 19:59:50.401000 8309 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 8344 closing signal SIGINT
+W0710 19:59:50.401000 8309 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 8345 closing signal SIGINT
+2025-07-10 19:59:50 [INFO    ] 🔸 root           : Rank 1 interrupted
+W0710 19:59:50.401000 8309 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 8346 closing signal SIGINT
+2025-07-10 19:59:50 [INFO    ] 🔸 root           : Rank 2 interrupted
+W0710 19:59:50.401000 8309 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 8347 closing signal SIGINT
+2025-07-10 19:59:50 [INFO    ] 🔸 root           : Rank 3 interrupted
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/mnt/windows/GeneticTrading/main.py", line 677, in <module>
+[rank0]:     main()
+[rank0]:   File "/mnt/windows/GeneticTrading/main.py", line 606, in main
+[rank0]:     training_log = adaptive_trainer.adaptive_train(
+[rank0]:                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/windows/GeneticTrading/adaptive_trainer.py", line 633, in adaptive_train
+[rank0]:     self.run_ga_phase(generations=generations, population_size=population_size)
+[rank0]:   File "/mnt/windows/GeneticTrading/adaptive_trainer.py", line 413, in run_ga_phase
+[rank0]:     best_agent, best_fitness, _, _ = run_ga_evolution(
+[rank0]:                                      ^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/windows/GeneticTrading/ga_policy_evolution.py", line 372, in run_ga_evolution
+[rank0]:     base_policy.load_model(model_save_path)  # logs internally if missing
+[rank0]:              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/windows/GeneticTrading/ga_policy_evolution.py", line 153, in evaluate_fitness
+[rank0]:     episode_reward += float(reward)
+[rank0]:              ^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/windows/GeneticTrading/ga_policy_evolution.py", line 61, in act
+[rank0]:     logits = self.forward(state)
+[rank0]:              ^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/windows/GeneticTrading/ga_policy_evolution.py", line 55, in forward
+[rank0]:     logits, _ = super().forward(x)
+[rank0]:                 ^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/windows/GeneticTrading/policy_gradient_methods.py", line 113, in forward
+[rank0]:     value = self.value_head(hidden)
+[rank0]:             ^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 125, in forward
+[rank0]:     return F.linear(input, self.weight, self.bias)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]: KeyboardInterrupt
+^CW0710 19:59:50.715000 8309 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 8344 closing signal SIGTERM
+W0710 19:59:50.715000 8309 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 8345 closing signal SIGTERM
+W0710 19:59:50.715000 8309 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 8346 closing signal SIGTERM
+W0710 19:59:50.716000 8309 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 8347 closing signal SIGTERM
+^CTraceback (most recent call last):
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/api.py", line 711, in run
+    result = self._invoke_run(role)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/api.py", line 870, in _invoke_run
+    time.sleep(monitor_interval)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 84, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 8309 got signal: 2
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/api.py", line 720, in run
+    self._shutdown(e.sigval)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/local_elastic_agent.py", line 372, in _shutdown
+    self._pcontext.close(death_sig)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 577, in close
+    self._close(death_sig=death_sig, timeout=timeout)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 912, in _close
+    handler.proc.wait(time_to_wait)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/subprocess.py", line 1266, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/subprocess.py", line 2055, in _wait
+    time.sleep(delay)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 84, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 8309 got signal: 2
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/alex/miniconda3/envs/GeneticTrading/bin/torchrun", line 8, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/run.py", line 892, in main
+    run(args)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/run.py", line 883, in run
+    elastic_launch(
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/launcher/api.py", line 139, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/launcher/api.py", line 261, in launch_agent
+    result = agent.run()
+             ^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/metrics/api.py", line 138, in wrapper
+    result = f(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/api.py", line 725, in run
+    self._shutdown()
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/local_elastic_agent.py", line 372, in _shutdown
+    self._pcontext.close(death_sig)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 577, in close
+    self._close(death_sig=death_sig, timeout=timeout)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 912, in _close
+    handler.proc.wait(time_to_wait)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/subprocess.py", line 1266, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/subprocess.py", line 2055, in _wait
+    time.sleep(delay)
+  File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 84, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 8309 got signal: 2
+(GeneticTrading) alex@alex-System-Product-Name:/mnt/windows/GeneticTrading$ ^C
+(GeneticTrading) alex@alex-System-Product-Name:/mnt/windows/GeneticTrading$ torchrun --nproc_per_node=4 --nnodes=1 --node_rank=0 --master_addr=127.0.0.1 --master_port=12355 main.py --data-folder ./data_txt --max-rows 50000 --adaptive-iterations 3 --log-level INFO --training-mode adaptive
+W0710 19:59:55.164000 10574 site-packages/torch/distributed/run.py:766] 
+W0710 19:59:55.164000 10574 site-packages/torch/distributed/run.py:766] *****************************************
+W0710 19:59:55.164000 10574 site-packages/torch/distributed/run.py:766] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0710 19:59:55.164000 10574 site-packages/torch/distributed/run.py:766] *****************************************
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 19:59:57.402533
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 💻 Process rank: 0
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_0.log
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:59:57 [INFO    ] 🔸 MAIN           : 🚀 Revolutionary Trading System Started
+2025-07-10 19:59:57 [INFO    ] 🔸 MAIN           : NCCL_TIMEOUT = 1800000 ms
+2025-07-10 19:59:57 [INFO    ] 🔸 MAIN           : Using 100.0% of available data
+2025-07-10 19:59:57 [INFO    ] 🔸 MAIN           : Models directory: ./models
+2025-07-10 19:59:57 [INFO    ] 🔸 MAIN           : Training mode: adaptive
+2025-07-10 19:59:57 [INFO    ] 🔸 MAIN           : Device configuration: cuda:0
+2025-07-10 19:59:57 [INFO    ] 🔸 MAIN           : World size: 4, Local rank: 0
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Rank 0/4 starting on cuda:0 (has_cudf=True)
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Data loading parameters: max_rows=50000, data_percentage=1.0
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Parquet cache found; skipping preprocessing.
+alex-System-Product-Name:10609:10609 [0] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:10609:10609 [0] NCCL INFO cudaDriverVersion 12020
+alex-System-Product-Name:10609:10609 [0] NCCL INFO NCCL version 2.26.2+cuda12.2
+alex-System-Product-Name:10609:10609 [0] NCCL INFO Comm config Blocking set to 1
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 19:59:57.542400
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 💻 Process rank: 1
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_1.log
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Rank 1/4 starting on cuda:1 (has_cudf=True)
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Data loading parameters: max_rows=50000, data_percentage=1.0
+alex-System-Product-Name:10610:10610 [1] NCCL INFO cudaDriverVersion 12020
+alex-System-Product-Name:10610:10610 [1] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:10610:10610 [1] NCCL INFO NCCL version 2.26.2+cuda12.2
+alex-System-Product-Name:10610:10610 [1] NCCL INFO Comm config Blocking set to 1
+alex-System-Product-Name:10609:10661 [0] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+alex-System-Product-Name:10609:10661 [0] NCCL INFO NET/IB : No device found.
+alex-System-Product-Name:10609:10661 [0] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:10609:10661 [0] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+alex-System-Product-Name:10609:10661 [0] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so. 
+alex-System-Product-Name:10609:10661 [0] NCCL INFO Using network Socket
+alex-System-Product-Name:10609:10661 [0] NCCL INFO ncclCommInitRankConfig comm 0x62a7736a1580 rank 0 nranks 4 cudaDev 0 nvmlDev 0 busId 1000 commId 0x26f02a6f25d9eef9 - Init START
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 19:59:57.555044
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 💻 Process rank: 3
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_3.log
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Rank 3/4 starting on cuda:3 (has_cudf=True)
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Data loading parameters: max_rows=50000, data_percentage=1.0
+alex-System-Product-Name:10612:10612 [3] NCCL INFO cudaDriverVersion 12020
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 19:59:57.561205
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 💻 Process rank: 2
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_2.log
+2025-07-10 19:59:57 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Rank 2/4 starting on cuda:2 (has_cudf=True)
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Data loading parameters: max_rows=50000, data_percentage=1.0
+alex-System-Product-Name:10612:10612 [3] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:10612:10612 [3] NCCL INFO NCCL version 2.26.2+cuda12.2
+alex-System-Product-Name:10612:10612 [3] NCCL INFO Comm config Blocking set to 1
+alex-System-Product-Name:10611:10611 [2] NCCL INFO cudaDriverVersion 12020
+alex-System-Product-Name:10611:10611 [2] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:10611:10611 [2] NCCL INFO NCCL version 2.26.2+cuda12.2
+alex-System-Product-Name:10611:10611 [2] NCCL INFO Comm config Blocking set to 1
+alex-System-Product-Name:10610:10667 [1] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+alex-System-Product-Name:10610:10667 [1] NCCL INFO NET/IB : No device found.
+alex-System-Product-Name:10610:10667 [1] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:10610:10667 [1] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+alex-System-Product-Name:10610:10667 [1] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so. 
+alex-System-Product-Name:10610:10667 [1] NCCL INFO Using network Socket
+alex-System-Product-Name:10610:10667 [1] NCCL INFO ncclCommInitRankConfig comm 0x5648c628d8a0 rank 1 nranks 4 cudaDev 1 nvmlDev 1 busId 5000 commId 0x26f02a6f25d9eef9 - Init START
+alex-System-Product-Name:10612:10672 [3] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+alex-System-Product-Name:10612:10672 [3] NCCL INFO NET/IB : No device found.
+alex-System-Product-Name:10612:10672 [3] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:10612:10672 [3] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+alex-System-Product-Name:10612:10672 [3] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so. 
+alex-System-Product-Name:10612:10672 [3] NCCL INFO Using network Socket
+alex-System-Product-Name:10612:10672 [3] NCCL INFO ncclCommInitRankConfig comm 0x617915776bb0 rank 3 nranks 4 cudaDev 3 nvmlDev 3 busId 9000 commId 0x26f02a6f25d9eef9 - Init START
+alex-System-Product-Name:10609:10661 [0] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+alex-System-Product-Name:10611:10673 [2] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+alex-System-Product-Name:10611:10673 [2] NCCL INFO NET/IB : No device found.
+alex-System-Product-Name:10611:10673 [2] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+alex-System-Product-Name:10611:10673 [2] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+alex-System-Product-Name:10611:10673 [2] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so. 
+alex-System-Product-Name:10611:10673 [2] NCCL INFO Using network Socket
+alex-System-Product-Name:10611:10673 [2] NCCL INFO ncclCommInitRankConfig comm 0x63ce60ca10a0 rank 2 nranks 4 cudaDev 2 nvmlDev 2 busId 8000 commId 0x26f02a6f25d9eef9 - Init START
+alex-System-Product-Name:10611:10673 [2] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+alex-System-Product-Name:10610:10667 [1] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+alex-System-Product-Name:10612:10672 [3] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+alex-System-Product-Name:10610:10667 [1] NCCL INFO Bootstrap timings total 0.035935 (create 0.000014, send 0.000061, recv 0.035637, ring 0.000102, delay 0.000000)
+alex-System-Product-Name:10609:10661 [0] NCCL INFO Bootstrap timings total 0.103296 (create 0.000014, send 0.000059, recv 0.067474, ring 0.007884, delay 0.000000)
+alex-System-Product-Name:10612:10672 [3] NCCL INFO Bootstrap timings total 0.023312 (create 0.000009, send 0.000046, recv 0.000082, ring 0.000045, delay 0.000000)
+alex-System-Product-Name:10611:10673 [2] NCCL INFO Bootstrap timings total 0.000417 (create 0.000010, send 0.000054, recv 0.000121, ring 0.000119, delay 0.000000)
+alex-System-Product-Name:10610:10667 [1] NCCL INFO NVLS multicast support is not available on dev 1
+alex-System-Product-Name:10609:10661 [0] NCCL INFO NVLS multicast support is not available on dev 0
+alex-System-Product-Name:10612:10672 [3] NCCL INFO NVLS multicast support is not available on dev 3
+alex-System-Product-Name:10611:10673 [2] NCCL INFO NVLS multicast support is not available on dev 2
+alex-System-Product-Name:10610:10667 [1] NCCL INFO comm 0x5648c628d8a0 rank 1 nRanks 4 nNodes 1 localRanks 4 localRank 1 MNNVL 0
+alex-System-Product-Name:10609:10661 [0] NCCL INFO comm 0x62a7736a1580 rank 0 nRanks 4 nNodes 1 localRanks 4 localRank 0 MNNVL 0
+alex-System-Product-Name:10612:10672 [3] NCCL INFO comm 0x617915776bb0 rank 3 nRanks 4 nNodes 1 localRanks 4 localRank 3 MNNVL 0
+alex-System-Product-Name:10611:10673 [2] NCCL INFO comm 0x63ce60ca10a0 rank 2 nRanks 4 nNodes 1 localRanks 4 localRank 2 MNNVL 0
+alex-System-Product-Name:10610:10667 [1] NCCL INFO Trees [0] 2/-1/-1->1->0 [1] 3/-1/-1->1->-1 [2] 2/-1/-1->1->0 [3] 3/-1/-1->1->-1
+alex-System-Product-Name:10609:10661 [0] NCCL INFO Channel 00/04 : 0 2 3 1
+alex-System-Product-Name:10610:10667 [1] NCCL INFO P2P Chunksize set to 131072
+alex-System-Product-Name:10609:10661 [0] NCCL INFO Channel 01/04 : 0 1 3 2
+alex-System-Product-Name:10612:10672 [3] NCCL INFO Trees [0] -1/-1/-1->3->2 [1] 0/-1/-1->3->1 [2] -1/-1/-1->3->2 [3] 0/-1/-1->3->1
+alex-System-Product-Name:10609:10661 [0] NCCL INFO Channel 02/04 : 0 2 3 1
+alex-System-Product-Name:10612:10672 [3] NCCL INFO P2P Chunksize set to 131072
+alex-System-Product-Name:10611:10673 [2] NCCL INFO Trees [0] 3/-1/-1->2->1 [1] -1/-1/-1->2->0 [2] 3/-1/-1->2->1 [3] -1/-1/-1->2->0
+alex-System-Product-Name:10609:10661 [0] NCCL INFO Channel 03/04 : 0 1 3 2
+alex-System-Product-Name:10611:10673 [2] NCCL INFO P2P Chunksize set to 131072
+alex-System-Product-Name:10609:10661 [0] NCCL INFO Trees [0] 1/-1/-1->0->-1 [1] 2/-1/-1->0->3 [2] 1/-1/-1->0->-1 [3] 2/-1/-1->0->3
+alex-System-Product-Name:10609:10661 [0] NCCL INFO P2P Chunksize set to 131072
+alex-System-Product-Name:10609:10661 [0] NCCL INFO Check P2P Type intraNodeP2pSupport 0 directMode 0
+alex-System-Product-Name:10609:10678 [0] NCCL INFO [Proxy Service] Device 0 CPU core 0
+alex-System-Product-Name:10609:10682 [0] NCCL INFO [Proxy Service UDS] Device 0 CPU core 26
+alex-System-Product-Name:10611:10685 [2] NCCL INFO [Proxy Service UDS] Device 2 CPU core 23
+alex-System-Product-Name:10612:10679 [3] NCCL INFO [Proxy Service] Device 3 CPU core 0
+alex-System-Product-Name:10612:10684 [3] NCCL INFO [Proxy Service UDS] Device 3 CPU core 17
+alex-System-Product-Name:10611:10681 [2] NCCL INFO [Proxy Service] Device 2 CPU core 19
+alex-System-Product-Name:10610:10680 [1] NCCL INFO [Proxy Service] Device 1 CPU core 30
+alex-System-Product-Name:10610:10683 [1] NCCL INFO [Proxy Service UDS] Device 1 CPU core 31
+alex-System-Product-Name:10610:10667 [1] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+alex-System-Product-Name:10610:10667 [1] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+alex-System-Product-Name:10612:10672 [3] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+alex-System-Product-Name:10609:10661 [0] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+alex-System-Product-Name:10612:10672 [3] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+alex-System-Product-Name:10609:10661 [0] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+alex-System-Product-Name:10611:10673 [2] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+alex-System-Product-Name:10611:10673 [2] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+alex-System-Product-Name:10609:10661 [0] NCCL INFO CC Off, workFifoBytes 1048576
+alex-System-Product-Name:10609:10661 [0] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+alex-System-Product-Name:10610:10667 [1] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+alex-System-Product-Name:10611:10673 [2] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+alex-System-Product-Name:10609:10661 [0] NCCL INFO ncclCommInitRankConfig comm 0x62a7736a1580 rank 0 nranks 4 cudaDev 0 nvmlDev 0 busId 1000 commId 0x26f02a6f25d9eef9 - Init COMPLETE
+alex-System-Product-Name:10610:10667 [1] NCCL INFO ncclCommInitRankConfig comm 0x5648c628d8a0 rank 1 nranks 4 cudaDev 1 nvmlDev 1 busId 5000 commId 0x26f02a6f25d9eef9 - Init COMPLETE
+alex-System-Product-Name:10611:10673 [2] NCCL INFO ncclCommInitRankConfig comm 0x63ce60ca10a0 rank 2 nranks 4 cudaDev 2 nvmlDev 2 busId 8000 commId 0x26f02a6f25d9eef9 - Init COMPLETE
+alex-System-Product-Name:10609:10661 [0] NCCL INFO Init timings - ncclCommInitRankConfig: rank 0 nranks 4 total 0.24 (kernels 0.12, alloc 0.00, bootstrap 0.10, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+alex-System-Product-Name:10610:10667 [1] NCCL INFO Init timings - ncclCommInitRankConfig: rank 1 nranks 4 total 0.13 (kernels 0.07, alloc 0.00, bootstrap 0.04, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+alex-System-Product-Name:10611:10673 [2] NCCL INFO Init timings - ncclCommInitRankConfig: rank 2 nranks 4 total 0.11 (kernels 0.08, alloc 0.00, bootstrap 0.00, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+alex-System-Product-Name:10612:10672 [3] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+alex-System-Product-Name:10612:10672 [3] NCCL INFO ncclCommInitRankConfig comm 0x617915776bb0 rank 3 nranks 4 cudaDev 3 nvmlDev 3 busId 9000 commId 0x26f02a6f25d9eef9 - Init COMPLETE
+alex-System-Product-Name:10612:10672 [3] NCCL INFO Init timings - ncclCommInitRankConfig: rank 3 nranks 4 total 0.12 (kernels 0.07, alloc 0.00, bootstrap 0.02, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+alex-System-Product-Name:10609:10688 [0] NCCL INFO Channel 01 : 0[0] -> 1[1] via SHM/direct/direct
+alex-System-Product-Name:10609:10688 [0] NCCL INFO Channel 03 : 0[0] -> 1[1] via SHM/direct/direct
+alex-System-Product-Name:10611:10689 [2] NCCL INFO Channel 00 : 2[2] -> 3[3] via SHM/direct/direct
+alex-System-Product-Name:10611:10689 [2] NCCL INFO Channel 02 : 2[2] -> 3[3] via SHM/direct/direct
+alex-System-Product-Name:10610:10687 [1] NCCL INFO Channel 01/0 : 1[1] -> 3[3] via P2P/CUMEM
+alex-System-Product-Name:10610:10687 [1] NCCL INFO Channel 03/0 : 1[1] -> 3[3] via P2P/CUMEM
+alex-System-Product-Name:10609:10688 [0] NCCL INFO Channel 00/0 : 0[0] -> 2[2] via P2P/CUMEM
+alex-System-Product-Name:10609:10688 [0] NCCL INFO Channel 02/0 : 0[0] -> 2[2] via P2P/CUMEM
+alex-System-Product-Name:10611:10689 [2] NCCL INFO Channel 01/0 : 2[2] -> 0[0] via P2P/CUMEM
+alex-System-Product-Name:10611:10689 [2] NCCL INFO Channel 03/0 : 2[2] -> 0[0] via P2P/CUMEM
+alex-System-Product-Name:10612:10690 [3] NCCL INFO Channel 00/0 : 3[3] -> 1[1] via P2P/CUMEM
+alex-System-Product-Name:10612:10690 [3] NCCL INFO Channel 02/0 : 3[3] -> 1[1] via P2P/CUMEM
+alex-System-Product-Name:10610:10687 [1] NCCL INFO Channel 00 : 1[1] -> 0[0] via SHM/direct/direct
+alex-System-Product-Name:10612:10690 [3] NCCL INFO Channel 01 : 3[3] -> 2[2] via SHM/direct/direct
+alex-System-Product-Name:10610:10687 [1] NCCL INFO Channel 02 : 1[1] -> 0[0] via SHM/direct/direct
+alex-System-Product-Name:10612:10690 [3] NCCL INFO Channel 03 : 3[3] -> 2[2] via SHM/direct/direct
+alex-System-Product-Name:10612:10690 [3] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+alex-System-Product-Name:10611:10689 [2] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+alex-System-Product-Name:10610:10687 [1] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+alex-System-Product-Name:10609:10688 [0] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Rank 0: Sampled 100000 train rows from 4311800 total
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Rank 0: Sampled 20000 test rows from 1077950 total
+2025-07-10 19:59:57 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Rank 1: Sampled 100000 train rows from 4311800 total
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Rank 1: Sampled 20000 test rows from 1077950 total
+2025-07-10 19:59:57 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Rank 3: Sampled 100000 train rows from 4311800 total
+2025-07-10 19:59:57 [INFO    ] 🔸 root           : Rank 3: Sampled 20000 test rows from 1077950 total
+2025-07-10 19:59:57 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+2025-07-10 19:59:58 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+2025-07-10 19:59:58 [INFO    ] 🔸 root           : Rank 2: Sampled 100000 train rows from 4311800 total
+2025-07-10 19:59:58 [INFO    ] 🔸 root           : Rank 2: Sampled 20000 test rows from 1077950 total
+2025-07-10 19:59:58 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+2025-07-10 19:59:59 [INFO    ] 🔸 root           : Rank 1 heartbeat - waiting for adaptive training
+2025-07-10 19:59:59 [INFO    ] 🔸 root           : Rank 3 heartbeat - waiting for adaptive training
+2025-07-10 19:59:59 [INFO    ] 🔸 VISUALIZATION  : 🎨 Visualization system initialized on port 5000
+2025-07-10 19:59:59 [ERROR   ] 🔸 VISUALIZATION  : ❌ Failed to start web server: [Errno 98] Address already in use
+2025-07-10 19:59:59 [INFO    ] 🔸 email_notifications: Email notifications configured for ali.aloraibi@outlook.com
+2025-07-10 19:59:59 [INFO    ] 🔸 email_notifications: Notifications will be sent every 6 hours
+2025-07-10 19:59:59 [INFO    ] 🔸 email_notifications: No training metrics available for progress update
+2025-07-10 19:59:59 [INFO    ] 🔸 email_notifications: Training monitoring started
+2025-07-10 19:59:59 [INFO    ] 🔸 root           : 📧 Email notifications enabled
+2025-07-10 19:59:59 [INFO    ] 🔸 adaptive_trainer: Removed old TensorBoard run: ./runs/ga_experiment
+2025-07-10 19:59:59 [INFO    ] 🔸 adaptive_trainer: Starting adaptive training
+2025-07-10 19:59:59 [INFO    ] 🔸 adaptive_trainer: 
+=== Adaptive Training Iteration 1/3 ===
+2025-07-10 20:00:00 [INFO    ] 🔸 root           : Rank 2 heartbeat - waiting for adaptive training
+2025-07-10 20:00:01 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 3293 profits, total=0.0000
+2025-07-10 20:00:01 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=0.0000, MDD=0.0000
+2025-07-10 20:00:01 [INFO    ] 🔸 adaptive_trainer: Current performance: 0.0000 (best: 0.0000)
+2025-07-10 20:00:01 [INFO    ] 🔸 adaptive_trainer: Stagnation: 0, Poor performance: 0
+2025-07-10 20:00:01 [INFO    ] 🔸 adaptive_trainer: Method: GA, Entropy: 1.9459
+2025-07-10 20:00:01 [INFO    ] 🔸 adaptive_trainer: Switching to PPO due to: ga_solution_refinement
+2025-07-10 20:00:01 [INFO    ] 🔸 adaptive_trainer: Switching from GA to PPO
+2025-07-10 20:00:01 [INFO    ] 🔸 adaptive_trainer: Starting PPO phase: 150 updates
+2025-07-10 20:00:01 [INFO    ] 🔸 policy_gradient_methods: Loaded model from models/ppo_models/adaptive_ppo_model.pth
+Removed old TensorBoard run: ./runs/ppo_rank_0
+2025-07-10 20:00:02 [INFO    ] 🔸 policy_gradient_methods: Loaded model from models/ppo_models/adaptive_ppo_model.pth
+2025-07-10 20:00:12 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 18098 profits, total=0.0000
+2025-07-10 20:00:12 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=0.0000
+2025-07-10 20:01:17 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 9515 profits, total=0.0000                                                                                                                         
+2025-07-10 20:01:17 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=0.0000
+2025-07-10 20:01:17 [INFO    ] 🔸 adaptive_trainer: PPO Update 50: Performance=-0.2500, Entropy=1.9459
+2025-07-10 20:01:17 [WARNING ] 🔸 adaptive_trainer: PPO early stopping due to lack of improvement (patience: 3)
+2025-07-10 20:01:17 [INFO    ] 🔸 policy_gradient_methods: Saved model to models/ppo_models/adaptive_ppo_model.pth at 2025-07-10 20:01:17.878345
+2025-07-10 20:01:22 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 9424 profits, total=0.0000
+2025-07-10 20:01:22 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=0.0000
+2025-07-10 20:01:22 [INFO    ] 🔸 adaptive_trainer: PPO phase completed with performance: -0.2500
+2025-07-10 20:01:22 [INFO    ] 🔸 adaptive_trainer: 
+=== Adaptive Training Iteration 2/3 ===
+2025-07-10 20:01:31 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 14952 profits, total=0.0000
+2025-07-10 20:01:31 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=0.0000
+2025-07-10 20:01:31 [INFO    ] 🔸 adaptive_trainer: Current performance: -0.2500 (best: 0.0000)
+2025-07-10 20:01:31 [INFO    ] 🔸 adaptive_trainer: Stagnation: 1, Poor performance: 1
+2025-07-10 20:01:31 [INFO    ] 🔸 adaptive_trainer: Method: PPO, Entropy: 1.7669
+2025-07-10 20:01:31 [INFO    ] 🔸 adaptive_trainer: Switching to GA due to: exploration_phase
+2025-07-10 20:01:31 [INFO    ] 🔸 adaptive_trainer: Switching from PPO to GA
+2025-07-10 20:01:31 [INFO    ] 🔸 adaptive_trainer: Starting GA phase: 30 generations, population 30
+[GA] No model file at models/ga_models/adaptive_ga_model.pth, starting from scratch                                     
+[GA gens]:   0%|                                                                                 | 0/10 [00:00<?, ?it/s][rank0]: Traceback (most recent call last):
+[rank0]:   File "/mnt/windows/GeneticTrading/main.py", line 677, in <module>
+[rank0]:     main()
+[rank0]:   File "/mnt/windows/GeneticTrading/main.py", line 606, in main
+[rank0]:     training_log = adaptive_trainer.adaptive_train(
+[rank0]:                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/windows/GeneticTrading/adaptive_trainer.py", line 633, in adaptive_train
+[rank0]:     self.run_ga_phase(generations=generations, population_size=population_size)
+[rank0]:   File "/mnt/windows/GeneticTrading/adaptive_trainer.py", line 413, in run_ga_phase
+[rank0]:     best_agent, best_fitness, _, _ = run_ga_evolution(
+[rank0]:                                      ^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/windows/GeneticTrading/ga_policy_evolution.py", line 391, in run_ga_evolution
+[rank0]:     inits = [evaluate_fitness(ind, env, device, metric=fitness_metric) for ind in pop]
+[rank0]:              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/windows/GeneticTrading/ga_policy_evolution.py", line 167, in evaluate_fitness
+[rank0]:     trade_profits = [trade[4] for trade in env.trades]
+[rank0]:                      ~~~~~^^^
+[rank0]: KeyError: 4
+[rank0]:[W710 20:01:32.451405031 ProcessGroupNCCL.cpp:1476] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+alex-System-Product-Name:10609:10843 [0] NCCL INFO misc/socket.cc:64 -> 3
+alex-System-Product-Name:10609:10843 [0] NCCL INFO misc/socket.cc:80 -> 3
+alex-System-Product-Name:10609:10843 [0] NCCL INFO misc/socket.cc:829 -> 3
+alex-System-Product-Name:10609:10843 [0] NCCL INFO misc/socket.cc:64 -> 3
+alex-System-Product-Name:10609:10843 [0] NCCL INFO misc/socket.cc:80 -> 3
+alex-System-Product-Name:10609:10843 [0] NCCL INFO misc/socket.cc:829 -> 3
+alex-System-Product-Name:10609:10678 [0] NCCL INFO misc/socket.cc:881 -> 3
