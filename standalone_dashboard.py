@@ -732,7 +732,7 @@ class ComprehensiveTradingDashboard:
                         lines = f.readlines()[-100:]  # Last 100 lines
 
                     for line in lines:
-                        # Parse GA fitness scores
+                        # Parse more comprehensive training metrics
                         if "GA Generation" in line and "fitness:" in line:
                             try:
                                 fitness = float(line.split("fitness:")[-1].strip())
@@ -740,6 +740,7 @@ class ComprehensiveTradingDashboard:
                                 self.training_data['iterations'].append(len(self.training_data['ga_fitness']))
                                 self.training_data['timestamps'].append(datetime.now().isoformat())
                                 self.training_data['methods'].append('GA')
+                                logger.info(f"📊 GA Fitness: {fitness:.4f}")
                             except:
                                 pass
 
@@ -749,23 +750,66 @@ class ComprehensiveTradingDashboard:
                                 reward = float(line.split("reward:")[-1].strip())
                                 self.training_data['ppo_rewards'].append(reward)
                                 self.training_data['methods'].append('PPO')
+                                logger.info(f"🎯 PPO Reward: {reward:.4f}")
+                            except:
+                                pass
+
+                        # Parse CAGR values
+                        if "CAGR:" in line:
+                            try:
+                                cagr_part = line.split("CAGR:")[-1].split(",")[0].strip()
+                                cagr = float(cagr_part.replace('%', ''))
+                                logger.info(f"💰 CAGR: {cagr:.2f}%")
+                            except:
+                                pass
+
+                        # Parse Sharpe values
+                        if "Sharpe:" in line:
+                            try:
+                                sharpe_part = line.split("Sharpe:")[-1].split(",")[0].strip()
+                                sharpe = float(sharpe_part)
+                                logger.info(f"📈 Sharpe: {sharpe:.4f}")
                             except:
                                 pass
 
                         # Parse account values
-                        if "Account value:" in line:
+                        if "Account value:" in line or "Performance:" in line:
                             try:
-                                value_str = line.split("Account value:")[-1].strip()
-                                value = float(value_str.replace('$', '').replace(',', ''))
-                                self.training_data['account_values'].append(value)
+                                if "Account value:" in line:
+                                    value_str = line.split("Account value:")[-1].strip()
+                                else:
+                                    value_str = line.split("Performance:")[-1].strip()
+                                
+                                # Extract numeric value
+                                import re
+                                numbers = re.findall(r'[\d.]+', value_str)
+                                if numbers:
+                                    value = float(numbers[0])
+                                    self.training_data['account_values'].append(value)
+                                    logger.info(f"💵 Account Value: {value:.2f}")
+                            except:
+                                pass
+
+                        # Parse iteration progress
+                        if "Iteration" in line and ("GA" in line or "PPO" in line):
+                            try:
+                                timestamp = datetime.now().isoformat()
+                                self.training_data['timestamps'].append(timestamp)
+                                if "GA" in line:
+                                    self.training_data['methods'].append('GA')
+                                else:
+                                    self.training_data['methods'].append('PPO')
                             except:
                                 pass
 
         except Exception as e:
             logger.error(f"Error collecting training metrics: {e}")
+            
+        # Also check for TensorBoard data
+        self.collect_tensorboard_files()
 
-    def collect_tensorboard_metrics(self):
-        """Attempt to collect TensorBoard data."""
+    def collect_tensorboard_files(self):
+        """Monitor TensorBoard files for data."""
         try:
             # Check if TensorBoard files exist
             tb_dirs = [Path("./runs"), Path("./logs")]
@@ -775,9 +819,26 @@ class ComprehensiveTradingDashboard:
                     # Find event files
                     event_files = list(tb_dir.rglob("events.out.tfevents.*"))
                     if event_files:
-                        logger.info(f"Found {len(event_files)} TensorBoard event files")
-                        # Here you would parse TensorBoard events
-                        # For now, we'll simulate some data
+                        logger.info(f"📊 Found {len(event_files)} TensorBoard event files")
+                        # Store file count as metric
+                        self.training_data['system_metrics']['tensorboard_files'] = len(event_files)
+
+        except Exception as e:
+            logger.error(f"Error collecting TensorBoard files: {e}")
+
+    def collect_tensorboard_metrics(self):
+        """Attempt to collect TensorBoard data."""
+        try:
+            # Check if TensorBoard is accessible
+            import requests
+            try:
+                response = requests.get("http://localhost:6006", timeout=2)
+                if response.status_code == 200:
+                    self.training_data['system_metrics']['tensorboard_status'] = "✅ Online"
+                else:
+                    self.training_data['system_metrics']['tensorboard_status'] = "⚠️ Issues"
+            except:
+                self.training_data['system_metrics']['tensorboard_status'] = "❌ Offline"
 
         except Exception as e:
             logger.error(f"Error collecting TensorBoard metrics: {e}")
