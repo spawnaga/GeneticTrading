@@ -1,3 +1,4 @@
+
 """This change introduces structured table logging for trading activities within the FuturesEnv class, enhancing monitoring and analysis capabilities."""
 #!/usr/bin/env python
 """
@@ -215,6 +216,17 @@ class FuturesEnv(gym.Env):
             'unrealized_pnl': []
         }
 
+        # Setup file-only trading logger
+        self.trading_logger = logging.getLogger("TRADING_ACTIVITY_FILE")
+        if not self.trading_logger.handlers:
+            trading_file_handler = logging.FileHandler(Path(self.log_dir) / "trading_activity.log")
+            trading_file_handler.setFormatter(logging.Formatter(
+                "%(asctime)s [%(levelname)-8s] %(message)s"
+            ))
+            self.trading_logger.addHandler(trading_file_handler)
+            self.trading_logger.setLevel(logging.INFO)
+            self.trading_logger.propagate = False  # No console output
+
         logger.info(f"Initialized FuturesEnv with {len(states)} states, obs_dim={obs_dim}")
 
     def reset(self, seed=None, options=None):
@@ -273,54 +285,40 @@ class FuturesEnv(gym.Env):
         current_state = self.states[self.current_index]
         self._update_market_conditions(current_state)
 
-        # Execute action with more aggressive trading
+        # Execute action
         reward = 0.0
         info = {"message": "hold"}
 
         # Log the action being taken
         action_names = {0: "HOLD", 1: "BUY", 2: "SELL"}
         current_action = action_names.get(action, f"UNKNOWN({action})")
-
-        # Log current price
         current_price = current_state.close_price
-
-        # Calculate profit/loss (pnl)
-        profit_loss = 0.0  # Initialize pnl
 
         # Track action for monitoring with structured logging
         if MONITOR_AVAILABLE:
             log_trading_action(self.current_index, action, current_price, self.current_position, self.account_balance)
 
-        # Create trading activity logger (file only, not console)
-        trading_logger = logging.getLogger("TRADING_ACTIVITY_FILE")
-        if not trading_logger.handlers:
-            trading_file_handler = logging.FileHandler(Path(self.log_dir) / "trading_activity.log")
-            trading_file_handler.setFormatter(logging.Formatter(
-                "%(asctime)s [%(levelname)-8s] %(message)s"
-            ))
-            trading_logger.addHandler(trading_file_handler)
-            trading_logger.setLevel(logging.INFO)
-            trading_logger.propagate = False  # Don't send to console
-
         # Log current state to file only
-        trading_logger.info(f"📊 Step {self.current_index} | Action: {current_action} | "
-                           f"Price: ${current_state.close_price:.2f} | "
-                           f"Position: {self.current_position} | "
-                           f"Account: ${self.account_balance:,.2f}")
+        self.trading_logger.info(f"📊 Step {self.current_index} | Action: {current_action} | "
+                               f"Price: ${current_state.close_price:.2f} | "
+                               f"Position: {self.current_position} | "
+                               f"Account: ${self.account_balance:,.2f}")
 
         if action != 0:  # Not hold
             reward, info = self._execute_trade(action, current_state)
 
             # Log trade execution result to file only
-            trading_logger.info(f"🔄 Trade Result: {info.get('message', 'Unknown')} | "
-                               f"Reward: {reward:.4f} | "
-                               f"New Position: {self.current_position}")
+            self.trading_logger.info(f"🔄 Trade Result: {info.get('message', 'Unknown')} | "
+                                   f"Reward: {reward:.4f} | "
+                                   f"New Position: {self.current_position}")
 
-            # Log to structured trading table with actual trade reward as P&L
+            # Log to both structured tables
             self._log_to_trading_table(action, current_price, self.current_position, self.account_balance, reward, reward)
+            self._log_to_trades_table(action, current_price, self.current_position, self.account_balance, reward, reward)
         else:
-            # Log hold action to trading table
+            # Log hold action to both tables
             self._log_to_trading_table(action, current_price, self.current_position, self.account_balance, 0.0, 0.0)
+            self._log_to_trades_table(action, current_price, self.current_position, self.account_balance, 0.0, 0.0)
 
         # Update position valuation
         self._update_position_value(current_state.close_price)
@@ -341,11 +339,11 @@ class FuturesEnv(gym.Env):
         # Log account status every 1000 steps to reduce console spam
         if self.current_index % 1000 == 0:
             total_equity = self.account_balance + self.unrealized_pnl
-            logger.info(f"💰 ACCOUNT STATUS | Step: {self.current_index} | "
-                       f"Balance: ${self.account_balance:,.2f} | "
-                       f"Unrealized P&L: ${self.unrealized_pnl:,.2f} | "
-                       f"Total Equity: ${total_equity:,.2f} | "
-                       f"Total Trades: {len(self.trades)}")
+            self.trading_logger.info(f"💰 ACCOUNT STATUS | Step: {self.current_index} | "
+                                   f"Balance: ${self.account_balance:,.2f} | "
+                                   f"Unrealized P&L: ${self.unrealized_pnl:,.2f} | "
+                                   f"Total Equity: ${total_equity:,.2f} | "
+                                   f"Total Trades: {len(self.trades)}")
 
         return self._get_observation(), step_reward, self.done, False, self._get_info()
 
@@ -389,16 +387,16 @@ class FuturesEnv(gym.Env):
             self.position_entry_price = execution_price
             self.position_entry_time = state.ts
             info = {"message": f"OPENED {position_type}: {abs(actual_trade_size)} contracts at ${execution_price:.2f}"}
-            logger.debug(f"🟢 NEW POSITION | {position_type} {abs(actual_trade_size)} contracts | "
-                        f"Entry: ${execution_price:.2f} | Time: {state.ts}")
+            self.trading_logger.debug(f"🟢 NEW POSITION | {position_type} {abs(actual_trade_size)} contracts | "
+                                    f"Entry: ${execution_price:.2f} | Time: {state.ts}")
 
         elif new_position == 0:
             # Closing position
             reward = self._close_position(execution_price, state.ts)
             prev_type = "LONG" if self.current_position > 0 else "SHORT"
             info = {"message": f"CLOSED {prev_type}: P&L=${reward:.2f}"}
-            logger.debug(f"🔴 CLOSED POSITION | {prev_type} | "
-                        f"Exit: ${execution_price:.2f} | P&L: ${reward:.2f}")
+            self.trading_logger.debug(f"🔴 CLOSED POSITION | {prev_type} | "
+                                    f"Exit: ${execution_price:.2f} | P&L: ${reward:.2f}")
 
         elif np.sign(new_position) != np.sign(self.current_position):
             # Reversing position
@@ -407,8 +405,8 @@ class FuturesEnv(gym.Env):
             self.position_entry_price = execution_price
             self.position_entry_time = state.ts
             info = {"message": f"REVERSED {prev_type}→{position_type}: P&L=${reward:.2f}"}
-            logger.debug(f"🔄 REVERSED POSITION | {prev_type} → {position_type} | "
-                        f"P&L: ${reward:.2f} | New Entry: ${execution_price:.2f}")
+            self.trading_logger.debug(f"🔄 REVERSED POSITION | {prev_type} → {position_type} | "
+                                    f"P&L: ${reward:.2f} | New Entry: ${execution_price:.2f}")
 
         else:
             # Adding to existing position
@@ -422,8 +420,8 @@ class FuturesEnv(gym.Env):
             )
             current_type = "LONG" if new_position > 0 else "SHORT"
             info = {"message": f"ADDED TO {current_type}: +{abs(actual_trade_size)} contracts"}
-            logger.debug(f"🔵 ADDED TO POSITION | {current_type} +{abs(actual_trade_size)} | "
-                        f"Total: {abs(new_position)} contracts | Avg Entry: ${self.position_entry_price:.2f}")
+            self.trading_logger.debug(f"🔵 ADDED TO POSITION | {current_type} +{abs(actual_trade_size)} | "
+                                    f"Total: {abs(new_position)} contracts | Avg Entry: ${self.position_entry_price:.2f}")
 
         # Log position change
         if MONITOR_AVAILABLE:
@@ -734,17 +732,25 @@ class FuturesEnv(gym.Env):
             if not hasattr(self, '_last_position') or position != self._last_position:
                 self._last_position = position
 
+            # Determine trade status
+            status = "HOLD"
+            if pnl > 0:
+                status = "PROFIT"
+            elif pnl < 0:
+                status = "LOSS"
+
             # Create table entry - convert all values to native Python types
             table_entry = {
                 "timestamp": timestamp,
                 "step": int(self.current_index),
                 "action": action_name,
-                "price": f"${float(price):.2f}",
+                "price": float(price),
                 "position": int(position),
                 "pos_change": position_change if position_change else "0",
-                "balance": f"${float(balance):,.2f}",
-                "pnl": f"${float(pnl):.2f}",
-                "reward": f"{float(reward):.4f}"
+                "balance": float(balance),
+                "pnl": float(pnl),
+                "reward": float(reward),
+                "status": status
             }
 
             # Load existing table or create new
@@ -771,7 +777,7 @@ class FuturesEnv(gym.Env):
                                     trading_table = json.loads(content)
                         except (json.JSONDecodeError, ValueError) as e:
                             # If JSON is corrupted, start fresh
-                            logger.warning(f"Corrupted trading table, starting fresh: {e}")
+                            self.trading_logger.warning(f"Corrupted trading table, starting fresh: {e}")
                             trading_table = []
 
                     # Add new entry
@@ -796,7 +802,7 @@ class FuturesEnv(gym.Env):
 
                 except Exception as e:
                     if attempt == max_retries - 1:
-                        logger.error(f"Failed to save trading table after {max_retries} attempts: {e}")
+                        self.trading_logger.error(f"Failed to save trading table after {max_retries} attempts: {e}")
                     else:
                         # Brief delay before retry
                         import time
@@ -804,4 +810,113 @@ class FuturesEnv(gym.Env):
 
         except Exception as e:
             # Silent failure - don't spam logs
+            pass
+
+    def _log_to_trades_table(self, action, price, position, balance, reward, pnl):
+        """Log trade outcomes to a separate structured table file."""
+        try:
+            from datetime import datetime
+            import fcntl
+            import tempfile
+            import os
+
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            action_name = {0: "HOLD", 1: "BUY", 2: "SELL"}.get(action, "UNKNOWN")
+
+            # Enhanced position change tracking
+            position_change = ""
+            position_type = "FLAT"
+            if hasattr(self, '_last_trade_position'):
+                if position != self._last_trade_position:
+                    change = position - self._last_trade_position
+                    if change > 0:
+                        position_change = f"+{change}"
+                        position_type = "LONG"
+                    elif change < 0:
+                        position_change = f"{change}"
+                        position_type = "SHORT"
+                    else:
+                        position_change = "0"
+                        position_type = "FLAT"
+                else:
+                    position_change = "0"
+                    if position > 0:
+                        position_type = "LONG"
+                    elif position < 0:
+                        position_type = "SHORT"
+                    else:
+                        position_type = "FLAT"
+            else:
+                self._last_trade_position = 0
+                if position != 0:
+                    position_change = f"{position}"
+                    position_type = "LONG" if position > 0 else "SHORT"
+
+            if not hasattr(self, '_last_trade_position') or position != self._last_trade_position:
+                self._last_trade_position = position
+
+            # Determine profit/loss status
+            status = "HOLD"
+            if pnl > 0:
+                status = "PROFIT"
+            elif pnl < 0:
+                status = "LOSS"
+
+            table_entry = {
+                "timestamp": timestamp,
+                "step": int(self.current_index),
+                "action": action_name,
+                "price": float(price),
+                "position": int(position),
+                "position_change": position_change,
+                "position_type": position_type,
+                "balance": float(balance),
+                "pnl": float(pnl),
+                "reward": float(reward),
+                "status": status,
+                "account_equity": float(balance + self.unrealized_pnl)
+            }
+
+            table_file = Path(self.log_dir) / "trades_table.json"
+            table_file.parent.mkdir(parents=True, exist_ok=True)
+
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    trades_table = []
+                    if table_file.exists():
+                        try:
+                            with open(table_file, 'r') as f:
+                                fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
+                                content = f.read().strip()
+                                if content:
+                                    trades_table = json.loads(content)
+                        except (json.JSONDecodeError, ValueError) as e:
+                            self.trading_logger.warning(f"Corrupted trades table, starting fresh: {e}")
+                            trades_table = []
+
+                    trades_table.append(table_entry)
+
+                    if len(trades_table) > 5000:
+                        trades_table = trades_table[-5000:]
+
+                    with tempfile.NamedTemporaryFile(mode='w', dir=table_file.parent, 
+                                                   prefix='.trades_table_tmp_', 
+                                                   suffix='.json', delete=False) as tmp_f:
+                        json.dump(trades_table, tmp_f, indent=2)
+                        tmp_f.flush()
+                        os.fsync(tmp_f.fileno())
+                        temp_path = tmp_f.name
+
+                    os.rename(temp_path, table_file)
+                    break
+
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        self.trading_logger.error(f"Failed to save trades table after {max_retries} attempts: {e}")
+                    else:
+                        import time
+                        time.sleep(0.01)
+
+        except Exception as e:
             pass
