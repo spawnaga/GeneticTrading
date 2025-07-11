@@ -291,9 +291,6 @@ class FuturesEnv(gym.Env):
         if MONITOR_AVAILABLE:
             log_trading_action(self.current_index, action, current_price, self.current_position, self.account_balance)
 
-        # Log to structured trading table
-            self._log_to_trading_table(action, current_price, self.current_position, self.account_balance, reward, profit_loss)
-
         # Log current state before action
         logger.info(f"📊 Step {self.current_index} | Action: {current_action} | "
                    f"Price: ${current_state.close_price:.2f} | "
@@ -307,6 +304,12 @@ class FuturesEnv(gym.Env):
             logger.info(f"🔄 Trade Result: {info.get('message', 'Unknown')} | "
                        f"Reward: {reward:.4f} | "
                        f"New Position: {self.current_position}")
+            
+            # Log to structured trading table with actual trade reward as P&L
+            self._log_to_trading_table(action, current_price, self.current_position, self.account_balance, reward, reward)
+        else:
+            # Log hold action to trading table
+            self._log_to_trading_table(action, current_price, self.current_position, self.account_balance, 0.0, 0.0)
 
         # Update position valuation
         self._update_position_value(current_state.close_price)
