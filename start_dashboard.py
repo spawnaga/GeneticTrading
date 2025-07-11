@@ -1,24 +1,65 @@
 
 #!/usr/bin/env python
 """
-Quick Dashboard Startup Script
+Complete Dashboard & TensorBoard Startup Script
 """
 import subprocess
 import sys
 import threading
 import time
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def start_tensorboard():
+    """Start TensorBoard in background."""
+    logger.info("🔧 Starting TensorBoard...")
+    try:
+        subprocess.run([sys.executable, "start_tensorboard.py", "--port", "6006"])
+    except Exception as e:
+        logger.error(f"TensorBoard failed: {e}")
 
 def start_dashboard():
-    """Start the dashboard server."""
-    print("🚀 Starting NQ Trading Dashboard...")
+    """Start the main dashboard."""
+    logger.info("🚀 Starting Trading Dashboard...")
     try:
-        # Start the standalone dashboard
         subprocess.run([sys.executable, "standalone_dashboard.py"])
     except KeyboardInterrupt:
-        print("\n🛑 Dashboard stopped")
+        logger.info("\n🛑 Dashboard stopped")
+
+def start_both():
+    """Start both TensorBoard and dashboard."""
+    print("🎯 NQ Trading System - Complete Dashboard")
+    print("=" * 50)
+    print("Starting TensorBoard on port 6006...")
+    print("Starting Trading Dashboard on port 5000...")
+    print("=" * 50)
+    
+    # Start TensorBoard in background thread
+    tb_thread = threading.Thread(target=start_tensorboard, daemon=True)
+    tb_thread.start()
+    
+    # Give TensorBoard time to start
+    time.sleep(3)
+    
+    # Start main dashboard (this will block)
+    start_dashboard()
 
 if __name__ == "__main__":
-    start_dashboard()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--tensorboard-only", action="store_true", help="Start only TensorBoard")
+    parser.add_argument("--dashboard-only", action="store_true", help="Start only dashboard")
+    
+    args = parser.parse_args()
+    
+    if args.tensorboard_only:
+        start_tensorboard()
+    elif args.dashboard_only:
+        start_dashboard()
+    else:
+        start_both()
 #!/usr/bin/env python
 """
 Start Dashboard with TensorBoard Integration
