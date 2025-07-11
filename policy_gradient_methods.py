@@ -17,6 +17,9 @@ import logging
 import time
 from collections import deque
 
+# Force tqdm to use single line output
+os.environ['TQDM_DISABLE_MONITOR'] = '1'
+
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -287,12 +290,14 @@ class PPOTrainer:
             trajectory_pbar = tqdm(range(self.rollout_steps), 
                                  desc="🎯 Collecting Trajectories", 
                                  leave=False, 
-                                 ncols=120,
+                                 ncols=100,
                                  position=0,
-                                 dynamic_ncols=True,
-                                 miniters=10,  # Update less frequently
-                                 ascii=False,
-                                 bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]')
+                                 dynamic_ncols=False,  # Fixed width to prevent line wrapping
+                                 miniters=max(1, self.rollout_steps // 20),  # Update every 5%
+                                 maxinterval=1.0,  # Force update at least every second
+                                 ascii=True,  # Use ASCII characters for better compatibility
+                                 file=None,  # Use default stdout
+                                 disable=False)
         else:
             trajectory_pbar = range(self.rollout_steps)
 
@@ -367,7 +372,7 @@ class PPOTrainer:
                     state = np.zeros(self.env.observation_space.shape, dtype=np.float32)
 
             # Update trajectory progress bar less frequently to avoid conflicts
-            if self.local_rank == 0 and hasattr(trajectory_pbar, 'set_postfix') and step % 50 == 0:
+            if self.local_rank == 0 and hasattr(trajectory_pbar, 'set_postfix') and step % 100 == 0:
                 avg_reward = np.mean(rew_buf[-50:]) if len(rew_buf) >= 50 else np.mean(rew_buf) if rew_buf else 0.0
                 episodes = sum(done_buf[-50:]) if len(done_buf) >= 50 else sum(done_buf) if done_buf else 0
 
@@ -377,15 +382,13 @@ class PPOTrainer:
                 avg_policy_loss = sum(recent_policy_losses[-10:]) / len(recent_policy_losses[-10:]) if recent_policy_losses else 0.0
                 avg_value_loss = sum(recent_value_losses[-10:]) / len(recent_value_losses[-10:]) if recent_value_losses else 0.0
 
+                # Simpler postfix to avoid line wrapping
                 trajectory_pbar.set_postfix({
-                    'reward': f"{avg_reward:.1f}",
+                    'reward': f"{avg_reward:.2f}",
                     'eps': episodes,
                     'p_loss': f"{avg_policy_loss:.3f}",
-                    'v_loss': f"{avg_value_loss:.3f}",
-                    'progress': f"{((step+1)/self.rollout_steps)*100:.0f}%"
+                    'v_loss': f"{avg_value_loss:.3f}"
                 })
-                # Force refresh to ensure proper display
-                trajectory_pbar.refresh()
 
         # Close trajectory progress bar
         if self.local_rank == 0 and hasattr(trajectory_pbar, 'close'):
@@ -799,13 +802,15 @@ class PPOTrainer:
         if self.local_rank == 0:
             pbar = tqdm(range(start_update, n_updates), 
                        desc="🚀 PPO Training", 
-                       ncols=140, 
+                       ncols=120, 
                        leave=True, 
                        position=1,  # Position below trajectory collection bar
-                       dynamic_ncols=True,
+                       dynamic_ncols=False,  # Fixed width
                        unit="update",
-                       ascii=False,
-                       bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]')
+                       ascii=True,  # Use ASCII for compatibility
+                       miniters=1,
+                       maxinterval=2.0,
+                       file=None)
         else:
             pbar = range(start_update, n_updates)
 
@@ -814,32 +819,19 @@ class PPOTrainer:
             mean_reward = self.train_step()
 
             if self.local_rank == 0 and hasattr(pbar, 'set_postfix'):
-                # Calculate additional metrics for better progress display
-                lr = self.optimizer.param_groups[0]["lr"]
-                entropy_coef = getattr(self, 'entropy_coef', 0.0)
-
                 # Get recent performance metrics
                 recent_policy_losses = getattr(self, '_recent_policy_losses', [0.0])
                 recent_value_losses = getattr(self, '_recent_value_losses', [0.0])
 
-                avg_policy_loss = sum(recent_policy_losses[-10:]) / len(recent_policy_losses[-10:]) if recent_policy_losses else 0.0
-                avg_value_loss = sum(recent_value_losses[-10:]) / len(recent_value_losses[-10:]) if recent_value_losses else 0.0
+                avg_policy_loss = sum(recent_policy_losses[-5:]) / len(recent_policy_losses[-5:]) if recent_policy_losses else 0.0
+                avg_value_loss = sum(recent_value_losses[-5:]) / len(recent_value_losses[-5:]) if recent_value_losses else 0.0
 
-                # Calculate iterations per second based on elapsed time
-                elapsed_time = time.time() - start_time
-                iter_per_sec = (update - start_update + 1) / elapsed_time if elapsed_time > 0 else 0.0
-
+                # Simpler postfix to prevent line wrapping
                 pbar.set_postfix({
                     'reward': f"{mean_reward:.1f}",
                     'p_loss': f"{avg_policy_loss:.3f}",
-                    'v_loss': f"{avg_value_loss:.3f}",
-                    'iter/s': f"{iter_per_sec:.2f}",
-                    'progress': f"{update+1}/{n_updates}"
+                    'v_loss': f"{avg_value_loss:.3f}"
                 })
-
-                # Update progress bar description with current phase info
-                if hasattr(self, '_current_phase'):
-                    pbar.set_description(f"PPO Training ({self._current_phase})")
 
             elapsed = time.time() - start_time
             self.tb_writer.add_scalar("PPO/ElapsedSeconds", elapsed, update)
