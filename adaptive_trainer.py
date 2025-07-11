@@ -141,8 +141,8 @@ class AdaptiveTrainer:
             self.train_env, 
             population_size=30, 
             generations=30,
-            elite_count=5,
-            local_rank=self.local_rank
+            hall_of_fame_size=5,
+            device=self.device
         )
 
         # Evaluate the best policy
