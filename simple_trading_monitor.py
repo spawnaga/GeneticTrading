@@ -407,6 +407,3 @@ if __name__ == '__main__':
     print("📋 Dual table view: Trading Activity + Trade Outcomes")
 
     app.run(host='0.0.0.0', port=args.port, debug=False)
-```
-
-Here's the complete code with the requested P&L updates in both dashboard stats and table rows.

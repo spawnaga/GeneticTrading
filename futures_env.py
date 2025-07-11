@@ -1,4 +1,3 @@
-
 """This change introduces structured table logging for trading activities within the FuturesEnv class, enhancing monitoring and analysis capabilities."""
 #!/usr/bin/env python
 """
@@ -461,11 +460,11 @@ class FuturesEnv(gym.Env):
         # Calculate P&L for NQ futures
         # For NQ: each point = $20, tick size = 0.25, so each tick = $5
         price_diff = exit_price - self.position_entry_price
-        
+
         # For short positions, we profit when price goes down
         if self.current_position < 0:
             price_diff = -price_diff
-            
+
         # Calculate P&L: price difference * position size * $20 per point
         pnl = price_diff * abs(self.current_position) * 20.0
 
@@ -504,11 +503,11 @@ class FuturesEnv(gym.Env):
         if self.current_position != 0 and self.position_entry_price != 0:
             # Calculate unrealized P&L for NQ futures
             price_diff = current_price - self.position_entry_price
-            
+
             # For short positions, we profit when price goes down
             if self.current_position < 0:
                 price_diff = -price_diff
-                
+
             # Calculate unrealized P&L: price difference * position size * $20 per point
             self.unrealized_pnl = price_diff * abs(self.current_position) * 20.0
             self.position_value = abs(self.current_position) * current_price * 20.0  # Position value in dollars
@@ -695,248 +694,4 @@ class FuturesEnv(gym.Env):
             'time_of_day_factor': self.time_of_day_factor,
             'liquidity_factor': self.liquidity_factor,
             'total_profit': sum([t['pnl'] for t in self.trades]),
-            'timestamp': self.states[self.current_index].ts if self.current_index < len(self.states) else None
-        }
-
-    def render(self, mode='human'):
-        """Render environment state"""
-        if mode == 'human':
-            metrics = self.generate_episode_metrics()
-            return self.total_reward, metrics
-        return None
-
-    def generate_episode_metrics(self) -> Dict:
-        """Generate comprehensive episode performance metrics"""
-        total_equity = self.account_balance + self.unrealized_pnl
-
-        return {
-            'total_trades': len(self.trades),
-            'total_pnl': sum([t['pnl'] for t in self.trades]),
-            'total_return': ((total_equity - self.initial_capital) / self.initial_capital) * 100,
-            'final_equity': total_equity,
-            'max_drawdown': max(self.drawdown_series) if self.drawdown_series else 0.0,
-            'equity_curve': self.equity_curve.copy(),
-            'current_position': self.current_position,
-            'unrealized_pnl': self.unrealized_pnl
-        }
-
-    def close(self):
-        """Clean up environment resources"""
-        pass
-
-    def _log_to_trading_table(self, action, price, position, balance, reward, pnl):
-        """Log trading activity to structured table format."""
-        try:
-            from datetime import datetime
-            import fcntl
-            import tempfile
-            import os
-
-            # Create structured log entry
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            action_name = {0: "HOLD", 1: "BUY", 2: "SELL"}.get(action, "UNKNOWN")
-
-            # Determine position change
-            position_change = ""
-            if hasattr(self, '_last_position'):
-                if position != self._last_position:
-                    if position > self._last_position:
-                        position_change = f"+{position - self._last_position}"
-                    else:
-                        position_change = f"{position - self._last_position}"
-            else:
-                self._last_position = 0
-
-            if not hasattr(self, '_last_position') or position != self._last_position:
-                self._last_position = position
-
-            # Determine trade status
-            status = "HOLD"
-            if pnl > 0:
-                status = "PROFIT"
-            elif pnl < 0:
-                status = "LOSS"
-
-            # Create table entry - convert all values to native Python types
-            table_entry = {
-                "timestamp": timestamp,
-                "step": int(self.current_index),
-                "action": action_name,
-                "price": float(price),
-                "position": int(position),
-                "pos_change": position_change if position_change else "0",
-                "balance": float(balance),
-                "pnl": float(pnl),
-                "reward": float(reward),
-                "status": status
-            }
-
-            # Load existing table or create new
-            table_file = Path(self.log_dir) / "trading_table.json"
-            table_file.parent.mkdir(parents=True, exist_ok=True)
-
-            max_retries = 3
-            for attempt in range(max_retries):
-                try:
-                    # Try to read existing data
-                    trading_table = []
-                    if table_file.exists():
-                        try:
-                            with open(table_file, 'r') as f:
-                                # Try to acquire file lock
-                                try:
-                                    fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
-                                except:
-                                    # If can't lock, skip this logging attempt
-                                    return
-                                
-                                content = f.read().strip()
-                                if content:  # Only parse if file has content
-                                    trading_table = json.loads(content)
-                        except (json.JSONDecodeError, ValueError) as e:
-                            # If JSON is corrupted, start fresh
-                            self.trading_logger.warning(f"Corrupted trading table, starting fresh: {e}")
-                            trading_table = []
-
-                    # Add new entry
-                    trading_table.append(table_entry)
-
-                    # Keep only last 5000 entries to prevent huge files
-                    if len(trading_table) > 5000:
-                        trading_table = trading_table[-5000:]
-
-                    # Write atomically using temporary file
-                    with tempfile.NamedTemporaryFile(mode='w', dir=table_file.parent, 
-                                                   prefix='.trading_table_tmp_', 
-                                                   suffix='.json', delete=False) as tmp_f:
-                        json.dump(trading_table, tmp_f, indent=2)
-                        tmp_f.flush()
-                        os.fsync(tmp_f.fileno())
-                        temp_path = tmp_f.name
-
-                    # Atomic rename
-                    os.rename(temp_path, table_file)
-                    break  # Success, exit retry loop
-
-                except Exception as e:
-                    if attempt == max_retries - 1:
-                        self.trading_logger.error(f"Failed to save trading table after {max_retries} attempts: {e}")
-                    else:
-                        # Brief delay before retry
-                        import time
-                        time.sleep(0.01)
-
-        except Exception as e:
-            # Silent failure - don't spam logs
-            pass
-
-    def _log_to_trades_table(self, action, price, position, balance, reward, pnl):
-        """Log trade outcomes to a separate structured table file."""
-        try:
-            from datetime import datetime
-            import fcntl
-            import tempfile
-            import os
-
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            action_name = {0: "HOLD", 1: "BUY", 2: "SELL"}.get(action, "UNKNOWN")
-
-            # Enhanced position change tracking
-            position_change = ""
-            position_type = "FLAT"
-            if hasattr(self, '_last_trade_position'):
-                if position != self._last_trade_position:
-                    change = position - self._last_trade_position
-                    if change > 0:
-                        position_change = f"+{change}"
-                        position_type = "LONG"
-                    elif change < 0:
-                        position_change = f"{change}"
-                        position_type = "SHORT"
-                    else:
-                        position_change = "0"
-                        position_type = "FLAT"
-                else:
-                    position_change = "0"
-                    if position > 0:
-                        position_type = "LONG"
-                    elif position < 0:
-                        position_type = "SHORT"
-                    else:
-                        position_type = "FLAT"
-            else:
-                self._last_trade_position = 0
-                if position != 0:
-                    position_change = f"{position}"
-                    position_type = "LONG" if position > 0 else "SHORT"
-
-            if not hasattr(self, '_last_trade_position') or position != self._last_trade_position:
-                self._last_trade_position = position
-
-            # Determine profit/loss status based on realized P&L
-            status = "HOLD"
-            if pnl > 0:
-                status = "PROFIT"
-            elif pnl < 0:
-                status = "LOSS"
-
-            table_entry = {
-                "timestamp": timestamp,
-                "step": int(self.current_index),
-                "action": action_name,
-                "price": float(price),
-                "position": int(position),
-                "position_change": position_change,
-                "position_type": position_type,
-                "balance": float(balance),
-                "realized_pnl": float(pnl),
-                "unrealized_pnl": float(self.unrealized_pnl),
-                "reward": float(reward),
-                "status": status,
-                "account_equity": float(balance + self.unrealized_pnl),
-                "total_trades": len(self.trades)
-            }
-
-            table_file = Path(self.log_dir) / "trades_table.json"
-            table_file.parent.mkdir(parents=True, exist_ok=True)
-
-            max_retries = 3
-            for attempt in range(max_retries):
-                try:
-                    trades_table = []
-                    if table_file.exists():
-                        try:
-                            with open(table_file, 'r') as f:
-                                fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
-                                content = f.read().strip()
-                                if content:
-                                    trades_table = json.loads(content)
-                        except (json.JSONDecodeError, ValueError) as e:
-                            self.trading_logger.warning(f"Corrupted trades table, starting fresh: {e}")
-                            trades_table = []
-
-                    trades_table.append(table_entry)
-
-                    if len(trades_table) > 5000:
-                        trades_table = trades_table[-5000:]
-
-                    with tempfile.NamedTemporaryFile(mode='w', dir=table_file.parent, 
-                                                   prefix='.trades_table_tmp_', 
-                                                   suffix='.json', delete=False) as tmp_f:
-                        json.dump(trades_table, tmp_f, indent=2)
-                        tmp_f.flush()
-                        os.fsync(tmp_f.fileno())
-                        temp_path = tmp_f.name
-
-                    os.rename(temp_path, table_file)
-                    break
-
-                except Exception as e:
-                    if attempt == max_retries - 1:
-                        self.trading_logger.error(f"Failed to save trades table after {max_retries} attempts: {e}")
-                    else:
-                        import time
-                        time.sleep(0.01)
-
-        except Exception as e:
-            pass
+            'timestamp': self.states[self.current_index].ts if self.current_index < len(self

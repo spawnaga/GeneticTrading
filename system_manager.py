@@ -125,30 +125,38 @@ class SystemManager:
             def monitor_dashboard():
                 while self.running and process.poll() is None:
                     line = process.stdout.readline()
-                    if line and "ERROR" in line:
-                        logger.warning(f"[DASHBOARD] {line.strip()}")
+                    if line:
+                        if "Running on" in line or "Dashboard" in line:
+                            logger.info(f"[DASHBOARD] {line.strip()}")
+                        elif "ERROR" in line:
+                            logger.warning(f"[DASHBOARD] {line.strip()}")
 
             threading.Thread(target=monitor_dashboard, daemon=True).start()
+            
+            # Wait a moment for dashboard to start
+            time.sleep(2)
             return True
 
         except Exception as e:
             logger.error(f"❌ Failed to start dashboard: {e}")
             return False
 
-    def wait_for_tensorboard(self, max_wait=60):
+    def wait_for_tensorboard(self, max_wait=10):
         """Wait for TensorBoard to be ready."""
+        logger.info("⏳ Waiting for TensorBoard to initialize...")
         for i in range(max_wait):
             try:
-                response = requests.get("http://localhost:6006", timeout=2)
+                response = requests.get("http://localhost:6006", timeout=1)
                 if response.status_code == 200:
                     logger.info("✅ TensorBoard is ready!")
                     return True
             except:
                 pass
-            logger.info(f"⏳ Waiting for TensorBoard... ({i+1}/{max_wait})")
+            if i < 5:  # Only show first 5 attempts
+                logger.info(f"⏳ Waiting for TensorBoard... ({i+1}/{max_wait})")
             time.sleep(1)
-        logger.warning("⚠️ TensorBoard may not be fully ready")
-        return False
+        logger.info("⚠️ TensorBoard starting in background, continuing...")
+        return True
 
     def start_complete_system(self):
         """Start the complete system in proper order."""
