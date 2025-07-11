@@ -112,6 +112,11 @@ class ComprehensiveTradingDashboard:
             tb_data = self.extract_tensorboard_data()
             return jsonify(tb_data)
 
+        @self.app.route('/')
+        def index():
+            """Main dashboard page."""
+            return self.get_dashboard_html()
+
     def get_dashboard_html(self):
         """Generate comprehensive dashboard HTML."""
         return """
@@ -873,6 +878,9 @@ class ComprehensiveTradingDashboard:
 
 def main():
     """Main function to start the dashboard."""
+    logger.info("🚀 Starting Comprehensive Trading Dashboard")
+    logger.info("📊 Dashboard will be available at http://0.0.0.0:5000")
+    
     dashboard = ComprehensiveTradingDashboard(port=5000)
 
     def signal_handler(sig, frame):
@@ -892,4 +900,4 @@ def main():
 
 
 if __name__ == "__main__":
-    exit(main())
+    main()
