@@ -757,3 +757,6 @@ class FuturesEnv(gym.Env):
 
             except Exception as e:
                 logger.error(f"Failed to save trading table: {e}")
+
+        except Exception as e:
+            logger.error(f"Failed to log to trading table: {e}")
