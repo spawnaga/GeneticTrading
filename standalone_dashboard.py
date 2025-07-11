@@ -518,57 +518,108 @@ class ComprehensiveTradingDashboard:
         }
 
         function updatePerformanceChart(training) {
-            const trace = {
-                x: training.timestamps,
-                y: training.ga_fitness.concat(training.ppo_rewards),
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'Performance',
-                line: { color: '#00ff88', width: 3 },
-                marker: { size: 6 }
-            };
+            let traces = [];
+            
+            // Check if we have any actual training data
+            if (training.ga_fitness.length > 0 || training.ppo_rewards.length > 0) {
+                // Combine GA and PPO data with different colors
+                if (training.ga_fitness.length > 0) {
+                    traces.push({
+                        x: training.timestamps.slice(0, training.ga_fitness.length),
+                        y: training.ga_fitness,
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        name: 'GA Fitness',
+                        line: { color: '#ff6b6b', width: 3 },
+                        marker: { size: 6 }
+                    });
+                }
+                
+                if (training.ppo_rewards.length > 0) {
+                    const ppoStartIndex = training.ga_fitness.length;
+                    traces.push({
+                        x: training.timestamps.slice(ppoStartIndex, ppoStartIndex + training.ppo_rewards.length),
+                        y: training.ppo_rewards,
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        name: 'PPO Rewards',
+                        line: { color: '#4ecdc4', width: 3 },
+                        marker: { size: 6 }
+                    });
+                }
+            }
 
             const layout = {
-                title: 'Training Performance Over Time',
+                title: training.ga_fitness.length > 0 || training.ppo_rewards.length > 0 
+                    ? 'Training Performance Over Time' 
+                    : 'Training Performance Over Time (Waiting for Data...)',
                 paper_bgcolor: 'rgba(0,0,0,0)',
                 plot_bgcolor: 'rgba(0,0,0,0.3)',
                 font: { color: 'white' },
                 xaxis: { title: 'Time', gridcolor: 'rgba(255,255,255,0.2)' },
-                yaxis: { title: 'Performance Score', gridcolor: 'rgba(255,255,255,0.2)' }
+                yaxis: { title: 'Performance Score', gridcolor: 'rgba(255,255,255,0.2)' },
+                annotations: traces.length === 0 ? [{
+                    x: 0.5,
+                    y: 0.5,
+                    xref: 'paper',
+                    yref: 'paper',
+                    text: 'Start training to see performance data...<br>Run a training workflow to populate this chart',
+                    showarrow: false,
+                    font: { size: 14, color: 'white' },
+                    align: 'center'
+                }] : []
             };
 
-            Plotly.newPlot('performanceChart', [trace], layout, {responsive: true});
+            Plotly.newPlot('performanceChart', traces, layout, {responsive: true});
         }
 
         function updateAlgorithmChart(training) {
-            const gaTrace = {
-                x: training.iterations.slice(0, training.ga_fitness.length),
-                y: training.ga_fitness,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'GA Fitness',
-                line: { color: '#ff6b6b', width: 2 }
-            };
+            let traces = [];
+            
+            if (training.ga_fitness.length > 0) {
+                traces.push({
+                    x: Array.from({length: training.ga_fitness.length}, (_, i) => i + 1),
+                    y: training.ga_fitness,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    name: 'GA Fitness',
+                    line: { color: '#ff6b6b', width: 2 }
+                });
+            }
 
-            const ppoTrace = {
-                x: training.iterations.slice(0, training.ppo_rewards.length),
-                y: training.ppo_rewards,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: 'PPO Rewards',
-                line: { color: '#4ecdc4', width: 2 }
-            };
+            if (training.ppo_rewards.length > 0) {
+                traces.push({
+                    x: Array.from({length: training.ppo_rewards.length}, (_, i) => i + 1),
+                    y: training.ppo_rewards,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    name: 'PPO Rewards',
+                    line: { color: '#4ecdc4', width: 2 }
+                });
+            }
 
             const layout = {
-                title: 'GA vs PPO Performance Comparison',
+                title: traces.length > 0 
+                    ? 'GA vs PPO Performance Comparison' 
+                    : 'GA vs PPO Performance Comparison (No Data)',
                 paper_bgcolor: 'rgba(0,0,0,0)',
                 plot_bgcolor: 'rgba(0,0,0,0.3)',
                 font: { color: 'white' },
                 xaxis: { title: 'Iteration', gridcolor: 'rgba(255,255,255,0.2)' },
-                yaxis: { title: 'Score', gridcolor: 'rgba(255,255,255,0.2)' }
+                yaxis: { title: 'Score', gridcolor: 'rgba(255,255,255,0.2)' },
+                annotations: traces.length === 0 ? [{
+                    x: 0.5,
+                    y: 0.5,
+                    xref: 'paper',
+                    yref: 'paper',
+                    text: 'No algorithm data available yet<br>Start GA or PPO training to see comparison',
+                    showarrow: false,
+                    font: { size: 14, color: 'white' },
+                    align: 'center'
+                }] : []
             };
 
-            Plotly.newPlot('algorithmChart', [gaTrace, ppoTrace], layout, {responsive: true});
+            Plotly.newPlot('algorithmChart', traces, layout, {responsive: true});
         }
 
         function updateAccountChart(training) {
@@ -725,86 +776,112 @@ class ComprehensiveTradingDashboard:
         try:
             # Look for training metrics in log files
             log_files = list(self.log_dir.glob("*.log"))
-
+            
+            # Add more comprehensive log parsing
             for log_file in log_files:
-                if log_file.exists():
-                    with open(log_file, 'r') as f:
-                        lines = f.readlines()[-100:]  # Last 100 lines
+                if log_file.exists() and log_file.stat().st_size > 0:
+                    try:
+                        with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
+                            lines = f.readlines()
 
-                    for line in lines:
-                        # Parse more comprehensive training metrics
-                        if "GA Generation" in line and "fitness:" in line:
-                            try:
-                                fitness = float(line.split("fitness:")[-1].strip())
-                                self.training_data['ga_fitness'].append(fitness)
-                                self.training_data['iterations'].append(len(self.training_data['ga_fitness']))
-                                self.training_data['timestamps'].append(datetime.now().isoformat())
-                                self.training_data['methods'].append('GA')
-                                logger.info(f"📊 GA Fitness: {fitness:.4f}")
-                            except:
-                                pass
+                        # Process all lines, not just last 100
+                        for line_num, line in enumerate(lines):
+                            line = line.strip()
+                            if not line:
+                                continue
 
-                        # Parse PPO rewards
-                        if "PPO Episode" in line and "reward:" in line:
-                            try:
-                                reward = float(line.split("reward:")[-1].strip())
-                                self.training_data['ppo_rewards'].append(reward)
-                                self.training_data['methods'].append('PPO')
-                                logger.info(f"🎯 PPO Reward: {reward:.4f}")
-                            except:
-                                pass
+                            # Parse GA fitness values
+                            if any(keyword in line for keyword in ["GA Generation", "🧬 GA", "fitness"]):
+                                try:
+                                    # Look for fitness patterns
+                                    import re
+                                    fitness_match = re.search(r'fitness[:\s]*([0-9.-]+)', line, re.IGNORECASE)
+                                    if fitness_match:
+                                        fitness = float(fitness_match.group(1))
+                                        if abs(fitness) < 1000:  # Reasonable fitness value
+                                            timestamp = datetime.now().isoformat()
+                                            self.training_data['ga_fitness'].append(fitness)
+                                            self.training_data['timestamps'].append(timestamp)
+                                            self.training_data['methods'].append('GA')
+                                            logger.info(f"📊 Found GA Fitness: {fitness:.4f}")
+                                except:
+                                    pass
 
-                        # Parse CAGR values
-                        if "CAGR:" in line:
-                            try:
-                                cagr_part = line.split("CAGR:")[-1].split(",")[0].strip()
-                                cagr = float(cagr_part.replace('%', ''))
-                                logger.info(f"💰 CAGR: {cagr:.2f}%")
-                            except:
-                                pass
+                            # Parse PPO rewards
+                            if any(keyword in line for keyword in ["PPO", "🎯 PPO", "reward", "episode"]):
+                                try:
+                                    import re
+                                    reward_match = re.search(r'reward[:\s]*([0-9.-]+)', line, re.IGNORECASE)
+                                    if reward_match:
+                                        reward = float(reward_match.group(1))
+                                        if abs(reward) < 10000:  # Reasonable reward value
+                                            timestamp = datetime.now().isoformat()
+                                            self.training_data['ppo_rewards'].append(reward)
+                                            self.training_data['timestamps'].append(timestamp)
+                                            self.training_data['methods'].append('PPO')
+                                            logger.info(f"🎯 Found PPO Reward: {reward:.4f}")
+                                except:
+                                    pass
 
-                        # Parse Sharpe values
-                        if "Sharpe:" in line:
-                            try:
-                                sharpe_part = line.split("Sharpe:")[-1].split(",")[0].strip()
-                                sharpe = float(sharpe_part)
-                                logger.info(f"📈 Sharpe: {sharpe:.4f}")
-                            except:
-                                pass
+                            # Parse performance metrics
+                            if "CAGR" in line:
+                                try:
+                                    import re
+                                    cagr_match = re.search(r'CAGR[:\s]*([0-9.-]+)', line)
+                                    if cagr_match:
+                                        cagr = float(cagr_match.group(1))
+                                        logger.info(f"💰 Found CAGR: {cagr:.2f}%")
+                                except:
+                                    pass
 
-                        # Parse account values
-                        if "Account value:" in line or "Performance:" in line:
-                            try:
-                                if "Account value:" in line:
-                                    value_str = line.split("Account value:")[-1].strip()
-                                else:
-                                    value_str = line.split("Performance:")[-1].strip()
-                                
-                                # Extract numeric value
-                                import re
-                                numbers = re.findall(r'[\d.]+', value_str)
-                                if numbers:
-                                    value = float(numbers[0])
-                                    self.training_data['account_values'].append(value)
-                                    logger.info(f"💵 Account Value: {value:.2f}")
-                            except:
-                                pass
+                            # Parse Sharpe ratios
+                            if "Sharpe" in line:
+                                try:
+                                    import re
+                                    sharpe_match = re.search(r'Sharpe[:\s]*([0-9.-]+)', line)
+                                    if sharpe_match:
+                                        sharpe = float(sharpe_match.group(1))
+                                        logger.info(f"📈 Found Sharpe: {sharpe:.4f}")
+                                except:
+                                    pass
 
-                        # Parse iteration progress
-                        if "Iteration" in line and ("GA" in line or "PPO" in line):
-                            try:
-                                timestamp = datetime.now().isoformat()
-                                self.training_data['timestamps'].append(timestamp)
-                                if "GA" in line:
-                                    self.training_data['methods'].append('GA')
-                                else:
-                                    self.training_data['methods'].append('PPO')
-                            except:
-                                pass
+                            # Parse account values
+                            if any(keyword in line for keyword in ["Account", "total=", "Performance"]):
+                                try:
+                                    import re
+                                    # Look for monetary values
+                                    value_matches = re.findall(r'[\$]?([0-9]+\.?[0-9]*)', line)
+                                    for match in value_matches:
+                                        try:
+                                            value = float(match)
+                                            if 1000 <= value <= 1000000:  # Reasonable account value range
+                                                self.training_data['account_values'].append(value)
+                                                logger.info(f"💵 Found Account Value: ${value:,.2f}")
+                                                break
+                                        except:
+                                            continue
+                                except:
+                                    pass
+
+                    except Exception as e:
+                        logger.warning(f"Error reading log file {log_file}: {e}")
+
+            # If we still have no data, create some initial data to show dashboard structure
+            if not self.training_data['ga_fitness'] and not self.training_data['ppo_rewards']:
+                logger.info("📊 No training data found in logs, initializing empty dashboard")
+                # Don't add fake data, just ensure arrays exist
+                current_time = datetime.now().isoformat()
+                self.training_data['timestamps'] = [current_time]
+                self.training_data['account_values'] = [100000.0]
 
         except Exception as e:
             logger.error(f"Error collecting training metrics: {e}")
             
+        # Update iterations counter
+        total_data_points = len(self.training_data['ga_fitness']) + len(self.training_data['ppo_rewards'])
+        if total_data_points > 0:
+            self.training_data['iterations'] = list(range(1, total_data_points + 1))
+        
         # Also check for TensorBoard data
         self.collect_tensorboard_files()
 
