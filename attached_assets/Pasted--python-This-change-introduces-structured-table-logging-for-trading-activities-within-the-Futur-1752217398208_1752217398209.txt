@@ -1,0 +1,476 @@
+```python
+"""This change introduces structured table logging for trading activities within the FuturesEnv class, enhancing monitoring and analysis capabilities."""
+#!/usr/bin/env python
+"""
+Enhanced Professional Futures Trading Environment
+=================================================
+
+Fixed version that generates real trading activity and proper metrics
+for the monitoring dashboard. Modified to export trades to a separate file
+and disable console logging of trade details.
+"""
+
+import math
+import json
+import logging
+from pathlib import Path
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import gymnasium as gym
+from gymnasium import spaces
+from uuid import uuid4
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Tuple, Union
+
+from utils import round_to_nearest_increment, monotonicity
+
+# Import trading monitor
+try:
+    from trading_activity_monitor import log_trading_action, log_position_change
+    MONITOR_AVAILABLE = True
+except ImportError:
+    MONITOR_AVAILABLE = False
+
+logger = logging.getLogger("FUTURES_ENV")
+
+# [MarketRegimeDetector and TimeSeriesState classes unchanged]
+# ... (Omitted for brevity, assume identical to original)
+
+class FuturesEnv(gym.Env):
+    """
+    Professional NQ Futures Trading Environment - Fixed Version
+    """
+    metadata = {'render.modes': ['human']}
+
+    def __init__(self, states: List[TimeSeriesState], 
+                 value_per_tick: float = 12.5,
+                 tick_size: float = 0.25, 
+                 initial_capital: float = 100000,
+                 max_position_size: int = 5, 
+                 commission_per_contract: float = 2.50,
+                 margin_rate: float = 0.05,
+                 fill_probability: float = 1.0,
+                 execution_cost_per_order: float = 0.00005,
+                 contracts_per_trade: int = 1,
+                 bid_ask_spread: float = 0.25,
+                 add_current_position_to_state: bool = True,
+                 log_dir: str = None,
+                 **kwargs):
+        super().__init__()
+
+        # [Initialization unchanged]
+        self.states = states
+        self.limit = len(states)
+        self.value_per_tick = value_per_tick
+        self.tick_size = tick_size
+        self.initial_capital = initial_capital
+        self.max_position_size = max_position_size
+        self.commission_per_contract = commission_per_contract
+        self.margin_rate = margin_rate
+        self.fill_probability = fill_probability
+        self.execution_cost_per_order = execution_cost_per_order
+        self.contracts_per_trade = contracts_per_trade
+        self.bid_ask_spread = bid_ask_spread
+        self.add_current_position_to_state = add_current_position_to_state
+
+        # Logging setup
+        self.log_dir = log_dir or f"./logs/futures_env/{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        Path(self.log_dir).mkdir(parents=True, exist_ok=True)
+
+        # [Other initialization unchanged]
+        self.regime_detector = MarketRegimeDetector()
+        self.liquidity_factor = 1.0
+        self.market_impact_coefficient = 0.001
+        self.current_index = 0
+        self.done = False
+        self.account_balance = initial_capital
+        self.unrealized_pnl = 0.0
+        self.margin_used = 0.0
+        self.current_position = 0
+        self.position_entry_price = 0.0
+        self.position_entry_time = None
+        self.position_value = 0.0
+        self.trades = []
+        self.orders = []
+        self.daily_pnl = []
+        self.equity_curve = [initial_capital]
+        self.drawdown_series = [0.0]
+        self.max_equity = initial_capital
+        self.total_reward = 0.0
+        self.episode = 0
+        self.time_of_day_factor = 1.0
+        self.volatility_regime = "normal"
+        self.liquidity_regime = "normal"
+        self.action_space = spaces.Discrete(3)  # 0=hold, 1=buy, 2=sell
+        base_features = len(states[0].features) if states and len(states[0].features) > 0 else 20
+        position_info = 8
+        market_info = 10
+        obs_dim = base_features + position_info + market_info
+        self.observation_space = spaces.Box(
+            low=-np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float32
+        )
+        self.metrics_history = {
+            'timestamps': [],
+            'account_values': [],
+            'positions': [],
+            'pnl_changes': [],
+            'trades_count': [],
+            'unrealized_pnl': []
+        }
+        logger.info(f"Initialized FuturesEnv with {len(states)} states, obs_dim={obs_dim}")
+
+        # Setup file-only trading logger
+        self.trading_logger = logging.getLogger("TRADING_ACTIVITY_FILE")
+        if not self.trading_logger.handlers:
+            trading_file_handler = logging.FileHandler(Path(self.log_dir) / "trading_activity.log")
+            trading_file_handler.setFormatter(logging.Formatter(
+                "%(asctime)s [%(levelname)-8s] %(message)s"
+            ))
+            self.trading_logger.addHandler(trading_file_handler)
+            self.trading_logger.setLevel(logging.INFO)
+            self.trading_logger.propagate = False  # No console output
+
+    def reset(self, seed=None, options=None):
+        """Reset environment to initial state"""
+        # [Unchanged]
+        super().reset(seed=seed)
+        start_idx = np.random.randint(0, max(1, self.limit - 1000)) if self.limit > 1000 else 0
+        self.current_index = start_idx
+        self.done = False
+        self.account_balance = self.initial_capital
+        self.unrealized_pnl = 0.0
+        self.margin_used = 0.0
+        self.current_position = 0
+        self.position_entry_price = 0.0
+        self.position_entry_time = None
+        self.position_value = 0.0
+        self.trades.clear()
+        self.orders.clear()
+        self.daily_pnl.clear()
+        self.equity_curve = [initial_capital]
+        self.drawdown_series = [0.0]
+        self.max_equity = self.initial_capital
+        self.total_reward = 0.0
+        self.regime_detector = MarketRegimeDetector()
+        self.metrics_history = {
+            'timestamps': [datetime.now()],
+            'account_values': [self.initial_capital],
+            'positions': [0],
+            'pnl_changes': [0.0],
+            'trades_count': [0],
+            'unrealized_pnl': [0.0]
+        }
+        return self._get_observation(), {}
+
+    def step(self, action: int):
+        """Execute one step in the environment"""
+        if self.done or self.current_index >= self.limit:
+            return self._get_observation(), 0.0, True, False, self._get_info()
+
+        # Validate action
+        action = int(np.clip(action, 0, 2))
+
+        # Get current market state
+        current_state = self.states[self.current_index]
+        self._update_market_conditions(current_state)
+
+        # Execute action
+        reward = 0.0
+        info = {"message": "hold"}
+
+        # Log the action being taken
+        action_names = {0: "HOLD", 1: "BUY", 2: "SELL"}
+        current_action = action_names.get(action, f"UNKNOWN({action})")
+        current_price = current_state.close_price
+
+        # Log to file only
+        self.trading_logger.info(f"📊 Step {self.current_index} | Action: {current_action} | "
+                               f"Price: ${current_state.close_price:.2f} | "
+                               f"Position: {self.current_position} | "
+                               f"Account: ${self.account_balance:,.2f}")
+
+        if action != 0:  # Not hold
+            reward, info = self._execute_trade(action, current_state)
+            # Log trade result to file only
+            self.trading_logger.info(f"🔄 Trade Result: {info.get('message', 'Unknown')} | "
+                                   f"Reward: {reward:.4f} | "
+                                   f"New Position: {self.current_position}")
+            # Log to trades table
+            self._log_to_trades_table(action, current_price, self.current_position, self.account_balance, reward, reward)
+        else:
+            # Log hold action to trading and trades table
+            self._log_to_trading_table(action, current_price, self.current_position, self.account_balance, 0.0, 0.0)
+            self._log_to_trades_table(action, current_price, self.current_position, self.account_balance, 0.0, 0.0)
+
+        # Update position valuation
+        self._update_position_value(current_state.close_price)
+
+        # Calculate step reward
+        step_reward = self._calculate_reward(current_state, action, reward)
+
+        # Move to next state
+        self.current_index += 1
+        if self.current_index >= self.limit:
+            self.done = True
+            step_reward += self._calculate_final_reward()
+
+        # Update performance tracking and metrics
+        self._update_performance_tracking()
+        self._update_realtime_metrics()
+
+        # Log account status to file every 1000 steps
+        if self.current_index % 1000 == 0:
+            total_equity = self.account_balance + self.unrealized_pnl
+            self.trading_logger.info(f"💰 ACCOUNT STATUS | Step: {self.current_index} | "
+                                   f"Balance: ${self.account_balance:,.2f} | "
+                                   f"Unrealized P&L: ${self.unrealized_pnl:,.2f} | "
+                                   f"Total Equity: ${total_equity:,.2f} | "
+                                   f"Total Trades: {len(self.trades)}")
+
+        return self._get_observation(), step_reward, self.done, False, self._get_info()
+
+    def _execute_trade(self, action: int, state: TimeSeriesState) -> Tuple[float, Dict]:
+        """Execute trade action with realistic market mechanics"""
+        if action == 1:  # Buy
+            direction = 1
+            size = 1
+        else:  # Sell
+            direction = -1
+            size = 1
+
+        new_position = np.clip(
+            self.current_position + (direction * size),
+            -self.max_position_size, 
+            self.max_position_size
+        )
+        actual_trade_size = new_position - self.current_position
+        if actual_trade_size == 0:
+            return 0.0, {"message": "position limit reached"}
+
+        if not self._check_margin_requirements(new_position, state.close_price):
+            return -0.01, {"message": "insufficient margin"}
+
+        execution_price = state.close_price + (direction * self.tick_size * 0.5)
+        reward = 0.0
+        info = {}
+        position_type = "LONG" if actual_trade_size > 0 else "SHORT"
+
+        if self.current_position == 0:
+            self.position_entry_price = execution_price
+            self.position_entry_time = state.ts
+            info = {"message": f"OPENED {position_type}: {abs(actual_trade_size)} contracts at ${execution_price:.2f}"}
+            self.trading_logger.debug(f"🟢 NEW POSITION | {position_type} {abs(actual_trade_size)} contracts | "
+                                    f"Entry: ${execution_price:.2f} | Time: {state.ts}")
+
+        elif new_position == 0:
+            reward = self._close_position(execution_price, state.ts)
+            prev_type = "LONG" if self.current_position > 0 else "SHORT"
+            info = {"message": f"CLOSED {prev_type}: P&L=${reward:.2f}"}
+            self.trading_logger.debug(f"🔴 CLOSED POSITION | {prev_type} | "
+                                    f"Exit: ${execution_price:.2f} | P&L: ${reward:.2f}")
+
+        elif np.sign(new_position) != np.sign(self.current_position):
+            prev_type = "LONG" if self.current_position > 0 else "SHORT"
+            reward = self._close_position(execution_price, state.ts)
+            self.position_entry_price = execution_price
+            self.position_entry_time = state.ts
+            info = {"message": f"REVERSED {prev_type}→{position_type}: P&L=${reward:.2f}"}
+            self.trading_logger.debug(f"🔄 REVERSED POSITION | {prev_type} → {position_type} | "
+                                    f"P&L: ${reward:.2f} | New Entry: ${execution_price:.2f}")
+
+        else:
+            total_size = abs(new_position)
+            existing_size = abs(self.current_position)
+            new_size = abs(actual_trade_size)
+            self.position_entry_price = (
+                (self.position_entry_price * existing_size + execution_price * new_size) / 
+                total_size
+            )
+            current_type = "LONG" if new_position > 0 else "SHORT"
+            info = {"message": f"ADDED TO {current_type}: +{abs(actual_trade_size)} contracts"}
+            self.trading_logger.debug(f"🔵 ADDED TO POSITION | {current_type} +{abs(actual_trade_size)} | "
+                                    f"Total: {abs(new_position)} contracts | Avg Entry: ${self.position_entry_price:.2f}")
+
+        if MONITOR_AVAILABLE:
+            log_position_change(self.current_position, new_position, reward)
+
+        old_position = self.current_position
+        self.current_position = new_position
+        commission = self.commission_per_contract * abs(actual_trade_size)
+        self.account_balance -= commission
+
+        self.orders.append({
+            'order_id': str(uuid4()),
+            'timestamp': state.ts,
+            'price': execution_price,
+            'size': actual_trade_size,
+            'commission': commission,
+            'state': state
+        })
+
+        return reward, info
+
+    def _close_position(self, exit_price: float, exit_time) -> float:
+        """Close current position and calculate P&L"""
+        # [Unchanged]
+        if self.current_position == 0 or self.position_entry_price == 0:
+            return 0.0
+        price_diff = exit_price - self.position_entry_price
+        ticks = price_diff / self.tick_size
+        pnl = self.current_position * ticks * self.value_per_tick
+        self.account_balance += pnl
+        duration = (exit_time - self.position_entry_time).total_seconds() if self.position_entry_time else 0
+        self.trades.append({
+            'trade_id': str(uuid4()),
+            'entry_time': self.position_entry_time,
+            'exit_time': exit_time,
+            'entry_price': self.position_entry_price,
+            'exit_price': exit_price,
+            'size': self.current_position,
+            'pnl': pnl,
+            'duration': duration,
+            'trade_type': 'long' if self.current_position > 0 else 'short'
+        })
+        self.position_entry_price = 0.0
+        self.position_entry_time = None
+        return pnl
+
+    # [Other methods unchanged: _check_margin_requirements, _update_position_value, etc.]
+
+    def _log_to_trading_table(self, action, price, position, balance, reward, pnl):
+        """Log trading activity to structured table format."""
+        try:
+            from datetime import datetime
+            import fcntl
+            import tempfile
+            import os
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            action_name = {0: "HOLD", 1: "BUY", 2: "SELL"}.get(action, "UNKNOWN")
+            position_change = ""
+            if hasattr(self, '_last_position'):
+                if position != self._last_position:
+                    if position > self._last_position:
+                        position_change = f"+{position - self._last_position}"
+                    else:
+                        position_change = f"{position - self._last_position}"
+            else:
+                self._last_position = 0
+            if not hasattr(self, '_last_position') or position != self._last_position:
+                self._last_position = position
+            table_entry = {
+                "timestamp": timestamp,
+                "step": int(self.current_index),
+                "action": action_name,
+                "price": f"${float(price):.2f}",
+                "position": int(position),
+                "pos_change": position_change if position_change else "0",
+                "balance": f"${float(balance):,.2f}",
+                "pnl": f"${float(pnl):.2f}",
+                "reward": f"{float(reward):.4f}"
+            }
+            table_file = Path(self.log_dir) / "trading_table.json"
+            table_file.parent.mkdir(parents=True, exist_ok=True)
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    trading_table = []
+                    if table_file.exists():
+                        try:
+                            with open(table_file, 'r') as f:
+                                fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
+                                content = f.read().strip()
+                                if content:
+                                    trading_table = json.loads(content)
+                        except (json.JSONDecodeError, ValueError) as e:
+                            self.trading_logger.warning(f"Corrupted trading table, starting fresh: {e}")
+                            trading_table = []
+                    trading_table.append(table_entry)
+                    if len(trading_table) > 5000:
+                        trading_table = trading_table[-5000:]
+                    with tempfile.NamedTemporaryFile(mode='w', dir=table_file.parent, 
+                                                   prefix='.trading_table_tmp_', 
+                                                   suffix='.json', delete=False) as tmp_f:
+                        json.dump(trading_table, tmp_f, indent=2)
+                        tmp_f.flush()
+                        os.fsync(tmp_f.fileno())
+                        temp_path = tmp_f.name
+                    os.rename(temp_path, table_file)
+                    break
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        self.trading_logger.error(f"Failed to save trading table after {max_retries} attempts: {e}")
+                    else:
+                        import time
+                        time.sleep(0.01)
+        except Exception as e:
+            pass
+
+    def _log_to_trades_table(self, action, price, position, balance, reward, pnl):
+        """Log trade outcomes to a separate structured table file."""
+        try:
+            from datetime import datetime
+            import fcntl
+            import tempfile
+            import os
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            action_name = {0: "HOLD", 1: "BUY", 2: "SELL"}.get(action, "UNKNOWN")
+            position_change = ""
+            if hasattr(self, '_last_trade_position'):
+                if position != self._last_trade_position:
+                    position_change = f"{position - self._last_trade_position} ({'LONG' if position > self._last_trade_position else 'SHORT' if position < self._last_trade_position else 'FLAT'})"
+            else:
+                self._last_trade_position = 0
+            if not hasattr(self, '_last_trade_position') or position != self._last_trade_position:
+                self._last_trade_position = position
+            table_entry = {
+                "timestamp": timestamp,
+                "step": int(self.current_index),
+                "action": action_name,
+                "price": f"${float(price):.2f}",
+                "position": int(position),
+                "position_change": position_change if position_change else "0 (FLAT)",
+                "balance": f"${float(balance):,.2f}",
+                "pnl": f"${float(pnl):.2f}",
+                "reward": f"{float(reward):.4f}"
+            }
+            table_file = Path(self.log_dir) / "trades_table.json"
+            table_file.parent.mkdir(parents=True, exist_ok=True)
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    trades_table = []
+                    if table_file.exists():
+                        try:
+                            with open(table_file, 'r') as f:
+                                fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
+                                content = f.read().strip()
+                                if content:
+                                    trades_table = json.loads(content)
+                        except (json.JSONDecodeError, ValueError) as e:
+                            self.trading_logger.warning(f"Corrupted trades table, starting fresh: {e}")
+                            trades_table = []
+                    trades_table.append(table_entry)
+                    if len(trades_table) > 5000:
+                        trades_table = trades_table[-5000:]
+                    with tempfile.NamedTemporaryFile(mode='w', dir=table_file.parent, 
+                                                   prefix='.trades_table_tmp_', 
+                                                   suffix='.json', delete=False) as tmp_f:
+                        json.dump(trades_table, tmp_f, indent=2)
+                        tmp_f.flush()
+                        os.fsync(tmp_f.fileno())
+                        temp_path = tmp_f.name
+                    os.rename(temp_path, table_file)
+                    break
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        self.trading_logger.error(f"Failed to save trades table after {max_retries} attempts: {e}")
+                    else:
+                        import time
+                        time.sleep(0.01)
+        except Exception as e:
+            pass
+
+    # [Remaining methods unchanged]
+    # ... (Omitted for brevity)
+```
