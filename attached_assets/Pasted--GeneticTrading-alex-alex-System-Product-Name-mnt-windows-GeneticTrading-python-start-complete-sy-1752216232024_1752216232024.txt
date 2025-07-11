@@ -1,0 +1,96 @@
+(GeneticTrading) alex@alex-System-Product-Name:/mnt/windows/GeneticTrading$ python start_complete_system.py
+INFO:__main__:🚀 Starting Complete NQ Trading System
+INFO:__main__:============================================================
+INFO:__main__:🚀 Starting TensorBoard...
+INFO:__main__:✅ TensorBoard started on http://0.0.0.0:6006
+INFO:__main__:⏳ Waiting for TensorBoard... (1/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (2/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (3/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (4/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (5/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (6/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (7/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (8/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (9/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (10/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (11/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (12/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (13/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (14/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (15/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (16/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (17/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (18/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (19/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (20/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (21/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (22/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (23/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (24/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (25/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (26/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (27/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (28/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (29/30)
+INFO:__main__:⏳ Waiting for TensorBoard... (30/30)
+WARNING:__main__:⚠️ TensorBoard may not be fully ready
+INFO:__main__:🧠 Starting training process...
+INFO:__main__:✅ Training started
+INFO:__main__:⏳ Waiting for training to initialize...
+[TRAINING] W0710 23:43:32.423000 44122 site-packages/torch/distributed/run.py:766]
+[TRAINING] W0710 23:43:32.423000 44122 site-packages/torch/distributed/run.py:766] *****************************************
+[TRAINING] W0710 23:43:32.423000 44122 site-packages/torch/distributed/run.py:766] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed.
+[TRAINING] W0710 23:43:32.423000 44122 site-packages/torch/distributed/run.py:766] *****************************************
+[TRAINING] Traceback (most recent call last):
+[TRAINING] File "/home/alex/miniconda3/envs/GeneticTrading/bin/torchrun", line 8, in <module>
+[TRAINING] sys.exit(main())
+[TRAINING] ^^^^^^
+[TRAINING] File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+[TRAINING] return f(*args, **kwargs)
+[TRAINING] ^^^^^^^^^^^^^^^^^^
+[TRAINING] File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/run.py", line 892, in main
+[TRAINING] run(args)
+[TRAINING] File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/run.py", line 883, in run
+[TRAINING] elastic_launch(
+[TRAINING] File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/launcher/api.py", line 139, in __call__
+[TRAINING] return launch_agent(self._config, self._entrypoint, list(args))
+[TRAINING] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[TRAINING] File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/launcher/api.py", line 261, in launch_agent
+[TRAINING] result = agent.run()
+[TRAINING] ^^^^^^^^^^^
+[TRAINING] File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/metrics/api.py", line 138, in wrapper
+[TRAINING] result = f(*args, **kwargs)
+[TRAINING] ^^^^^^^^^^^^^^^^^^
+[TRAINING] File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/api.py", line 711, in run
+[TRAINING] result = self._invoke_run(role)
+[TRAINING] ^^^^^^^^^^^^^^^^^^^^^^
+[TRAINING] File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/api.py", line 864, in _invoke_run
+[TRAINING] self._initialize_workers(self._worker_group)
+[TRAINING] File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/metrics/api.py", line 138, in wrapper
+[TRAINING] result = f(*args, **kwargs)
+[TRAINING] ^^^^^^^^^^^^^^^^^^
+[TRAINING] File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/api.py", line 683, in _initialize_workers
+[TRAINING] self._rendezvous(worker_group)
+[TRAINING] File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/metrics/api.py", line 138, in wrapper
+[TRAINING] result = f(*args, **kwargs)
+[TRAINING] ^^^^^^^^^^^^^^^^^^
+[TRAINING] File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/api.py", line 500, in _rendezvous
+[TRAINING] rdzv_info = spec.rdzv_handler.next_rendezvous()
+[TRAINING] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[TRAINING] File "/home/alex/miniconda3/envs/GeneticTrading/lib/python3.12/site-packages/torch/distributed/elastic/rendezvous/static_tcp_rendezvous.py", line 67, in next_rendezvous
+[TRAINING] self._store = TCPStore(  # type: ignore[call-arg]
+[TRAINING] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[TRAINING] torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
+INFO:__main__:📊 Starting dashboard...
+INFO:__main__:✅ Dashboard started on http://0.0.0.0:5000
+INFO:__main__:🎉 System startup complete!
+INFO:__main__:📊 Dashboard: http://0.0.0.0:5000
+INFO:__main__:📈 TensorBoard: http://0.0.0.0:6006
+INFO:__main__:🧠 Training: Active
+INFO:__main__:============================================================
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🔴 Stopped
+INFO:__main__:   Training: 🔴 Stopped
+INFO:__main__:   Dashboard: 🟢 Running
+
+
