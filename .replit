@@ -54,7 +54,11 @@ args = "python main.py --data-folder ./data_txt --max-rows 50000 --adaptive-iter
 
 [[ports]]
 localPort = 5000
-externalPort = 6800
+externalPort = 80
+
+[[ports]]
+localPort = 6006
+externalPort = 6006
 
 [[ports]]
 localPort = 12355

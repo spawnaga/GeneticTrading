@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 """
 Comprehensive Real-Time Trading Dashboard
@@ -11,6 +10,7 @@ and trading performance with proper formatting and live updates.
 import os
 import json
 import time
+import requests
 import threading
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -21,7 +21,7 @@ import signal
 import sys
 
 # Web framework
-from flask import Flask, render_template_string, jsonify
+from flask import Flask, render_template_string, jsonify, request, Response
 import webbrowser
 
 # Data processing
@@ -38,12 +38,12 @@ logger = logging.getLogger(__name__)
 
 class ComprehensiveTradingDashboard:
     """Comprehensive real-time trading dashboard with actual data integration."""
-    
+
     def __init__(self, log_dir="./logs", port=5000):
         self.log_dir = Path(log_dir)
         self.port = port
         self.log_dir.mkdir(exist_ok=True)
-        
+
         # Data storage
         self.training_data = {
             'iterations': [],
@@ -55,22 +55,47 @@ class ComprehensiveTradingDashboard:
             'methods': [],
             'system_metrics': {}
         }
-        
+
         # Flask app
         self.app = Flask(__name__)
         self.setup_routes()
-        
+
         # Background data collection
         self.running = True
         self.data_thread = threading.Thread(target=self.collect_data_continuously, daemon=True)
-        
+
     def setup_routes(self):
         """Setup Flask routes for the dashboard."""
-        
-        @self.app.route('/')
-        def dashboard():
-            return render_template_string(self.get_dashboard_html())
-            
+
+        @self.app.route('/tensorboard')
+        @self.app.route('/tensorboard/')
+        @self.app.route('/tensorboard/<path:path>')
+        def tensorboard_proxy(path=''):
+            """Proxy requests to TensorBoard running on port 6006."""
+            import requests
+            try:
+                # Forward the request to TensorBoard
+                url = f"http://localhost:6006/{path}"
+                if request.query_string:
+                    url += f"?{request.query_string.decode()}"
+
+                resp = requests.get(url, 
+                                  headers={key: value for key, value in request.headers if key != 'Host'},
+                                  allow_redirects=False)
+
+                # Return the response from TensorBoard
+                excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+                headers = [(name, value) for name, value in resp.raw.headers.items()
+                           if name.lower() not in excluded_headers]
+
+                response = Response(resp.content, resp.status_code, headers)
+                return response
+
+            except requests.exceptions.ConnectionError:
+                return "TensorBoard not available on port 6006. Make sure TensorBoard is running.", 503
+            except Exception as e:
+                return f"Error connecting to TensorBoard: {str(e)}", 500
+
         @self.app.route('/api/data')
         def get_data():
             """API endpoint for real-time data updates."""
@@ -80,13 +105,13 @@ class ComprehensiveTradingDashboard:
                 'performance_metrics': self.get_performance_metrics(),
                 'timestamp': datetime.now().isoformat()
             })
-            
+
         @self.app.route('/api/tensorboard_data')
         def get_tensorboard_data():
             """Get actual TensorBoard data if available."""
             tb_data = self.extract_tensorboard_data()
             return jsonify(tb_data)
-            
+
     def get_dashboard_html(self):
         """Generate comprehensive dashboard HTML."""
         return """
@@ -103,20 +128,20 @@ class ComprehensiveTradingDashboard:
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
             min-height: 100vh;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
-        
+
         .header {
             text-align: center;
             margin-bottom: 30px;
@@ -125,7 +150,7 @@ class ComprehensiveTradingDashboard:
             border-radius: 15px;
             backdrop-filter: blur(10px);
         }
-        
+
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
@@ -134,14 +159,14 @@ class ComprehensiveTradingDashboard:
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         .status-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
-        
+
         .status-card {
             background: rgba(255,255,255,0.1);
             border-radius: 15px;
@@ -150,11 +175,11 @@ class ComprehensiveTradingDashboard:
             border: 1px solid rgba(255,255,255,0.2);
             transition: transform 0.3s ease;
         }
-        
+
         .status-card:hover {
             transform: translateY(-5px);
         }
-        
+
         .status-card h3 {
             margin-bottom: 15px;
             color: #FFD700;
@@ -162,41 +187,41 @@ class ComprehensiveTradingDashboard:
             align-items: center;
             gap: 10px;
         }
-        
+
         .status-indicator {
             width: 12px;
             height: 12px;
             border-radius: 50%;
             display: inline-block;
         }
-        
+
         .status-online { background-color: #00ff00; animation: pulse 2s infinite; }
         .status-warning { background-color: #FFA500; animation: pulse 2s infinite; }
         .status-error { background-color: #ff0000; animation: pulse 2s infinite; }
-        
+
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
-        
+
         .metric-row {
             display: flex;
             justify-content: space-between;
             margin-bottom: 8px;
             padding: 5px 0;
         }
-        
+
         .metric-label {
             font-weight: 500;
             opacity: 0.8;
         }
-        
+
         .metric-value {
             font-weight: bold;
             color: #00ff88;
         }
-        
+
         .chart-container {
             background: rgba(0,0,0,0.3);
             border-radius: 15px;
@@ -204,14 +229,14 @@ class ComprehensiveTradingDashboard:
             margin-bottom: 20px;
             backdrop-filter: blur(10px);
         }
-        
+
         .chart-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
-        
+
         .log-container {
             background: rgba(0,0,0,0.5);
             border-radius: 15px;
@@ -222,28 +247,28 @@ class ComprehensiveTradingDashboard:
             font-size: 12px;
             border: 1px solid rgba(255,255,255,0.2);
         }
-        
+
         .log-entry {
             margin-bottom: 5px;
             padding: 2px 0;
         }
-        
+
         .log-timestamp {
             color: #888;
             margin-right: 10px;
         }
-        
+
         .log-level-INFO { color: #00ff88; }
         .log-level-WARNING { color: #FFA500; }
         .log-level-ERROR { color: #ff6b6b; }
-        
+
         .commands-section {
             background: rgba(0,0,0,0.3);
             border-radius: 15px;
             padding: 20px;
             margin-top: 20px;
         }
-        
+
         .command-button {
             background: linear-gradient(45deg, #00ff88, #00cc6a);
             color: white;
@@ -255,12 +280,12 @@ class ComprehensiveTradingDashboard:
             font-weight: bold;
             transition: all 0.3s ease;
         }
-        
+
         .command-button:hover {
             transform: scale(1.05);
             box-shadow: 0 5px 15px rgba(0,255,136,0.3);
         }
-        
+
         .refresh-indicator {
             position: fixed;
             top: 20px;
@@ -276,7 +301,7 @@ class ComprehensiveTradingDashboard:
     <div class="refresh-indicator" id="refreshIndicator">
         🔄 Updating...
     </div>
-    
+
     <div class="container">
         <div class="header">
             <h1>🚀 Revolutionary NQ Futures Trading System</h1>
@@ -383,17 +408,17 @@ class ComprehensiveTradingDashboard:
                 <h3>📈 Training Performance Over Time</h3>
                 <div id="performanceChart" style="height: 400px;"></div>
             </div>
-            
+
             <div class="chart-container">
                 <h3>🧬 GA vs PPO Performance</h3>
                 <div id="algorithmChart" style="height: 400px;"></div>
             </div>
-            
+
             <div class="chart-container">
                 <h3>💰 Account Value Evolution</h3>
                 <div id="accountChart" style="height: 400px;"></div>
             </div>
-            
+
             <div class="chart-container">
                 <h3>⚡ Real-time System Metrics</h3>
                 <div id="systemChart" style="height: 400px;"></div>
@@ -435,17 +460,17 @@ class ComprehensiveTradingDashboard:
         async function updateData() {
             try {
                 document.getElementById('refreshIndicator').style.display = 'block';
-                
+
                 const response = await fetch('/api/data');
                 const data = await response.json();
-                
+
                 updateStatusCards(data);
                 updateCharts(data);
                 updateLogs(data);
-                
+
                 lastUpdateTime = new Date();
                 document.getElementById('lastUpdate').textContent = lastUpdateTime.toLocaleTimeString();
-                
+
             } catch (error) {
                 console.error('Error updating data:', error);
                 showError('Failed to update data: ' + error.message);
@@ -595,17 +620,17 @@ class ComprehensiveTradingDashboard:
             // This would be updated with real log data
             const logContainer = document.getElementById('logContainer');
             const now = new Date().toLocaleTimeString();
-            
+
             const newLog = document.createElement('div');
             newLog.className = 'log-entry';
             newLog.innerHTML = `
                 <span class="log-timestamp">[${now}]</span>
                 <span class="log-level-INFO">Dashboard updated successfully - Training active</span>
             `;
-            
+
             logContainer.appendChild(newLog);
             logContainer.scrollTop = logContainer.scrollHeight;
-            
+
             // Keep only last 50 entries
             while (logContainer.children.length > 50) {
                 logContainer.removeChild(logContainer.firstChild);
@@ -675,32 +700,32 @@ class ComprehensiveTradingDashboard:
             try:
                 # Collect training metrics
                 self.collect_training_metrics()
-                
+
                 # Collect TensorBoard data
                 self.collect_tensorboard_metrics()
-                
+
                 # Collect system metrics
                 self.collect_system_metrics()
-                
+
                 # Collect log data
                 self.collect_log_data()
-                
+
             except Exception as e:
                 logger.error(f"Error collecting data: {e}")
-                
+
             time.sleep(5)  # Update every 5 seconds
-            
+
     def collect_training_metrics(self):
         """Collect actual training metrics from log files."""
         try:
             # Look for training metrics in log files
             log_files = list(self.log_dir.glob("*.log"))
-            
+
             for log_file in log_files:
                 if log_file.exists():
                     with open(log_file, 'r') as f:
                         lines = f.readlines()[-100:]  # Last 100 lines
-                        
+
                     for line in lines:
                         # Parse GA fitness scores
                         if "GA Generation" in line and "fitness:" in line:
@@ -712,7 +737,7 @@ class ComprehensiveTradingDashboard:
                                 self.training_data['methods'].append('GA')
                             except:
                                 pass
-                                
+
                         # Parse PPO rewards
                         if "PPO Episode" in line and "reward:" in line:
                             try:
@@ -721,7 +746,7 @@ class ComprehensiveTradingDashboard:
                                 self.training_data['methods'].append('PPO')
                             except:
                                 pass
-                                
+
                         # Parse account values
                         if "Account value:" in line:
                             try:
@@ -730,16 +755,16 @@ class ComprehensiveTradingDashboard:
                                 self.training_data['account_values'].append(value)
                             except:
                                 pass
-                                
+
         except Exception as e:
             logger.error(f"Error collecting training metrics: {e}")
-            
+
     def collect_tensorboard_metrics(self):
         """Attempt to collect TensorBoard data."""
         try:
             # Check if TensorBoard files exist
             tb_dirs = [Path("./runs"), Path("./logs")]
-            
+
             for tb_dir in tb_dirs:
                 if tb_dir.exists():
                     # Find event files
@@ -748,34 +773,34 @@ class ComprehensiveTradingDashboard:
                         logger.info(f"Found {len(event_files)} TensorBoard event files")
                         # Here you would parse TensorBoard events
                         # For now, we'll simulate some data
-                        
+
         except Exception as e:
             logger.error(f"Error collecting TensorBoard metrics: {e}")
-            
+
     def collect_system_metrics(self):
         """Collect system performance metrics."""
         try:
             import psutil
             import GPUtil
-            
+
             # CPU and Memory
             cpu_percent = psutil.cpu_percent()
             memory = psutil.virtual_memory()
-            
+
             # GPU info
             try:
                 gpus = GPUtil.getGPUs()
                 gpu_info = f"{len(gpus)} GPUs available" if gpus else "No GPU detected"
             except:
                 gpu_info = "GPU status unknown"
-                
+
             self.training_data['system_metrics'] = {
                 'cpu_percent': cpu_percent,
                 'memory_percent': memory.percent,
                 'gpu_info': gpu_info,
                 'timestamp': datetime.now().isoformat()
             }
-            
+
         except ImportError:
             # Fallback if psutil/GPUtil not available
             self.training_data['system_metrics'] = {
@@ -786,12 +811,12 @@ class ComprehensiveTradingDashboard:
             }
         except Exception as e:
             logger.error(f"Error collecting system metrics: {e}")
-            
+
     def collect_log_data(self):
         """Collect recent log entries."""
         # This would parse actual log files for display
         pass
-        
+
     def get_system_status(self):
         """Get current system status."""
         return {
@@ -799,28 +824,28 @@ class ComprehensiveTradingDashboard:
             'processing': 'GPU Accelerated' if 'GPU' in str(self.training_data['system_metrics'].get('gpu_info', '')) else 'CPU Processing',
             'data_status': '✅ Data loaded and ready' if self.training_data['iterations'] else '⚠️ Waiting for training data'
         }
-        
+
     def get_performance_metrics(self):
         """Get current performance metrics."""
         current_perf = None
         best_perf = None
         account_value = None
-        
+
         if self.training_data['ga_fitness'] or self.training_data['ppo_rewards']:
             all_scores = self.training_data['ga_fitness'] + self.training_data['ppo_rewards']
             if all_scores:
                 current_perf = f"{all_scores[-1]:.4f}"
                 best_perf = f"{max(all_scores):.4f}"
-                
+
         if self.training_data['account_values']:
             account_value = f"${self.training_data['account_values'][-1]:,.2f}"
-            
+
         return {
             'current': current_perf,
             'best': best_perf,
             'account_value': account_value
         }
-        
+
     def extract_tensorboard_data(self):
         """Extract actual TensorBoard data for charts."""
         # This would parse TensorBoard event files
@@ -830,14 +855,14 @@ class ComprehensiveTradingDashboard:
             'histograms': {},
             'images': []
         }
-        
+
     def start_server(self):
         """Start the dashboard server."""
         self.data_thread.start()
-        
+
         logger.info(f"🚀 Starting comprehensive dashboard server on port {self.port}")
         logger.info(f"🌐 Dashboard will be available at http://0.0.0.0:{self.port}")
-        
+
         try:
             self.app.run(host='0.0.0.0', port=self.port, debug=False, threaded=True)
         except KeyboardInterrupt:
@@ -849,20 +874,20 @@ class ComprehensiveTradingDashboard:
 def main():
     """Main function to start the dashboard."""
     dashboard = ComprehensiveTradingDashboard(port=5000)
-    
+
     def signal_handler(sig, frame):
         logger.info("Shutting down dashboard...")
         dashboard.running = False
         sys.exit(0)
-        
+
     signal.signal(signal.SIGINT, signal_handler)
-    
+
     try:
         dashboard.start_server()
     except Exception as e:
         logger.error(f"Failed to start dashboard: {e}")
         return 1
-        
+
     return 0
 
 
