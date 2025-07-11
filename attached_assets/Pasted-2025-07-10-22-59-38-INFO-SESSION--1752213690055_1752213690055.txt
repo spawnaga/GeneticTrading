@@ -1,0 +1,34 @@
+2025-07-10 22:59:38 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 22:59:38 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+2025-07-10 22:59:38 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 22:59:38.239544
+2025-07-10 22:59:38 [INFO    ] 🔸 SESSION        : 💻 Process rank: 0
+2025-07-10 22:59:38 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_0.log
+2025-07-10 22:59:38 [INFO    ] 🔸 SESSION        : ================================================================================
+2025-07-10 22:59:38 [INFO    ] 🔸 MAIN           : 🚀 Revolutionary Trading System Started
+2025-07-10 22:59:38 [INFO    ] 🔸 MAIN           : NCCL_TIMEOUT = 1800000 ms
+2025-07-10 22:59:38 [INFO    ] 🔸 MAIN           : Using 100.0% of available data
+2025-07-10 22:59:38 [INFO    ] 🔸 MAIN           : Models directory: ./models
+2025-07-10 22:59:38 [INFO    ] 🔸 MAIN           : Training mode: adaptive
+2025-07-10 22:59:38 [INFO    ] 🔸 MAIN           : Device configuration: cuda:0
+2025-07-10 22:59:38 [INFO    ] 🔸 MAIN           : World size: 4, Local rank: 0
+2025-07-10 22:59:38 [INFO    ] 🔸 root           : Rank 0/4 starting on cuda:0 (has_cudf=True)
+2025-07-10 22:59:38 [INFO    ] 🔸 root           : Data loading parameters: max_rows=None, data_percentage=1.0
+2025-07-10 22:59:38 [INFO    ] 🔸 root           : No row limit specified, using 1M row chunks for memory efficiency
+2025-07-10 22:59:38 [INFO    ] 🔸 root           : Parquet cache found; skipping preprocessing.
+2025-07-10 22:59:38 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+2025-07-10 22:59:38 [INFO    ] 🔸 root           : Using full dataset: 1077950 train rows, 269487 test rows per GPU
+2025-07-10 22:59:38 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+2025-07-10 22:59:59 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 1077950 states, obs_dim=132
+2025-07-10 22:59:59 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 269487 states, obs_dim=132
+2025-07-10 22:59:59 [INFO    ] 🔸 VISUALIZATION  : 🎨 Visualization system initialized on port 5000
+2025-07-10 22:59:59 [ERROR   ] 🔸 VISUALIZATION  : ❌ Failed to start web server: [Errno 98] Address already in use
+2025-07-10 22:59:59 [INFO    ] 🔸 email_notifications: Email notifications configured for ali.aloraibi@outlook.com
+2025-07-10 22:59:59 [INFO    ] 🔸 email_notifications: Notifications will be sent every 6 hours
+2025-07-10 22:59:59 [INFO    ] 🔸 email_notifications: No training metrics available for progress update
+2025-07-10 22:59:59 [INFO    ] 🔸 email_notifications: Training monitoring started
+2025-07-10 22:59:59 [INFO    ] 🔸 root           : 📧 Email notifications enabled
+2025-07-10 22:59:59 [INFO    ] 🔸 adaptive_trainer: Fixed AdaptiveTrainer initialized with dashboard integration
+2025-07-10 22:59:59 [INFO    ] 🔸 adaptive_trainer: Starting fixed adaptive training with dashboard integration
+2025-07-10 22:59:59 [INFO    ] 🔸 adaptive_trainer: 
+=== Adaptive Training Iteration 1/3 ===
+2025-07-10 22:59:59 [INFO    ] 🔸 adaptive_trainer: Starting GA phase: 30 generations, population 30
