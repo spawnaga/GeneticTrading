@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 """
 Enhanced Trading Activity Monitor
@@ -57,7 +56,7 @@ DASHBOARD_HTML = """
             <span id="last-update"></span>
         </div>
     </div>
-    
+
     <div class="stats">
         <div class="stat-card">
             <div>Total Trades</div>
@@ -80,23 +79,23 @@ DASHBOARD_HTML = """
             <div class="stat-value" id="win-rate">0%</div>
         </div>
     </div>
-    
+
     <div class="chart-container">
         <h3>📈 Account Equity Chart</h3>
         <div id="equity-chart" style="height: 300px;"></div>
     </div>
-    
+
     <div class="chart-container">
         <h3>📊 P&L Distribution</h3>
         <div id="pnl-chart" style="height: 300px;"></div>
     </div>
-    
+
     <div class="table-container">
         <div class="table-tabs">
             <button class="tab-button active" onclick="showTab('trading')">Trading Activity</button>
             <button class="tab-button" onclick="showTab('trades')">Trade Outcomes</button>
         </div>
-        
+
         <div id="trading-tab" class="tab-content active">
             <table>
                 <thead>
@@ -117,7 +116,7 @@ DASHBOARD_HTML = """
                 </tbody>
             </table>
         </div>
-        
+
         <div id="trades-tab" class="tab-content">
             <table>
                 <thead>
@@ -151,12 +150,12 @@ DASHBOARD_HTML = """
             document.querySelectorAll('.tab-button').forEach(btn => {
                 btn.classList.remove('active');
             });
-            
+
             // Show selected tab
             document.getElementById(tabName + '-tab').classList.add('active');
             event.target.classList.add('active');
         }
-        
+
         function refreshData() {
             fetch('/api/trading-data')
                 .then(response => response.json())
@@ -172,7 +171,7 @@ DASHBOARD_HTML = """
                     document.getElementById('last-update').innerHTML = '<span style="color: #f44336;">Connection Error</span>';
                 });
         }
-        
+
         function updateStats(stats) {
             document.getElementById('total-trades').textContent = stats.total_trades;
             document.getElementById('current-position').textContent = stats.current_position;
@@ -180,14 +179,14 @@ DASHBOARD_HTML = """
             document.getElementById('total-pnl').textContent = stats.total_pnl;
             document.getElementById('win-rate').textContent = stats.win_rate + '%';
         }
-        
+
         function updateTradingTable(data) {
             const tbody = document.getElementById('trading-table');
             if (!data || data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="9">No trading data available</td></tr>';
                 return;
             }
-            
+
             tbody.innerHTML = data.slice(-100).reverse().map(trade => {
                 const statusClass = trade.status === 'PROFIT' ? 'profit' : trade.status === 'LOSS' ? 'loss' : '';
                 return `
@@ -204,14 +203,14 @@ DASHBOARD_HTML = """
                 </tr>
             `;}).join('');
         }
-        
+
         function updateTradesTable(data) {
             const tbody = document.getElementById('trades-table');
             if (!data || data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="11">No trades data available</td></tr>';
                 return;
             }
-            
+
             tbody.innerHTML = data.slice(-100).reverse().map(trade => {
                 const statusClass = trade.status === 'PROFIT' ? 'profit' : trade.status === 'LOSS' ? 'loss' : '';
                 return `
@@ -230,7 +229,7 @@ DASHBOARD_HTML = """
                 </tr>
             `;}).join('');
         }
-        
+
         function updateCharts(data) {
             // Update equity chart
             if (data.trading_data && data.trading_data.length > 0) {
@@ -238,7 +237,7 @@ DASHBOARD_HTML = """
                     x: index,
                     y: trade.balance
                 }));
-                
+
                 Plotly.newPlot('equity-chart', [{
                     x: equityData.map(d => d.x),
                     y: equityData.map(d => d.y),
@@ -256,13 +255,13 @@ DASHBOARD_HTML = """
                     margin: { t: 40, r: 20, b: 40, l: 60 }
                 });
             }
-            
+
             // Update P&L distribution chart
             if (data.trades_data && data.trades_data.length > 0) {
                 const pnlData = data.trades_data
                     .filter(trade => trade.pnl !== 0)
                     .map(trade => trade.pnl);
-                
+
                 if (pnlData.length > 0) {
                     Plotly.newPlot('pnl-chart', [{
                         x: pnlData,
@@ -281,10 +280,10 @@ DASHBOARD_HTML = """
                 }
             }
         }
-        
+
         // Auto-refresh every 3 seconds
         setInterval(refreshData, 3000);
-        
+
         // Initial load
         refreshData();
     </script>
@@ -304,10 +303,10 @@ def get_trading_data():
         logs_dir = Path('./logs')
         trading_files = list(logs_dir.glob('**/trading_table.json'))
         trades_files = list(logs_dir.glob('**/trades_table.json'))
-        
+
         trading_data = []
         trades_data = []
-        
+
         # Read trading activity data
         for file_path in trading_files:
             try:
@@ -316,7 +315,7 @@ def get_trading_data():
                     trading_data.extend(data)
             except (json.JSONDecodeError, FileNotFoundError):
                 continue
-        
+
         # Read trades data
         for file_path in trades_files:
             try:
@@ -325,7 +324,7 @@ def get_trading_data():
                     trades_data.extend(data)
             except (json.JSONDecodeError, FileNotFoundError):
                 continue
-        
+
         # Calculate comprehensive stats
         stats = {
             'total_trades': 0,
@@ -334,33 +333,50 @@ def get_trading_data():
             'total_pnl': '$0.00',
             'win_rate': '0'
         }
-        
+
         if trading_data:
             # Sort by timestamp
             trading_data.sort(key=lambda x: x.get('timestamp', ''))
             latest_trade = trading_data[-1]
-            
+
             # Calculate stats
             actual_trades = [t for t in trading_data if t.get('action') != 'HOLD']
             profitable_trades = [t for t in trading_data if t.get('status') == 'PROFIT']
-            
-            stats = {
-                'total_trades': len(actual_trades),
-                'current_position': latest_trade.get('position', 0),
-                'account_balance': f"${latest_trade.get('balance', 100000):,.2f}",
-                'total_pnl': f"${sum([t.get('pnl', 0) for t in trading_data]):,.2f}",
-                'win_rate': f"{(len(profitable_trades) / max(len(actual_trades), 1) * 100):.1f}"
-            }
-        
+
+            # Create summary stats
+            if trading_data:
+                total_trades = len(trading_data)
+                profit_trades = len([t for t in trading_data if t.get('status') == 'PROFIT'])
+                loss_trades = len([t for t in trading_data if t.get('status') == 'LOSS'])
+                win_rate = (profit_trades / total_trades * 100) if total_trades > 0 else 0
+
+                latest = trading_data[-1]
+                current_balance = latest.get('balance', 100000)
+                current_position = latest.get('position', 0)
+                account_equity = latest.get('account_equity', current_balance)
+
+                # Calculate realized and unrealized P&L
+                realized_pnl = sum([t.get('realized_pnl', 0) for t in trading_data if t.get('status') in ['PROFIT', 'LOSS']])
+                unrealized_pnl = latest.get('unrealized_pnl', 0)
+                total_pnl = realized_pnl + unrealized_pnl
+
+                stats = {
+                    'total_trades': len(actual_trades),
+                    'current_position': latest_trade.get('position', 0),
+                    'account_balance': f"${latest_trade.get('balance', 100000):,.2f}",
+                    'total_pnl': f"${sum([t.get('pnl', 0) for t in trading_data]):,.2f}",
+                    'win_rate': f"{(len(profitable_trades) / max(len(actual_trades), 1) * 100):.1f}"
+                }
+
         if trades_data:
             trades_data.sort(key=lambda x: x.get('timestamp', ''))
-        
+
         return jsonify({
             'trading_data': trading_data,
             'trades_data': trades_data,
             'stats': stats
         })
-        
+
     except Exception as e:
         return jsonify({
             'trading_data': [],
@@ -384,10 +400,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Enhanced Trading Activity Monitor")
     parser.add_argument('--port', type=int, default=8080, help='Port to run dashboard on (default: 8080)')
     args = parser.parse_args()
-    
+
     print("🚀 Starting Enhanced Trading Activity Monitor...")
     print(f"📊 Dashboard: http://0.0.0.0:{args.port}")
     print("🔄 Auto-refreshes every 3 seconds")
     print("📋 Dual table view: Trading Activity + Trade Outcomes")
-    
+
     app.run(host='0.0.0.0', port=args.port, debug=False)
+```
+
+Here's the complete code with the requested P&L updates in both dashboard stats and table rows.

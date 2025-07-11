@@ -307,16 +307,17 @@ class FuturesEnv(gym.Env):
                                f"Account: ${self.account_balance:,.2f}")
 
         if action != 0:  # Not hold
-            reward, info = self._execute_trade(action, current_state)
+            realized_pnl, info = self._execute_trade(action, current_state)
 
             # Log trade execution result to file only
             self.trading_logger.info(f"🔄 Trade Result: {info.get('message', 'Unknown')} | "
-                                   f"Reward: {reward:.4f} | "
+                                   f"Realized P&L: ${realized_pnl:.2f} | "
+                                   f"Unrealized P&L: ${self.unrealized_pnl:.2f} | "
                                    f"New Position: {self.current_position}")
 
             # Log to both structured tables
-            self._log_to_trading_table(action, current_price, self.current_position, self.account_balance, reward, reward)
-            self._log_to_trades_table(action, current_price, self.current_position, self.account_balance, reward, reward)
+            self._log_to_trading_table(action, current_price, self.current_position, self.account_balance, realized_pnl, realized_pnl)
+            self._log_to_trades_table(action, current_price, self.current_position, self.account_balance, realized_pnl, realized_pnl)
         else:
             # Log hold action to both tables
             self._log_to_trading_table(action, current_price, self.current_position, self.account_balance, 0.0, 0.0)
@@ -325,8 +326,9 @@ class FuturesEnv(gym.Env):
         # Update position valuation
         self._update_position_value(current_state.close_price)
 
-        # Calculate step reward
-        step_reward = self._calculate_reward(current_state, action, reward)
+        # Calculate step reward using realized P&L if action was taken
+        reward_for_calculation = realized_pnl if action != 0 else 0.0
+        step_reward = self._calculate_reward(current_state, action, reward_for_calculation)
 
         # Move to next state
         self.current_index += 1
@@ -341,8 +343,10 @@ class FuturesEnv(gym.Env):
         # Log account status every 1000 steps to reduce console spam
         if self.current_index % 1000 == 0:
             total_equity = self.account_balance + self.unrealized_pnl
+            total_realized_pnl = sum([t['pnl'] for t in self.trades])
             self.trading_logger.info(f"💰 ACCOUNT STATUS | Step: {self.current_index} | "
                                    f"Balance: ${self.account_balance:,.2f} | "
+                                   f"Realized P&L: ${total_realized_pnl:,.2f} | "
                                    f"Unrealized P&L: ${self.unrealized_pnl:,.2f} | "
                                    f"Total Equity: ${total_equity:,.2f} | "
                                    f"Total Trades: {len(self.trades)}")
@@ -374,11 +378,11 @@ class FuturesEnv(gym.Env):
         if not self._check_margin_requirements(new_position, state.close_price):
             return -0.01, {"message": "insufficient margin"}
 
-        # Calculate execution price with minimal slippage for more trading
-        execution_price = (state.close_price * self.price_scale) + (direction * self.tick_size * 0.5)  # Apply price scaling
+        # Use current price directly without scaling - NQ prices are already in dollars
+        execution_price = state.close_price + (direction * self.tick_size * 0.5)
 
         # Execute the trade
-        reward = 0.0
+        realized_pnl = 0.0
         info = {}
 
         # Determine position type for logging
@@ -394,21 +398,21 @@ class FuturesEnv(gym.Env):
 
         elif new_position == 0:
             # Closing position
-            reward = self._close_position(execution_price, state.ts)
+            realized_pnl = self._close_position(execution_price, state.ts)
             prev_type = "LONG" if self.current_position > 0 else "SHORT"
-            info = {"message": f"CLOSED {prev_type}: P&L=${reward:.2f}"}
+            info = {"message": f"CLOSED {prev_type}: P&L=${realized_pnl:.2f}"}
             self.trading_logger.debug(f"🔴 CLOSED POSITION | {prev_type} | "
-                                    f"Exit: ${execution_price:.2f} | P&L: ${reward:.2f}")
+                                    f"Exit: ${execution_price:.2f} | P&L: ${realized_pnl:.2f}")
 
         elif np.sign(new_position) != np.sign(self.current_position):
             # Reversing position
             prev_type = "LONG" if self.current_position > 0 else "SHORT"
-            reward = self._close_position(execution_price, state.ts)
+            realized_pnl = self._close_position(execution_price, state.ts)
             self.position_entry_price = execution_price
             self.position_entry_time = state.ts
-            info = {"message": f"REVERSED {prev_type}→{position_type}: P&L=${reward:.2f}"}
+            info = {"message": f"REVERSED {prev_type}→{position_type}: P&L=${realized_pnl:.2f}"}
             self.trading_logger.debug(f"🔄 REVERSED POSITION | {prev_type} → {position_type} | "
-                                    f"P&L: ${reward:.2f} | New Entry: ${execution_price:.2f}")
+                                    f"P&L: ${realized_pnl:.2f} | New Entry: ${execution_price:.2f}")
 
         else:
             # Adding to existing position
@@ -427,7 +431,7 @@ class FuturesEnv(gym.Env):
 
         # Log position change
         if MONITOR_AVAILABLE:
-            log_position_change(self.current_position, new_position, reward)
+            log_position_change(self.current_position, new_position, realized_pnl)
 
         # Update position
         old_position = self.current_position
@@ -447,17 +451,23 @@ class FuturesEnv(gym.Env):
             'state': state
         })
 
-        return reward, info
+        return realized_pnl, info
 
     def _close_position(self, exit_price: float, exit_time) -> float:
         """Close current position and calculate P&L"""
         if self.current_position == 0 or self.position_entry_price == 0:
             return 0.0
 
-        # Calculate P&L (prices already scaled during execution)
+        # Calculate P&L for NQ futures
+        # For NQ: each point = $20, tick size = 0.25, so each tick = $5
         price_diff = exit_price - self.position_entry_price
-        ticks = price_diff / self.tick_size
-        pnl = self.current_position * ticks * self.value_per_tick
+        
+        # For short positions, we profit when price goes down
+        if self.current_position < 0:
+            price_diff = -price_diff
+            
+        # Calculate P&L: price difference * position size * $20 per point
+        pnl = price_diff * abs(self.current_position) * 20.0
 
         # Add to account balance
         self.account_balance += pnl
@@ -485,18 +495,23 @@ class FuturesEnv(gym.Env):
 
     def _check_margin_requirements(self, position_size: int, price: float) -> bool:
         """Check if sufficient margin is available"""
-        required_margin = abs(position_size) * (price * self.price_scale) * self.margin_rate
+        required_margin = abs(position_size) * price * 20.0 * self.margin_rate  # NQ margin calculation
         available_capital = self.account_balance + self.unrealized_pnl
         return available_capital >= required_margin
 
     def _update_position_value(self, current_price: float):
         """Update unrealized P&L and position value"""
         if self.current_position != 0 and self.position_entry_price != 0:
-            scaled_current_price = current_price * self.price_scale
-            price_diff = scaled_current_price - self.position_entry_price
-            ticks = price_diff / self.tick_size
-            self.unrealized_pnl = self.current_position * ticks * self.value_per_tick
-            self.position_value = abs(self.current_position) * scaled_current_price
+            # Calculate unrealized P&L for NQ futures
+            price_diff = current_price - self.position_entry_price
+            
+            # For short positions, we profit when price goes down
+            if self.current_position < 0:
+                price_diff = -price_diff
+                
+            # Calculate unrealized P&L: price difference * position size * $20 per point
+            self.unrealized_pnl = price_diff * abs(self.current_position) * 20.0
+            self.position_value = abs(self.current_position) * current_price * 20.0  # Position value in dollars
             self.margin_used = self.position_value * self.margin_rate
         else:
             self.unrealized_pnl = 0.0
@@ -858,7 +873,7 @@ class FuturesEnv(gym.Env):
             if not hasattr(self, '_last_trade_position') or position != self._last_trade_position:
                 self._last_trade_position = position
 
-            # Determine profit/loss status
+            # Determine profit/loss status based on realized P&L
             status = "HOLD"
             if pnl > 0:
                 status = "PROFIT"
@@ -874,10 +889,12 @@ class FuturesEnv(gym.Env):
                 "position_change": position_change,
                 "position_type": position_type,
                 "balance": float(balance),
-                "pnl": float(pnl),
+                "realized_pnl": float(pnl),
+                "unrealized_pnl": float(self.unrealized_pnl),
                 "reward": float(reward),
                 "status": status,
-                "account_equity": float(balance + self.unrealized_pnl)
+                "account_equity": float(balance + self.unrealized_pnl),
+                "total_trades": len(self.trades)
             }
 
             table_file = Path(self.log_dir) / "trades_table.json"
