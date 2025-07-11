@@ -730,3 +730,22 @@ class FuturesEnv(gym.Env):
             table_file.parent.mkdir(exist_ok=True)
 
             # Load existing data
+            if table_file.exists():
+                with open(table_file, 'r') as f:
+                    existing_data = json.load(f)
+            else:
+                existing_data = []
+
+            # Add new entry
+            existing_data.append(table_entry)
+
+            # Keep only last 1000 entries
+            if len(existing_data) > 1000:
+                existing_data = existing_data[-1000:]
+
+            # Save updated data
+            with open(table_file, 'w') as f:
+                json.dump(existing_data, f, indent=2)
+
+        except Exception as e:
+            logger.debug(f"Error logging to trading table: {e}")
