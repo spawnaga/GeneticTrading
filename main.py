@@ -506,8 +506,10 @@ def main():
         per_t = max(n_train // world_size, 50)  # Minimum 50 rows per GPU
         per_v = max(n_test // world_size, 10)   # Minimum 10 rows per GPU
     else:
-        per_t = min(n_train // world_size, args.max_train_per_rank)
-        per_v = min(n_test // world_size, args.max_test_per_rank)
+        # Use full dataset divided by world size for distributed training
+        per_t = n_train // world_size
+        per_v = n_test // world_size
+        logging.info(f"Using full dataset: {per_t} train rows, {per_v} test rows per GPU")
 
     # Use sampling for very large datasets
     if n_train > world_size * args.max_train_per_rank:
