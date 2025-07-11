@@ -603,15 +603,18 @@ def create_environment_data(
     logger.info(f"Processing {total_rows} rows in chunks of {chunk_size}")
 
     # Process in chunks to avoid memory issues
-    if total_rows > chunk_size:
+    # Ensure chunk_size is at least 1 to prevent range() error
+    effective_chunk_size = max(chunk_size, 1) if chunk_size > 0 else max(total_rows, 1)
+    
+    if total_rows > effective_chunk_size:
         processed_chunks = []
         scaler = None
 
-        for start_idx in range(0, total_rows, chunk_size):
-            end_idx = min(start_idx + chunk_size, total_rows)
+        for start_idx in range(0, total_rows, effective_chunk_size):
+            end_idx = min(start_idx + effective_chunk_size, total_rows)
             chunk = df.iloc[start_idx:end_idx].copy()
 
-            logger.info(f"Processing chunk {start_idx//chunk_size + 1}/{(total_rows + chunk_size - 1)//chunk_size}")
+            logger.info(f"Processing chunk {start_idx//effective_chunk_size + 1}/{(total_rows + effective_chunk_size - 1)//effective_chunk_size}")
 
             chunk, segment_dict = feature_engineering_gpu(chunk)
 

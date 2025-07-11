@@ -416,8 +416,10 @@ def main():
     
     # Only apply percentage if max_rows is set
     if max_rows and max_rows > 0 and args.data_percentage < 1.0:
-        max_rows = int(max_rows * args.data_percentage)
-        logging.info(f"Adjusted max_rows to {max_rows} based on data_percentage")
+        adjusted_rows = int(max_rows * args.data_percentage)
+        # Ensure we have at least 100 rows for meaningful training
+        max_rows = max(adjusted_rows, 100)
+        logging.info(f"Adjusted max_rows to {max_rows} based on data_percentage (minimum 100 rows)")
     
     # Intelligent chunk sizing based on data size
     if max_rows:
