@@ -1,0 +1,1863 @@
+(GeneticTrading) alex@alex-System-Product-Name:/mnt/windows/GeneticTrading$ python start_complete_system.py
+.INFO:__main__:🚀 Starting Complete NQ Trading System
+INFO:__main__:============================================================
+INFO:__main__:🚀 Starting TensorBoard...
+INFO:__main__:✅ TensorBoard started on http://0.0.0.0:6006
+INFO:__main__:⏳ Waiting for TensorBoard... (1/30)
+INFO:__main__:✅ TensorBoard is ready!
+INFO:__main__:🧠 Starting training process...
+INFO:__main__:✅ Training started
+INFO:__main__:⏳ Waiting for training to initialize...
+[TRAINING] W0710 22:25:50.735000 30825 site-packages/torch/distributed/run.py:766]
+[TRAINING] W0710 22:25:50.735000 30825 site-packages/torch/distributed/run.py:766] *****************************************
+[TRAINING] W0710 22:25:50.735000 30825 site-packages/torch/distributed/run.py:766] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed.
+[TRAINING] W0710 22:25:50.735000 30825 site-packages/torch/distributed/run.py:766] *****************************************
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 22:25:52.986902
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 SESSION        : 💻 Process rank: 0
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_0.log
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 MAIN           : 🚀 Revolutionary Trading System Started
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 MAIN           : NCCL_TIMEOUT = 1800000 ms
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 MAIN           : Using 100.0% of available data
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 MAIN           : Models directory: ./models
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 MAIN           : Training mode: adaptive
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 MAIN           : Device configuration: cuda:0
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 MAIN           : World size: 4, Local rank: 0
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 root           : Rank 0/4 starting on cuda:0 (has_cudf=True)
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 root           : Data loading parameters: max_rows=None, data_percentage=1.0
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 root           : No row limit specified, using 1M row chunks for memory efficiency
+[TRAINING] 2025-07-10 22:25:52 [INFO    ] 🔸 root           : Parquet cache found; skipping preprocessing.
+[TRAINING] alex-System-Product-Name:30860:30860 [0] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:30860:30860 [0] NCCL INFO cudaDriverVersion 12020
+[TRAINING] alex-System-Product-Name:30860:30860 [0] NCCL INFO NCCL version 2.26.2+cuda12.2
+[TRAINING] alex-System-Product-Name:30860:30860 [0] NCCL INFO Comm config Blocking set to 1
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO NET/IB : No device found.
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so.
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO Using network Socket
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO ncclCommInitRankConfig comm 0x577c23f518c0 rank 0 nranks 4 cudaDev 0 nvmlDev 0 busId 1000 commId 0xc7ae7532e1e0d9f6 - Init START
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 22:25:53.138166
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 22:25:53.138168
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : 💻 Process rank: 3
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : 💻 Process rank: 1
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_3.log
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_1.log
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : Rank 3/4 starting on cuda:3 (has_cudf=True)
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : Rank 1/4 starting on cuda:1 (has_cudf=True)
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : Data loading parameters: max_rows=None, data_percentage=1.0
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : Data loading parameters: max_rows=None, data_percentage=1.0
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : No row limit specified, using 1M row chunks for memory efficiency
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : No row limit specified, using 1M row chunks for memory efficiency
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 22:25:53.144018
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : 💻 Process rank: 2
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_2.log
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : Rank 2/4 starting on cuda:2 (has_cudf=True)
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : Data loading parameters: max_rows=None, data_percentage=1.0
+[TRAINING] alex-System-Product-Name:30863:30863 [3] NCCL INFO cudaDriverVersion 12020
+[TRAINING] alex-System-Product-Name:30861:30861 [1] NCCL INFO cudaDriverVersion 12020
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : No row limit specified, using 1M row chunks for memory efficiency
+[TRAINING] alex-System-Product-Name:30861:30861 [1] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:30863:30863 [3] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:30863:30863 [3] NCCL INFO NCCL version 2.26.2+cuda12.2
+[TRAINING] alex-System-Product-Name:30861:30861 [1] NCCL INFO NCCL version 2.26.2+cuda12.2
+[TRAINING] alex-System-Product-Name:30861:30861 [1] NCCL INFO Comm config Blocking set to 1
+[TRAINING] alex-System-Product-Name:30863:30863 [3] NCCL INFO Comm config Blocking set to 1
+[TRAINING] alex-System-Product-Name:30862:30862 [2] NCCL INFO cudaDriverVersion 12020
+[TRAINING] alex-System-Product-Name:30862:30862 [2] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:30862:30862 [2] NCCL INFO NCCL version 2.26.2+cuda12.2
+[TRAINING] alex-System-Product-Name:30862:30862 [2] NCCL INFO Comm config Blocking set to 1
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO NET/IB : No device found.
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so.
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO Using network Socket
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO ncclCommInitRankConfig comm 0x6314af55b4a0 rank 3 nranks 4 cudaDev 3 nvmlDev 3 busId 9000 commId 0xc7ae7532e1e0d9f6 - Init START
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO NET/IB : No device found.
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so.
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO Using network Socket
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO ncclCommInitRankConfig comm 0x5a41bd8f6b40 rank 1 nranks 4 cudaDev 1 nvmlDev 1 busId 5000 commId 0xc7ae7532e1e0d9f6 - Init START
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO NET/IB : No device found.
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so.
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO Using network Socket
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO ncclCommInitRankConfig comm 0x5e00b0601990 rank 2 nranks 4 cudaDev 2 nvmlDev 2 busId 8000 commId 0xc7ae7532e1e0d9f6 - Init START
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO Bootstrap timings total 0.000226 (create 0.000009, send 0.000051, recv 0.000043, ring 0.000022, delay 0.000000)
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO Bootstrap timings total 0.014761 (create 0.000009, send 0.000044, recv 0.014570, ring 0.000024, delay 0.000000)
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO Bootstrap timings total 0.015702 (create 0.000077, send 0.000068, recv 0.000052, ring 0.000022, delay 0.000000)
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO Bootstrap timings total 0.096790 (create 0.000014, send 0.000084, recv 0.082012, ring 0.002682, delay 0.000000)
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO NVLS multicast support is not available on dev 3
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO NVLS multicast support is not available on dev 2
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO NVLS multicast support is not available on dev 0
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO NVLS multicast support is not available on dev 1
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO comm 0x5e00b0601990 rank 2 nRanks 4 nNodes 1 localRanks 4 localRank 2 MNNVL 0
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO comm 0x577c23f518c0 rank 0 nRanks 4 nNodes 1 localRanks 4 localRank 0 MNNVL 0
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO comm 0x6314af55b4a0 rank 3 nRanks 4 nNodes 1 localRanks 4 localRank 3 MNNVL 0
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO comm 0x5a41bd8f6b40 rank 1 nRanks 4 nNodes 1 localRanks 4 localRank 1 MNNVL 0
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO Channel 00/04 : 0 2 3 1
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO Trees [0] -1/-1/-1->3->2 [1] 0/-1/-1->3->1 [2] -1/-1/-1->3->2 [3] 0/-1/-1->3->1
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO Trees [0] 3/-1/-1->2->1 [1] -1/-1/-1->2->0 [2] 3/-1/-1->2->1 [3] -1/-1/-1->2->0
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO Trees [0] 2/-1/-1->1->0 [1] 3/-1/-1->1->-1 [2] 2/-1/-1->1->0 [3] 3/-1/-1->1->-1
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO Channel 01/04 : 0 1 3 2
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO P2P Chunksize set to 131072
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO P2P Chunksize set to 131072
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO Channel 02/04 : 0 2 3 1
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO P2P Chunksize set to 131072
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO Channel 03/04 : 0 1 3 2
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO Trees [0] 1/-1/-1->0->-1 [1] 2/-1/-1->0->3 [2] 1/-1/-1->0->-1 [3] 2/-1/-1->0->3
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO P2P Chunksize set to 131072
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO Check P2P Type intraNodeP2pSupport 0 directMode 0
+[TRAINING] alex-System-Product-Name:30860:30935 [0] NCCL INFO [Proxy Service UDS] Device 0 CPU core 16
+[TRAINING] alex-System-Product-Name:30862:30934 [2] NCCL INFO [Proxy Service UDS] Device 2 CPU core 18
+[TRAINING] alex-System-Product-Name:30863:30933 [3] NCCL INFO [Proxy Service UDS] Device 3 CPU core 23
+[TRAINING] alex-System-Product-Name:30863:30930 [3] NCCL INFO [Proxy Service] Device 3 CPU core 25
+[TRAINING] alex-System-Product-Name:30860:30929 [0] NCCL INFO [Proxy Service] Device 0 CPU core 28
+[TRAINING] alex-System-Product-Name:30862:30931 [2] NCCL INFO [Proxy Service] Device 2 CPU core 4
+[TRAINING] alex-System-Product-Name:30861:30936 [1] NCCL INFO [Proxy Service UDS] Device 1 CPU core 17
+[TRAINING] alex-System-Product-Name:30861:30932 [1] NCCL INFO [Proxy Service] Device 1 CPU core 4
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO CC Off, workFifoBytes 1048576
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO ncclCommInitRankConfig comm 0x6314af55b4a0 rank 3 nranks 4 cudaDev 3 nvmlDev 3 busId 9000 commId 0xc7ae7532e1e0d9f6 - Init COMPLETE
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO ncclCommInitRankConfig comm 0x577c23f518c0 rank 0 nranks 4 cudaDev 0 nvmlDev 0 busId 1000 commId 0xc7ae7532e1e0d9f6 - Init COMPLETE
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO ncclCommInitRankConfig comm 0x5e00b0601990 rank 2 nranks 4 cudaDev 2 nvmlDev 2 busId 8000 commId 0xc7ae7532e1e0d9f6 - Init COMPLETE
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO ncclCommInitRankConfig comm 0x5a41bd8f6b40 rank 1 nranks 4 cudaDev 1 nvmlDev 1 busId 5000 commId 0xc7ae7532e1e0d9f6 - Init COMPLETE
+[TRAINING] alex-System-Product-Name:30863:30923 [3] NCCL INFO Init timings - ncclCommInitRankConfig: rank 3 nranks 4 total 0.11 (kernels 0.07, alloc 0.00, bootstrap 0.02, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+[TRAINING] alex-System-Product-Name:30860:30912 [0] NCCL INFO Init timings - ncclCommInitRankConfig: rank 0 nranks 4 total 0.23 (kernels 0.12, alloc 0.00, bootstrap 0.10, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+[TRAINING] alex-System-Product-Name:30862:30924 [2] NCCL INFO Init timings - ncclCommInitRankConfig: rank 2 nranks 4 total 0.10 (kernels 0.08, alloc 0.00, bootstrap 0.00, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+[TRAINING] alex-System-Product-Name:30861:30922 [1] NCCL INFO Init timings - ncclCommInitRankConfig: rank 1 nranks 4 total 0.11 (kernels 0.07, alloc 0.00, bootstrap 0.01, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+[TRAINING] alex-System-Product-Name:30860:30937 [0] NCCL INFO Channel 01 : 0[0] -> 1[1] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:30860:30937 [0] NCCL INFO Channel 03 : 0[0] -> 1[1] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:30862:30938 [2] NCCL INFO Channel 00 : 2[2] -> 3[3] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:30862:30938 [2] NCCL INFO Channel 02 : 2[2] -> 3[3] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:30863:30940 [3] NCCL INFO Channel 00/0 : 3[3] -> 1[1] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:30862:30938 [2] NCCL INFO Channel 01/0 : 2[2] -> 0[0] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:30860:30937 [0] NCCL INFO Channel 00/0 : 0[0] -> 2[2] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:30861:30939 [1] NCCL INFO Channel 01/0 : 1[1] -> 3[3] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:30863:30940 [3] NCCL INFO Channel 02/0 : 3[3] -> 1[1] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:30862:30938 [2] NCCL INFO Channel 03/0 : 2[2] -> 0[0] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:30860:30937 [0] NCCL INFO Channel 02/0 : 0[0] -> 2[2] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:30861:30939 [1] NCCL INFO Channel 03/0 : 1[1] -> 3[3] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:30863:30940 [3] NCCL INFO Channel 01 : 3[3] -> 2[2] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:30861:30939 [1] NCCL INFO Channel 00 : 1[1] -> 0[0] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:30863:30940 [3] NCCL INFO Channel 03 : 3[3] -> 2[2] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:30861:30939 [1] NCCL INFO Channel 02 : 1[1] -> 0[0] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:30863:30940 [3] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+[TRAINING] alex-System-Product-Name:30860:30937 [0] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+[TRAINING] alex-System-Product-Name:30862:30938 [2] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+[TRAINING] alex-System-Product-Name:30861:30939 [1] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : Using full dataset: 1077950 train rows, 269487 test rows per GPU
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : Using full dataset: 1077950 train rows, 269487 test rows per GPU
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : Using full dataset: 1077950 train rows, 269487 test rows per GPU
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 root           : Using full dataset: 1077950 train rows, 269487 test rows per GPU
+[TRAINING] 2025-07-10 22:25:53 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+INFO:__main__:📊 Starting dashboard...
+INFO:__main__:✅ Dashboard started on http://0.0.0.0:5000
+INFO:__main__:🎉 System startup complete!
+INFO:__main__:📊 Dashboard: http://0.0.0.0:5000
+INFO:__main__:📈 TensorBoard: http://0.0.0.0:6006
+INFO:__main__:🧠 Training: Active
+INFO:__main__:============================================================
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 1077950 states, obs_dim=132
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 269487 states, obs_dim=132
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 root           : Rank 1 heartbeat - waiting for adaptive training
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 1077950 states, obs_dim=132
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 269487 states, obs_dim=132
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 1077950 states, obs_dim=132
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 269487 states, obs_dim=132
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 root           : Rank 2 heartbeat - waiting for adaptive training
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 VISUALIZATION  : 🎨 Visualization system initialized on port 5000
+[TRAINING] 2025-07-10 22:26:14 [ERROR   ] 🔸 VISUALIZATION  : ❌ Failed to start web server: [Errno 98] Address already in use
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 email_notifications: Email notifications configured for ali.aloraibi@outlook.com
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 email_notifications: Notifications will be sent every 6 hours
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 email_notifications: No training metrics available for progress update
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 email_notifications: Training monitoring started
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 root           : 📧 Email notifications enabled
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 adaptive_trainer: Removed old TensorBoard run: ./runs/ga_experiment
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 adaptive_trainer: Starting adaptive training
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 adaptive_trainer:
+[TRAINING] === Adaptive Training Iteration 1/3 ===
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 1077950 states, obs_dim=132
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 269489 states, obs_dim=132
+[TRAINING] 2025-07-10 22:26:14 [INFO    ] 🔸 root           : Rank 3 heartbeat - waiting for adaptive training
+[TRAINING] 2025-07-10 22:26:19 [INFO    ] 🔸 root           : Rank 1 detected training completion
+[TRAINING] 2025-07-10 22:26:19 [INFO    ] 🔸 root           : Rank 2 detected training completion
+[TRAINING] 2025-07-10 22:26:19 [INFO    ] 🔸 root           : Rank 3 detected training completion
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+[TRAINING] 2025-07-10 22:32:39 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 183915 profits, total=-104044747650.0000
+[TRAINING] 2025-07-10 22:32:39 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=-0.0949, Sharpe=-2.6234, MDD=50.0000
+[TRAINING] 2025-07-10 22:32:39 [INFO    ] 🔸 adaptive_trainer: Current performance: -0.2315 (best: -0.2315)
+[TRAINING] 2025-07-10 22:32:39 [INFO    ] 🔸 adaptive_trainer: Stagnation: 0, Poor performance: 0
+[TRAINING] 2025-07-10 22:32:39 [INFO    ] 🔸 adaptive_trainer: Method: GA, Entropy: 1.9459
+[TRAINING] 2025-07-10 22:32:39 [INFO    ] 🔸 adaptive_trainer: Switching to PPO due to: ga_solution_refinement
+[TRAINING] 2025-07-10 22:32:39 [INFO    ] 🔸 adaptive_trainer: Switching from GA to PPO
+[TRAINING] 2025-07-10 22:32:39 [INFO    ] 🔸 adaptive_trainer: Starting PPO phase: 150 updates
+[TRAINING] 2025-07-10 22:32:39 [WARNING ] 🔸 policy_gradient_methods: Dimension mismatch: saved model expects 127, current model has 132
+[TRAINING] 2025-07-10 22:32:39 [INFO    ] 🔸 policy_gradient_methods: Starting from scratch due to incompatible checkpoint at models/ppo_models/adaptive_ppo_model.pth
+[TRAINING] Removed old TensorBoard run: ./runs/ppo_rank_0
+[TRAINING] 2025-07-10 22:32:40 [WARNING ] 🔸 policy_gradient_methods: Dimension mismatch: saved model expects 127, current model has 132
+[TRAINING] 2025-07-10 22:32:40 [INFO    ] 🔸 policy_gradient_methods: Starting from scratch due to incompatible checkpoint at models/ppo_models/adaptive_ppo_model.pth
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+[TRAINING] 2025-07-10 22:34:46 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 92897 profits, total=-47669582400.0000
+[TRAINING] 2025-07-10 22:34:46 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=-0.1879, Sharpe=-1.9446, MDD=50.0000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.000, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   5%| | 51/1024 [00:00<00:03, 244.41it/s, reward=0.00, eps=0, p_loss=0.0
+[TRAINING] 🎯 Collecting Trajectories:   5%| | 51/1024 [00:00<00:03, 244.41it/s, reward=-0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  14%|1| 145/1024 [00:00<00:01, 525.11it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  14%|1| 145/1024 [00:00<00:01, 525.11it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  23%|2| 237/1024 [00:00<00:01, 669.52it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  23%|2| 237/1024 [00:00<00:01, 669.52it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  32%|3| 329/1024 [00:00<00:00, 754.60it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  32%|3| 329/1024 [00:00<00:00, 754.60it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  41%|4| 421/1024 [00:00<00:00, 807.28it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  41%|4| 421/1024 [00:00<00:00, 807.28it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  50%|5| 513/1024 [00:00<00:00, 842.11it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  50%|5| 513/1024 [00:00<00:00, 842.11it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  60%|5| 612/1024 [00:00<00:00, 887.35it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  60%|5| 612/1024 [00:00<00:00, 887.35it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  69%|6| 711/1024 [00:00<00:00, 916.91it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  69%|6| 711/1024 [00:01<00:00, 916.91it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 809/1024 [00:01<00:00, 933.93it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 809/1024 [00:01<00:00, 933.93it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  88%|8| 906/1024 [00:01<00:00, 942.76it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  88%|8| 906/1024 [00:01<00:00, 942.76it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  98%|9| 1002/1024 [00:01<00:00, 946.68it/s, reward=0.00, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:34:47 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0009, std=0.0996, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=-0.054, v_los
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=-0.054, v_lo
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 101/1024 [00:00<00:00, 1006.16it/s, reward=-0.00, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 199/1024 [00:00<00:00, 990.49it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 199/1024 [00:00<00:00, 990.49it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 296/1024 [00:00<00:00, 978.21it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 296/1024 [00:00<00:00, 978.21it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 391/1024 [00:00<00:00, 966.67it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 391/1024 [00:00<00:00, 966.67it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 488/1024 [00:00<00:00, 967.37it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 488/1024 [00:00<00:00, 967.37it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 574/1024 [00:00<00:00, 930.69it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 574/1024 [00:00<00:00, 930.69it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  64%|6| 659/1024 [00:00<00:00, 902.48it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  64%|6| 659/1024 [00:00<00:00, 902.48it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 744/1024 [00:00<00:00, 885.66it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 744/1024 [00:00<00:00, 885.66it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  81%|8| 829/1024 [00:00<00:00, 872.01it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  81%|8| 829/1024 [00:00<00:00, 872.01it/s, reward=0.02, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 917/1024 [00:01<00:00, 872.31it/s, reward=0.02, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 917/1024 [00:01<00:00, 872.31it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  99%|9| 1009/1024 [00:01<00:00, 885.82it/s, reward=0.01, eps=0, p_loss=-
+[TRAINING] 
+[TRAINING] 2025-07-10 22:34:49 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0006, std=0.0982, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=0.025, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 98/1024 [00:00<00:00, 975.55it/s, reward=-0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 98/1024 [00:00<00:00, 975.55it/s, reward=-0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 196/1024 [00:00<00:00, 975.40it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 196/1024 [00:00<00:00, 975.40it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 294/1024 [00:00<00:00, 974.02it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 294/1024 [00:00<00:00, 974.02it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 391/1024 [00:00<00:00, 971.01it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 391/1024 [00:00<00:00, 971.01it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 489/1024 [00:00<00:00, 973.37it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 489/1024 [00:00<00:00, 973.37it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  57%|5| 586/1024 [00:00<00:00, 971.24it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  57%|5| 586/1024 [00:00<00:00, 971.24it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 686/1024 [00:00<00:00, 977.75it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 686/1024 [00:00<00:00, 977.75it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 784/1024 [00:00<00:00, 976.05it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 784/1024 [00:00<00:00, 976.05it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  85%|8| 873/1024 [00:00<00:00, 947.11it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  85%|8| 873/1024 [00:00<00:00, 947.11it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  94%|9| 961/1024 [00:01<00:00, 925.77it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  94%|9| 961/1024 [00:01<00:00, 925.77it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:34:50 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0013, std=0.0987, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=-0.033, v_los
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=-0.033, v_lo
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 101/1024 [00:00<00:00, 1009.74it/s, reward=-0.00, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 101/1024 [00:00<00:00, 1009.74it/s, reward=-0.00, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 201/1024 [00:00<00:00, 1002.78it/s, reward=-0.00, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 300/1024 [00:00<00:00, 993.91it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 300/1024 [00:00<00:00, 993.91it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 399/1024 [00:00<00:00, 990.10it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 399/1024 [00:00<00:00, 990.10it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 984.76it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 984.76it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 593/1024 [00:00<00:00, 976.07it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 593/1024 [00:00<00:00, 976.07it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  68%|6| 692/1024 [00:00<00:00, 978.35it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  68%|6| 692/1024 [00:00<00:00, 978.35it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 789/1024 [00:00<00:00, 974.65it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 789/1024 [00:00<00:00, 974.65it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  87%|8| 886/1024 [00:00<00:00, 972.29it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  87%|8| 886/1024 [00:00<00:00, 972.29it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  95%|9| 974/1024 [00:01<00:00, 943.25it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  95%|9| 974/1024 [00:01<00:00, 943.25it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 
+[TRAINING] 2025-07-10 22:34:51 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0043, std=0.0982, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=-0.017, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 99/1024 [00:00<00:00, 989.22it/s, reward=0.00, eps=0, p_loss=-0.
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 99/1024 [00:00<00:00, 989.22it/s, reward=0.01, eps=0, p_loss=-0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 195/1024 [00:00<00:00, 970.81it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 195/1024 [00:00<00:00, 970.81it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 291/1024 [00:00<00:00, 961.81it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 291/1024 [00:00<00:00, 961.81it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  37%|3| 378/1024 [00:00<00:00, 925.24it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  37%|3| 378/1024 [00:00<00:00, 925.24it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  45%|4| 464/1024 [00:00<00:00, 898.73it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  45%|4| 464/1024 [00:00<00:00, 898.73it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  54%|5| 550/1024 [00:00<00:00, 883.79it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  54%|5| 550/1024 [00:00<00:00, 883.79it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  62%|6| 635/1024 [00:00<00:00, 871.77it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  62%|6| 635/1024 [00:00<00:00, 871.77it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  71%|7| 722/1024 [00:00<00:00, 870.13it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  71%|7| 722/1024 [00:00<00:00, 870.13it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 808/1024 [00:00<00:00, 865.95it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 808/1024 [00:01<00:00, 865.95it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  88%|8| 902/1024 [00:01<00:00, 888.23it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  97%|9| 996/1024 [00:01<00:00, 903.25it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  97%|9| 996/1024 [00:01<00:00, 903.25it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:34:53 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0010, std=0.0996, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=0.024, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 100/1024 [00:00<00:00, 993.55it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 100/1024 [00:00<00:00, 993.55it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 196/1024 [00:00<00:00, 972.78it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 196/1024 [00:00<00:00, 972.78it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 291/1024 [00:00<00:00, 962.05it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 291/1024 [00:00<00:00, 962.05it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 385/1024 [00:00<00:00, 952.00it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 385/1024 [00:00<00:00, 952.00it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  46%|4| 473/1024 [00:00<00:00, 923.01it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  46%|4| 473/1024 [00:00<00:00, 923.01it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  55%|5| 559/1024 [00:00<00:00, 901.04it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  55%|5| 559/1024 [00:00<00:00, 901.04it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  63%|6| 645/1024 [00:00<00:00, 887.06it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  63%|6| 645/1024 [00:00<00:00, 887.06it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  71%|7| 731/1024 [00:00<00:00, 878.16it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  71%|7| 731/1024 [00:00<00:00, 878.16it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  80%|7| 819/1024 [00:00<00:00, 870.01it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  80%|7| 819/1024 [00:00<00:00, 870.01it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  88%|8| 906/1024 [00:01<00:00, 864.20it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  88%|8| 906/1024 [00:01<00:00, 864.20it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  98%|9| 1001/1024 [00:01<00:00, 887.79it/s, reward=0.00, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:34:54 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0026, std=0.0995, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.007, v_loss
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 99/1024 [00:00<00:00, 985.26it/s, reward=0.00, eps=0, p_loss=0.0
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 99/1024 [00:00<00:00, 985.26it/s, reward=-0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 196/1024 [00:00<00:00, 973.33it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 196/1024 [00:00<00:00, 973.33it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 295/1024 [00:00<00:00, 976.79it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 295/1024 [00:00<00:00, 976.79it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 393/1024 [00:00<00:00, 975.43it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 393/1024 [00:00<00:00, 975.43it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 491/1024 [00:00<00:00, 974.72it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 491/1024 [00:00<00:00, 974.72it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  57%|5| 579/1024 [00:00<00:00, 942.06it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  57%|5| 579/1024 [00:00<00:00, 942.06it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  65%|6| 668/1024 [00:00<00:00, 923.66it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  65%|6| 668/1024 [00:00<00:00, 923.66it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  74%|7| 756/1024 [00:00<00:00, 908.19it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  74%|7| 756/1024 [00:00<00:00, 908.19it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  83%|8| 845/1024 [00:00<00:00, 900.13it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  83%|8| 845/1024 [00:00<00:00, 900.13it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  91%|9| 933/1024 [00:01<00:00, 891.70it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  91%|9| 933/1024 [00:01<00:00, 891.70it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories: 100%|9| 1020/1024 [00:01<00:00, 884.50it/s, reward=-0.02, eps=0, p_loss=
+[TRAINING] 
+[TRAINING] 2025-07-10 22:34:55 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0192, std=0.0026, min=-0.1000, max=0.0000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.043, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.01, eps=0, p_loss=0.043, v_loss
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 102/1024 [00:00<00:00, 1018.16it/s, reward=0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 200/1024 [00:00<00:00, 994.48it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 200/1024 [00:00<00:00, 994.48it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 297/1024 [00:00<00:00, 981.80it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 297/1024 [00:00<00:00, 981.80it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 396/1024 [00:00<00:00, 983.51it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 396/1024 [00:00<00:00, 983.51it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 491/1024 [00:00<00:00, 968.40it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 491/1024 [00:00<00:00, 968.40it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 578/1024 [00:00<00:00, 932.19it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 578/1024 [00:00<00:00, 932.19it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  65%|6| 664/1024 [00:00<00:00, 906.63it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  65%|6| 664/1024 [00:00<00:00, 906.63it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 750/1024 [00:00<00:00, 889.25it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 750/1024 [00:00<00:00, 889.25it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  82%|8| 837/1024 [00:00<00:00, 881.77it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  82%|8| 837/1024 [00:00<00:00, 881.77it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  90%|9| 924/1024 [00:01<00:00, 875.69it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  90%|9| 924/1024 [00:01<00:00, 875.69it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  98%|9| 1008/1024 [00:01<00:00, 862.32it/s, reward=0.00, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:34:57 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0005, std=0.0993, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.011, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.02, eps=0, p_loss=0.011, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 101/1024 [00:00<00:00, 1000.00it/s, reward=-0.02, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 198/1024 [00:00<00:00, 981.49it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 198/1024 [00:00<00:00, 981.49it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 292/1024 [00:00<00:00, 961.97it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 292/1024 [00:00<00:00, 961.97it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 388/1024 [00:00<00:00, 960.87it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 388/1024 [00:00<00:00, 960.87it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  47%|4| 483/1024 [00:00<00:00, 955.69it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  47%|4| 483/1024 [00:00<00:00, 955.69it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 578/1024 [00:00<00:00, 951.27it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 578/1024 [00:00<00:00, 951.27it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  65%|6| 664/1024 [00:00<00:00, 918.96it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  65%|6| 664/1024 [00:00<00:00, 918.96it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 749/1024 [00:00<00:00, 896.24it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 749/1024 [00:00<00:00, 896.24it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  82%|8| 835/1024 [00:00<00:00, 883.27it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  82%|8| 835/1024 [00:00<00:00, 883.27it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 921/1024 [00:01<00:00, 875.02it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 921/1024 [00:01<00:00, 875.02it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  99%|9| 1018/1024 [00:01<00:00, 903.54it/s, reward=0.01, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:34:58 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0009, std=0.0993, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=-0.013, v_los
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 94/1024 [00:00<00:00, 932.17it/s, reward=0.00, eps=0, p_loss=-0.
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 94/1024 [00:00<00:00, 932.17it/s, reward=0.01, eps=0, p_loss=-0.
+[TRAINING] 🎯 Collecting Trajectories:  18%|1| 183/1024 [00:00<00:00, 907.09it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  18%|1| 183/1024 [00:00<00:00, 907.09it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  26%|2| 271/1024 [00:00<00:00, 894.43it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  26%|2| 271/1024 [00:00<00:00, 894.43it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  35%|3| 358/1024 [00:00<00:00, 884.21it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  35%|3| 358/1024 [00:00<00:00, 884.21it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  44%|4| 447/1024 [00:00<00:00, 885.64it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  44%|4| 447/1024 [00:00<00:00, 885.64it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  52%|5| 535/1024 [00:00<00:00, 883.44it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  52%|5| 535/1024 [00:00<00:00, 883.44it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  61%|6| 623/1024 [00:00<00:00, 881.84it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  61%|6| 623/1024 [00:00<00:00, 881.84it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  69%|6| 711/1024 [00:00<00:00, 880.62it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  69%|6| 711/1024 [00:00<00:00, 880.62it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 807/1024 [00:00<00:00, 905.16it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 807/1024 [00:00<00:00, 905.16it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  88%|8| 904/1024 [00:01<00:00, 922.59it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  98%|9| 1000/1024 [00:01<00:00, 932.97it/s, reward=-0.00, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  98%|9| 1000/1024 [00:01<00:00, 932.97it/s, reward=0.01, eps=0, p_loss=-
+[TRAINING] 
+[TRAINING] 2025-07-10 22:34:59 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0011, std=0.0988, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.011, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.02, eps=0, p_loss=0.011, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 102/1024 [00:00<00:00, 1011.75it/s, reward=-0.02, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 200/1024 [00:00<00:00, 988.53it/s, reward=-0.02, eps=0, p_loss=0
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 200/1024 [00:00<00:00, 988.53it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 298/1024 [00:00<00:00, 982.19it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 298/1024 [00:00<00:00, 982.19it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 398/1024 [00:00<00:00, 985.67it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 398/1024 [00:00<00:00, 985.67it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 494/1024 [00:00<00:00, 973.41it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 494/1024 [00:00<00:00, 973.41it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 591/1024 [00:00<00:00, 969.77it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 591/1024 [00:00<00:00, 969.77it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 687/1024 [00:00<00:00, 965.50it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 687/1024 [00:00<00:00, 965.50it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  76%|7| 774/1024 [00:00<00:00, 933.34it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  76%|7| 774/1024 [00:00<00:00, 933.34it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  84%|8| 862/1024 [00:00<00:00, 916.32it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  84%|8| 862/1024 [00:00<00:00, 916.32it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  93%|9| 950/1024 [00:01<00:00, 903.71it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  93%|9| 950/1024 [00:01<00:00, 903.71it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:00 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0025, std=0.0993, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=-0.014, v_los
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 90/1024 [00:00<00:01, 899.64it/s, reward=0.00, eps=0, p_loss=-0.
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 90/1024 [00:00<00:01, 899.64it/s, reward=0.03, eps=0, p_loss=-0.
+[TRAINING] 🎯 Collecting Trajectories:  17%|1| 170/1024 [00:00<00:01, 839.01it/s, reward=0.03, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  17%|1| 170/1024 [00:00<00:01, 839.01it/s, reward=-0.03, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  24%|2| 250/1024 [00:00<00:00, 818.90it/s, reward=-0.03, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  24%|2| 250/1024 [00:00<00:00, 818.90it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  33%|3| 333/1024 [00:00<00:00, 822.64it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  33%|3| 333/1024 [00:00<00:00, 822.64it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  41%|4| 420/1024 [00:00<00:00, 839.57it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  41%|4| 420/1024 [00:00<00:00, 839.57it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  50%|5| 515/1024 [00:00<00:00, 875.56it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  50%|5| 515/1024 [00:00<00:00, 875.56it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  60%|5| 610/1024 [00:00<00:00, 897.53it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  60%|5| 610/1024 [00:00<00:00, 897.53it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  69%|6| 705/1024 [00:00<00:00, 912.99it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  78%|7| 800/1024 [00:00<00:00, 922.66it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  78%|7| 800/1024 [00:00<00:00, 922.66it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  87%|8| 895/1024 [00:01<00:00, 925.08it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  87%|8| 895/1024 [00:01<00:00, 925.08it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  96%|9| 980/1024 [00:01<00:00, 901.07it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  96%|9| 980/1024 [00:01<00:00, 901.07it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:02 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0006, std=0.0987, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=-0.023, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 100/1024 [00:00<00:00, 992.61it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 100/1024 [00:00<00:00, 992.61it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 195/1024 [00:00<00:00, 965.74it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 195/1024 [00:00<00:00, 965.74it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 292/1024 [00:00<00:00, 964.50it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 292/1024 [00:00<00:00, 964.50it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 388/1024 [00:00<00:00, 961.76it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 388/1024 [00:00<00:00, 961.76it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  47%|4| 483/1024 [00:00<00:00, 956.60it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  47%|4| 483/1024 [00:00<00:00, 956.60it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 570/1024 [00:00<00:00, 924.72it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 570/1024 [00:00<00:00, 924.72it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  64%|6| 655/1024 [00:00<00:00, 899.21it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  64%|6| 655/1024 [00:00<00:00, 899.21it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  72%|7| 741/1024 [00:00<00:00, 885.60it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  72%|7| 741/1024 [00:00<00:00, 885.60it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  81%|8| 827/1024 [00:00<00:00, 875.82it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  81%|8| 827/1024 [00:00<00:00, 875.82it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 918/1024 [00:01<00:00, 879.53it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 918/1024 [00:01<00:00, 879.53it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  98%|9| 1005/1024 [00:01<00:00, 870.64it/s, reward=-0.00, eps=0, p_loss=
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:03 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0011, std=0.0995, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.01, eps=0, p_loss=0.011, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.01, eps=0, p_loss=0.011, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 101/1024 [00:00<00:00, 999.24it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 197/1024 [00:00<00:00, 974.24it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 197/1024 [00:00<00:00, 974.24it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 284/1024 [00:00<00:00, 925.44it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 284/1024 [00:00<00:00, 925.44it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  36%|3| 372/1024 [00:00<00:00, 904.55it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  36%|3| 372/1024 [00:00<00:00, 904.55it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  45%|4| 456/1024 [00:00<00:00, 880.66it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  45%|4| 456/1024 [00:00<00:00, 880.66it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  53%|5| 541/1024 [00:00<00:00, 869.49it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  53%|5| 541/1024 [00:00<00:00, 869.49it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  61%|6| 627/1024 [00:00<00:00, 865.74it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  61%|6| 627/1024 [00:00<00:00, 865.74it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  70%|6| 714/1024 [00:00<00:00, 865.78it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  70%|6| 714/1024 [00:00<00:00, 865.78it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 808/1024 [00:00<00:00, 888.91it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 808/1024 [00:01<00:00, 888.91it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  88%|8| 903/1024 [00:01<00:00, 905.60it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  97%|9| 997/1024 [00:01<00:00, 914.86it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  97%|9| 997/1024 [00:01<00:00, 914.86it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:04 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0076, std=0.0061, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=0.019, v_los
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.01, eps=0, p_loss=0.019, v_loss
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1023.95it/s, reward=0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1023.95it/s, reward=-0.00, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 201/1024 [00:00<00:00, 994.39it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 300/1024 [00:00<00:00, 992.09it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 300/1024 [00:00<00:00, 992.09it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 398/1024 [00:00<00:00, 985.10it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 398/1024 [00:00<00:00, 985.10it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 496/1024 [00:00<00:00, 983.24it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 496/1024 [00:00<00:00, 983.24it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 594/1024 [00:00<00:00, 980.13it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 594/1024 [00:00<00:00, 980.13it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  68%|6| 692/1024 [00:00<00:00, 979.93it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  68%|6| 692/1024 [00:00<00:00, 979.93it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 788/1024 [00:00<00:00, 971.77it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 788/1024 [00:00<00:00, 971.77it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  87%|8| 886/1024 [00:00<00:00, 972.29it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  87%|8| 886/1024 [00:00<00:00, 972.29it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  95%|9| 975/1024 [00:01<00:00, 944.62it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  95%|9| 975/1024 [00:01<00:00, 944.62it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:06 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0024, std=0.0990, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.017, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.01, eps=0, p_loss=0.017, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1024.08it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1024.08it/s, reward=0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 202/1024 [00:00<00:00, 1000.81it/s, reward=0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 202/1024 [00:00<00:00, 1000.81it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 301/1024 [00:00<00:00, 994.23it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 398/1024 [00:00<00:00, 981.45it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 398/1024 [00:00<00:00, 981.45it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 982.05it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 982.05it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 595/1024 [00:00<00:00, 978.54it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 595/1024 [00:00<00:00, 978.54it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  68%|6| 693/1024 [00:00<00:00, 977.85it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  68%|6| 693/1024 [00:00<00:00, 977.85it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  76%|7| 780/1024 [00:00<00:00, 943.15it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  76%|7| 780/1024 [00:00<00:00, 943.15it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  85%|8| 869/1024 [00:00<00:00, 925.20it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  85%|8| 869/1024 [00:00<00:00, 925.20it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  94%|9| 958/1024 [00:01<00:00, 912.60it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  94%|9| 958/1024 [00:01<00:00, 912.60it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:07 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0001, std=0.0986, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.009, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.01, eps=0, p_loss=0.009, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1029.35it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1029.35it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 202/1024 [00:00<00:00, 1003.02it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 202/1024 [00:00<00:00, 1003.02it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 301/1024 [00:00<00:00, 996.53it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 400/1024 [00:00<00:00, 991.29it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 400/1024 [00:00<00:00, 991.29it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 982.29it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 982.29it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 596/1024 [00:00<00:00, 984.88it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 596/1024 [00:00<00:00, 984.88it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  68%|6| 693/1024 [00:00<00:00, 979.95it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  68%|6| 693/1024 [00:00<00:00, 979.95it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  76%|7| 782/1024 [00:00<00:00, 949.01it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  76%|7| 782/1024 [00:00<00:00, 949.01it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  85%|8| 870/1024 [00:00<00:00, 925.87it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  85%|8| 870/1024 [00:00<00:00, 925.87it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  94%|9| 960/1024 [00:01<00:00, 915.88it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  94%|9| 960/1024 [00:01<00:00, 915.88it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:08 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0085, std=0.0199, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.052, v_loss
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 100/1024 [00:00<00:00, 990.88it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 100/1024 [00:00<00:00, 990.88it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 199/1024 [00:00<00:00, 989.56it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 199/1024 [00:00<00:00, 989.56it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 297/1024 [00:00<00:00, 981.68it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 297/1024 [00:00<00:00, 981.68it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 395/1024 [00:00<00:00, 979.74it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 395/1024 [00:00<00:00, 979.74it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 494/1024 [00:00<00:00, 980.69it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 494/1024 [00:00<00:00, 980.69it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 592/1024 [00:00<00:00, 977.41it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 592/1024 [00:00<00:00, 977.41it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 688/1024 [00:00<00:00, 970.44it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 688/1024 [00:00<00:00, 970.44it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 787/1024 [00:00<00:00, 975.77it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 787/1024 [00:00<00:00, 975.77it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  86%|8| 884/1024 [00:00<00:00, 972.05it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  86%|8| 884/1024 [00:00<00:00, 972.05it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  95%|9| 972/1024 [00:01<00:00, 943.64it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  95%|9| 972/1024 [00:01<00:00, 943.64it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:09 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0006, std=0.0995, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=-0.030, v_los
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 97/1024 [00:00<00:00, 966.13it/s, reward=0.00, eps=0, p_loss=-0.
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 97/1024 [00:00<00:00, 966.13it/s, reward=0.01, eps=0, p_loss=-0.
+[TRAINING] 🎯 Collecting Trajectories:  17%|1| 179/1024 [00:00<00:00, 877.50it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  17%|1| 179/1024 [00:00<00:00, 877.50it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  25%|2| 261/1024 [00:00<00:00, 850.93it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  25%|2| 261/1024 [00:00<00:00, 850.93it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  33%|3| 343/1024 [00:00<00:00, 836.84it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  33%|3| 343/1024 [00:00<00:00, 836.84it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  42%|4| 430/1024 [00:00<00:00, 847.91it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  42%|4| 430/1024 [00:00<00:00, 847.91it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  51%|5| 519/1024 [00:00<00:00, 860.14it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  51%|5| 519/1024 [00:00<00:00, 860.14it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  60%|6| 616/1024 [00:00<00:00, 895.44it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  60%|6| 616/1024 [00:00<00:00, 895.44it/s, reward=0.02, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  70%|6| 713/1024 [00:00<00:00, 918.39it/s, reward=0.02, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  70%|6| 713/1024 [00:00<00:00, 918.39it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 811/1024 [00:00<00:00, 935.56it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 811/1024 [00:00<00:00, 935.56it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  89%|8| 907/1024 [00:01<00:00, 941.02it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  89%|8| 907/1024 [00:01<00:00, 941.02it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  98%|9| 1005/1024 [00:01<00:00, 952.30it/s, reward=0.01, eps=0, p_loss=-
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:11 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0018, std=0.0991, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=-0.005, v_los
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 95/1024 [00:00<00:00, 944.80it/s, reward=0.00, eps=0, p_loss=-0.
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 95/1024 [00:00<00:00, 944.80it/s, reward=-0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  18%|1| 184/1024 [00:00<00:00, 911.22it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  18%|1| 184/1024 [00:00<00:00, 911.22it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  27%|2| 274/1024 [00:00<00:00, 904.39it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  27%|2| 274/1024 [00:00<00:00, 904.39it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  35%|3| 359/1024 [00:00<00:00, 880.64it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  35%|3| 359/1024 [00:00<00:00, 880.64it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  44%|4| 447/1024 [00:00<00:00, 880.07it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  44%|4| 447/1024 [00:00<00:00, 880.07it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  52%|5| 535/1024 [00:00<00:00, 878.78it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  52%|5| 535/1024 [00:00<00:00, 878.78it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  61%|6| 622/1024 [00:00<00:00, 873.49it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  61%|6| 622/1024 [00:00<00:00, 873.49it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  70%|7| 718/1024 [00:00<00:00, 900.63it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  70%|7| 718/1024 [00:00<00:00, 900.63it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 805/1024 [00:00<00:00, 885.69it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  87%|8| 891/1024 [00:01<00:00, 877.67it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  87%|8| 891/1024 [00:01<00:00, 877.67it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  96%|9| 987/1024 [00:01<00:00, 901.53it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  96%|9| 987/1024 [00:01<00:00, 901.53it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:12 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0016, std=0.0988, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.009, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 91/1024 [00:00<00:01, 909.55it/s, reward=0.00, eps=0, p_loss=0.0
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 91/1024 [00:00<00:01, 909.55it/s, reward=0.02, eps=0, p_loss=0.0
+[TRAINING] 🎯 Collecting Trajectories:  17%|1| 178/1024 [00:00<00:00, 885.13it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  17%|1| 178/1024 [00:00<00:00, 885.13it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  25%|2| 259/1024 [00:00<00:00, 848.30it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  25%|2| 259/1024 [00:00<00:00, 848.30it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  33%|3| 340/1024 [00:00<00:00, 830.91it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  33%|3| 340/1024 [00:00<00:00, 830.91it/s, reward=0.03, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  41%|4| 420/1024 [00:00<00:00, 817.77it/s, reward=0.03, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  41%|4| 420/1024 [00:00<00:00, 817.77it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 504/1024 [00:00<00:00, 822.40it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 589/1024 [00:00<00:00, 830.54it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 589/1024 [00:00<00:00, 830.54it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  66%|6| 677/1024 [00:00<00:00, 844.55it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  66%|6| 677/1024 [00:00<00:00, 844.55it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  74%|7| 757/1024 [00:00<00:00, 828.29it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  74%|7| 757/1024 [00:00<00:00, 828.29it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  82%|8| 835/1024 [00:01<00:00, 811.96it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  82%|8| 835/1024 [00:01<00:00, 811.96it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 919/1024 [00:01<00:00, 813.70it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 919/1024 [00:01<00:00, 813.70it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  98%|9| 1006/1024 [00:01<00:00, 830.67it/s, reward=-0.02, eps=0, p_loss=
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:13 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0096, std=0.0967, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=-0.007, v_lo
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 98/1024 [00:00<00:00, 977.76it/s, reward=-0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 98/1024 [00:00<00:00, 977.76it/s, reward=0.01, eps=0, p_loss=-0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 197/1024 [00:00<00:00, 979.85it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 197/1024 [00:00<00:00, 979.85it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 294/1024 [00:00<00:00, 974.06it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 294/1024 [00:00<00:00, 974.06it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 391/1024 [00:00<00:00, 971.39it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 391/1024 [00:00<00:00, 971.39it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  47%|4| 479/1024 [00:00<00:00, 935.63it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  47%|4| 479/1024 [00:00<00:00, 935.63it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  55%|5| 566/1024 [00:00<00:00, 911.10it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  55%|5| 566/1024 [00:00<00:00, 911.10it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  64%|6| 653/1024 [00:00<00:00, 897.71it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  64%|6| 653/1024 [00:00<00:00, 897.71it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  72%|7| 741/1024 [00:00<00:00, 889.81it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  72%|7| 741/1024 [00:00<00:00, 889.81it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  81%|8| 828/1024 [00:00<00:00, 882.72it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  81%|8| 828/1024 [00:00<00:00, 882.72it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  89%|8| 916/1024 [00:01<00:00, 879.85it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  89%|8| 916/1024 [00:01<00:00, 879.85it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  99%|9| 1010/1024 [00:01<00:00, 896.53it/s, reward=0.00, eps=0, p_loss=-
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:15 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0007, std=0.0979, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=-0.004, v_lo
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.01, eps=0, p_loss=-0.004, v_lo
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 101/1024 [00:00<00:00, 1008.62it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 199/1024 [00:00<00:00, 986.63it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 199/1024 [00:00<00:00, 986.63it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 295/1024 [00:00<00:00, 972.52it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 295/1024 [00:00<00:00, 972.52it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 393/1024 [00:00<00:00, 972.37it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 393/1024 [00:00<00:00, 972.37it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 490/1024 [00:00<00:00, 969.11it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 490/1024 [00:00<00:00, 969.11it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  57%|5| 587/1024 [00:00<00:00, 969.27it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  57%|5| 587/1024 [00:00<00:00, 969.27it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  66%|6| 674/1024 [00:00<00:00, 934.16it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  66%|6| 674/1024 [00:00<00:00, 934.16it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  74%|7| 761/1024 [00:00<00:00, 912.16it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  74%|7| 761/1024 [00:00<00:00, 912.16it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  83%|8| 849/1024 [00:00<00:00, 900.68it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  83%|8| 849/1024 [00:00<00:00, 900.68it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  91%|9| 936/1024 [00:01<00:00, 888.85it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  91%|9| 936/1024 [00:01<00:00, 888.85it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories: 100%|9| 1023/1024 [00:01<00:00, 881.41it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:16 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0129, std=0.0237, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.046, v_loss
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 100/1024 [00:00<00:00, 991.12it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 100/1024 [00:00<00:00, 991.12it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 199/1024 [00:00<00:00, 987.51it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 199/1024 [00:00<00:00, 987.51it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 299/1024 [00:00<00:00, 989.20it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 299/1024 [00:00<00:00, 989.20it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 398/1024 [00:00<00:00, 987.55it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 398/1024 [00:00<00:00, 987.55it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 495/1024 [00:00<00:00, 978.06it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 495/1024 [00:00<00:00, 978.06it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  57%|5| 585/1024 [00:00<00:00, 949.85it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  57%|5| 585/1024 [00:00<00:00, 949.85it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  66%|6| 674/1024 [00:00<00:00, 927.57it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  66%|6| 674/1024 [00:00<00:00, 927.57it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  75%|7| 763/1024 [00:00<00:00, 914.00it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  75%|7| 763/1024 [00:00<00:00, 914.00it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  83%|8| 851/1024 [00:00<00:00, 903.38it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  83%|8| 851/1024 [00:00<00:00, 903.38it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  92%|9| 940/1024 [00:01<00:00, 897.66it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  92%|9| 940/1024 [00:01<00:00, 897.66it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:17 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0001, std=0.0994, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.020, v_loss
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 99/1024 [00:00<00:00, 985.12it/s, reward=0.00, eps=0, p_loss=0.0
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 99/1024 [00:00<00:00, 985.12it/s, reward=-0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 198/1024 [00:00<00:00, 984.50it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 198/1024 [00:00<00:00, 984.50it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 297/1024 [00:00<00:00, 986.24it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 297/1024 [00:00<00:00, 986.24it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 394/1024 [00:00<00:00, 979.77it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 394/1024 [00:00<00:00, 979.77it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 492/1024 [00:00<00:00, 977.66it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 492/1024 [00:00<00:00, 977.66it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 589/1024 [00:00<00:00, 973.03it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 589/1024 [00:00<00:00, 973.03it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 687/1024 [00:00<00:00, 975.01it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 687/1024 [00:00<00:00, 975.01it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 784/1024 [00:00<00:00, 972.36it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 784/1024 [00:00<00:00, 972.36it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  86%|8| 882/1024 [00:00<00:00, 972.45it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  86%|8| 882/1024 [00:00<00:00, 972.45it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  95%|9| 971/1024 [00:01<00:00, 944.87it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  95%|9| 971/1024 [00:01<00:00, 944.87it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:18 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0006, std=0.0997, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=-0.022, v_los
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.01, eps=0, p_loss=-0.022, v_lo
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 102/1024 [00:00<00:00, 1018.31it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 102/1024 [00:00<00:00, 1018.31it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 201/1024 [00:00<00:00, 997.59it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 300/1024 [00:00<00:00, 993.87it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 300/1024 [00:00<00:00, 993.87it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 398/1024 [00:00<00:00, 985.88it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 398/1024 [00:00<00:00, 985.88it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 496/1024 [00:00<00:00, 982.43it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 496/1024 [00:00<00:00, 982.43it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 595/1024 [00:00<00:00, 982.63it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 595/1024 [00:00<00:00, 982.63it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  68%|6| 693/1024 [00:00<00:00, 979.49it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  68%|6| 693/1024 [00:00<00:00, 979.49it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 790/1024 [00:00<00:00, 974.73it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 790/1024 [00:00<00:00, 974.73it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  86%|8| 878/1024 [00:00<00:00, 944.65it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  86%|8| 878/1024 [00:00<00:00, 944.65it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  94%|9| 967/1024 [00:01<00:00, 925.21it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  94%|9| 967/1024 [00:01<00:00, 925.21it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:20 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0024, std=0.0985, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.001, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 90/1024 [00:00<00:01, 898.18it/s, reward=0.00, eps=0, p_loss=0.0
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 90/1024 [00:00<00:01, 898.18it/s, reward=-0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  18%|1| 188/1024 [00:00<00:00, 943.66it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  18%|1| 188/1024 [00:00<00:00, 943.66it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 287/1024 [00:00<00:00, 961.60it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 287/1024 [00:00<00:00, 961.60it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 384/1024 [00:00<00:00, 964.33it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 384/1024 [00:00<00:00, 964.33it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  47%|4| 482/1024 [00:00<00:00, 969.01it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  47%|4| 482/1024 [00:00<00:00, 969.01it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 569/1024 [00:00<00:00, 934.68it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 569/1024 [00:00<00:00, 934.68it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  64%|6| 656/1024 [00:00<00:00, 912.33it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  64%|6| 656/1024 [00:00<00:00, 912.33it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 744/1024 [00:00<00:00, 899.82it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 744/1024 [00:00<00:00, 899.82it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  81%|8| 832/1024 [00:00<00:00, 892.94it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  81%|8| 832/1024 [00:00<00:00, 892.94it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 920/1024 [00:01<00:00, 886.77it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 920/1024 [00:01<00:00, 886.77it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  99%|9| 1016/1024 [00:01<00:00, 908.35it/s, reward=0.01, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:21 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0012, std=0.0994, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=-0.024, v_los
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=-0.024, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 104/1024 [00:00<00:00, 1034.97it/s, reward=0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 104/1024 [00:00<00:00, 1034.97it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 202/1024 [00:00<00:00, 999.85it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 202/1024 [00:00<00:00, 999.85it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 301/1024 [00:00<00:00, 991.58it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 399/1024 [00:00<00:00, 985.77it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 399/1024 [00:00<00:00, 985.77it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 496/1024 [00:00<00:00, 978.73it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 496/1024 [00:00<00:00, 978.73it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 591/1024 [00:00<00:00, 967.01it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 591/1024 [00:00<00:00, 967.01it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  66%|6| 678/1024 [00:00<00:00, 934.30it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  66%|6| 678/1024 [00:00<00:00, 934.30it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  75%|7| 763/1024 [00:00<00:00, 906.67it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  75%|7| 763/1024 [00:00<00:00, 906.67it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  83%|8| 849/1024 [00:00<00:00, 889.51it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  83%|8| 849/1024 [00:00<00:00, 889.51it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  91%|9| 934/1024 [00:01<00:00, 875.07it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  91%|9| 934/1024 [00:01<00:00, 875.07it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  99%|9| 1017/1024 [00:01<00:00, 860.88it/s, reward=0.00, eps=0, p_loss=-
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:22 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0005, std=0.0992, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=-0.017, v_lo
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 96/1024 [00:00<00:00, 955.13it/s, reward=-0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 96/1024 [00:00<00:00, 955.13it/s, reward=0.00, eps=0, p_loss=-0.
+[TRAINING] 🎯 Collecting Trajectories:  18%|1| 187/1024 [00:00<00:00, 923.98it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  18%|1| 187/1024 [00:00<00:00, 923.98it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  26%|2| 267/1024 [00:00<00:00, 866.29it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  26%|2| 267/1024 [00:00<00:00, 866.29it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  34%|3| 351/1024 [00:00<00:00, 852.73it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  34%|3| 351/1024 [00:00<00:00, 852.73it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  42%|4| 431/1024 [00:00<00:00, 832.74it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  42%|4| 431/1024 [00:00<00:00, 832.74it/s, reward=0.03, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  50%|5| 512/1024 [00:00<00:00, 822.37it/s, reward=0.03, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  50%|5| 512/1024 [00:00<00:00, 822.37it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  59%|5| 601/1024 [00:00<00:00, 842.85it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 689/1024 [00:00<00:00, 852.89it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 689/1024 [00:00<00:00, 852.89it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  75%|7| 771/1024 [00:00<00:00, 841.47it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  75%|7| 771/1024 [00:00<00:00, 841.47it/s, reward=0.04, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  83%|8| 852/1024 [00:01<00:00, 829.82it/s, reward=0.04, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  83%|8| 852/1024 [00:01<00:00, 829.82it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  91%|9| 932/1024 [00:01<00:00, 820.26it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  91%|9| 932/1024 [00:01<00:00, 820.26it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  99%|9| 1013/1024 [00:01<00:00, 814.69it/s, reward=0.00, eps=0, p_loss=-
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:24 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0022, std=0.0974, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.037, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 96/1024 [00:00<00:00, 954.06it/s, reward=0.00, eps=0, p_loss=0.0
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 96/1024 [00:00<00:00, 954.06it/s, reward=0.00, eps=0, p_loss=0.0
+[TRAINING] 🎯 Collecting Trajectories:  17%|1| 178/1024 [00:00<00:00, 871.70it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  17%|1| 178/1024 [00:00<00:00, 871.70it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  25%|2| 260/1024 [00:00<00:00, 846.27it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  25%|2| 260/1024 [00:00<00:00, 846.27it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  34%|3| 349/1024 [00:00<00:00, 862.14it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  34%|3| 349/1024 [00:00<00:00, 862.14it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  43%|4| 438/1024 [00:00<00:00, 870.07it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  43%|4| 438/1024 [00:00<00:00, 870.07it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  51%|5| 527/1024 [00:00<00:00, 874.76it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  51%|5| 527/1024 [00:00<00:00, 874.76it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  60%|6| 616/1024 [00:00<00:00, 877.09it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  60%|6| 616/1024 [00:00<00:00, 877.09it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  70%|6| 714/1024 [00:00<00:00, 907.93it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  70%|6| 714/1024 [00:00<00:00, 907.93it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 811/1024 [00:00<00:00, 927.12it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 811/1024 [00:00<00:00, 927.12it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  89%|8| 909/1024 [00:01<00:00, 941.67it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  89%|8| 909/1024 [00:01<00:00, 941.67it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  98%|9| 1004/1024 [00:01<00:00, 943.93it/s, reward=0.01, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:25 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0011, std=0.0996, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=0.042, v_los
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 96/1024 [00:00<00:00, 952.73it/s, reward=-0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 96/1024 [00:00<00:00, 952.73it/s, reward=-0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 195/1024 [00:00<00:00, 971.57it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 195/1024 [00:00<00:00, 971.57it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 294/1024 [00:00<00:00, 978.69it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 294/1024 [00:00<00:00, 978.69it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 392/1024 [00:00<00:00, 977.91it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 392/1024 [00:00<00:00, 977.91it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 490/1024 [00:00<00:00, 977.58it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 490/1024 [00:00<00:00, 977.58it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  57%|5| 588/1024 [00:00<00:00, 975.48it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  57%|5| 588/1024 [00:00<00:00, 975.48it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 685/1024 [00:00<00:00, 973.37it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 685/1024 [00:00<00:00, 973.37it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  76%|7| 781/1024 [00:00<00:00, 968.83it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  76%|7| 781/1024 [00:00<00:00, 968.83it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  85%|8| 869/1024 [00:00<00:00, 940.12it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  85%|8| 869/1024 [00:00<00:00, 940.12it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  93%|9| 957/1024 [00:01<00:00, 920.16it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  93%|9| 957/1024 [00:01<00:00, 920.16it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:26 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0027, std=0.0995, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.020, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 94/1024 [00:00<00:00, 936.82it/s, reward=0.00, eps=0, p_loss=0.0
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 94/1024 [00:00<00:00, 936.82it/s, reward=-0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  18%|1| 183/1024 [00:00<00:00, 908.97it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  18%|1| 183/1024 [00:00<00:00, 908.97it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  26%|2| 265/1024 [00:00<00:00, 868.26it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  26%|2| 265/1024 [00:00<00:00, 868.26it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  34%|3| 353/1024 [00:00<00:00, 870.17it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  34%|3| 353/1024 [00:00<00:00, 870.17it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  43%|4| 443/1024 [00:00<00:00, 878.04it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  43%|4| 443/1024 [00:00<00:00, 878.04it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  52%|5| 532/1024 [00:00<00:00, 880.20it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  52%|5| 532/1024 [00:00<00:00, 880.20it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  61%|6| 621/1024 [00:00<00:00, 881.99it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  61%|6| 621/1024 [00:00<00:00, 881.99it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  70%|6| 716/1024 [00:00<00:00, 884.46it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  70%|6| 716/1024 [00:00<00:00, 884.46it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 804/1024 [00:00<00:00, 879.81it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  88%|8| 900/1024 [00:01<00:00, 902.85it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  88%|8| 900/1024 [00:01<00:00, 902.85it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  97%|9| 997/1024 [00:01<00:00, 922.71it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  97%|9| 997/1024 [00:01<00:00, 922.71it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:27 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0039, std=0.0476, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.059, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 93/1024 [00:00<00:01, 923.29it/s, reward=0.00, eps=0, p_loss=0.0
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 93/1024 [00:00<00:01, 923.29it/s, reward=-0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  18%|1| 187/1024 [00:00<00:00, 932.36it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  18%|1| 187/1024 [00:00<00:00, 932.36it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 286/1024 [00:00<00:00, 955.17it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 286/1024 [00:00<00:00, 955.17it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  37%|3| 383/1024 [00:00<00:00, 960.83it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  37%|3| 383/1024 [00:00<00:00, 960.83it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  46%|4| 472/1024 [00:00<00:00, 932.41it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  46%|4| 472/1024 [00:00<00:00, 932.41it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  55%|5| 560/1024 [00:00<00:00, 913.67it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  55%|5| 560/1024 [00:00<00:00, 913.67it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  63%|6| 647/1024 [00:00<00:00, 899.01it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  63%|6| 647/1024 [00:00<00:00, 899.01it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  72%|7| 734/1024 [00:00<00:00, 889.62it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  72%|7| 734/1024 [00:00<00:00, 889.62it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  80%|8| 822/1024 [00:00<00:00, 885.60it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  80%|8| 822/1024 [00:00<00:00, 885.60it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 917/1024 [00:01<00:00, 886.60it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 917/1024 [00:01<00:00, 886.60it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  98%|9| 1005/1024 [00:01<00:00, 882.43it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:29 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0009, std=0.0991, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=-0.009, v_los
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.01, eps=0, p_loss=-0.009, v_lo
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 102/1024 [00:00<00:00, 1016.76it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 200/1024 [00:00<00:00, 991.32it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 200/1024 [00:00<00:00, 991.32it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 298/1024 [00:00<00:00, 983.30it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 298/1024 [00:00<00:00, 983.30it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 387/1024 [00:00<00:00, 943.43it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 387/1024 [00:00<00:00, 943.43it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  46%|4| 475/1024 [00:00<00:00, 920.19it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  46%|4| 475/1024 [00:00<00:00, 920.19it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  55%|5| 561/1024 [00:00<00:00, 898.30it/s, reward=0.00, eps=0, p_loss=-0
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+[TRAINING] 🎯 Collecting Trajectories:  55%|5| 561/1024 [00:00<00:00, 898.30it/s, reward=0.02, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  63%|6| 650/1024 [00:00<00:00, 895.56it/s, reward=0.02, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  63%|6| 650/1024 [00:00<00:00, 895.56it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  72%|7| 740/1024 [00:00<00:00, 896.46it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  72%|7| 740/1024 [00:00<00:00, 896.46it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  81%|8| 829/1024 [00:00<00:00, 893.66it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  81%|8| 829/1024 [00:00<00:00, 893.66it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 918/1024 [00:01<00:00, 891.64it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 918/1024 [00:01<00:00, 891.64it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  99%|9| 1014/1024 [00:01<00:00, 910.68it/s, reward=0.00, eps=0, p_loss=-
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:30 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0017, std=0.0996, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=-0.016, v_lo
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=-0.016, v_lo
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1022.23it/s, reward=-0.00, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1022.23it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 202/1024 [00:00<00:00, 999.05it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 300/1024 [00:00<00:00, 989.69it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 300/1024 [00:00<00:00, 989.69it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 400/1024 [00:00<00:00, 992.15it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 400/1024 [00:00<00:00, 992.15it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 983.02it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 983.02it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 593/1024 [00:00<00:00, 973.99it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 593/1024 [00:00<00:00, 973.99it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 688/1024 [00:00<00:00, 965.95it/s, reward=-0.02, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 688/1024 [00:00<00:00, 965.95it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  76%|7| 776/1024 [00:00<00:00, 935.88it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  76%|7| 776/1024 [00:00<00:00, 935.88it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  84%|8| 862/1024 [00:00<00:00, 909.47it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  84%|8| 862/1024 [00:00<00:00, 909.47it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  92%|9| 947/1024 [00:01<00:00, 891.15it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  92%|9| 947/1024 [00:01<00:00, 891.15it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:31 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0019, std=0.0985, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=0.025, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 100/1024 [00:00<00:00, 993.92it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 100/1024 [00:00<00:00, 993.92it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 195/1024 [00:00<00:00, 964.10it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 195/1024 [00:00<00:00, 964.10it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 292/1024 [00:00<00:00, 965.92it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 292/1024 [00:00<00:00, 965.92it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 387/1024 [00:00<00:00, 956.94it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  38%|3| 387/1024 [00:00<00:00, 956.94it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  46%|4| 474/1024 [00:00<00:00, 924.63it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  46%|4| 474/1024 [00:00<00:00, 924.63it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  55%|5| 561/1024 [00:00<00:00, 904.56it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  55%|5| 561/1024 [00:00<00:00, 904.56it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  63%|6| 646/1024 [00:00<00:00, 886.49it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  63%|6| 646/1024 [00:00<00:00, 886.49it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  71%|7| 732/1024 [00:00<00:00, 877.35it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  71%|7| 732/1024 [00:00<00:00, 877.35it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  80%|8| 821/1024 [00:00<00:00, 872.58it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  80%|8| 821/1024 [00:00<00:00, 872.58it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  89%|8| 907/1024 [00:01<00:00, 867.04it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  89%|8| 907/1024 [00:01<00:00, 867.04it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  98%|9| 1001/1024 [00:01<00:00, 886.87it/s, reward=0.02, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:33 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0024, std=0.0995, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.019, v_loss
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 100/1024 [00:00<00:00, 996.03it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 100/1024 [00:00<00:00, 996.03it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 196/1024 [00:00<00:00, 973.61it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 196/1024 [00:00<00:00, 973.61it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 291/1024 [00:00<00:00, 961.94it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 291/1024 [00:00<00:00, 961.94it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  37%|3| 376/1024 [00:00<00:00, 915.44it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  37%|3| 376/1024 [00:00<00:00, 915.44it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  45%|4| 463/1024 [00:00<00:00, 896.95it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  45%|4| 463/1024 [00:00<00:00, 896.95it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  54%|5| 550/1024 [00:00<00:00, 886.40it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  54%|5| 550/1024 [00:00<00:00, 886.40it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  62%|6| 637/1024 [00:00<00:00, 880.64it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  62%|6| 637/1024 [00:00<00:00, 880.64it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  71%|7| 723/1024 [00:00<00:00, 871.62it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  71%|7| 723/1024 [00:00<00:00, 871.62it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 810/1024 [00:00<00:00, 868.99it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 810/1024 [00:01<00:00, 868.99it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  88%|8| 904/1024 [00:01<00:00, 889.41it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  98%|9| 999/1024 [00:01<00:00, 907.59it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  98%|9| 999/1024 [00:01<00:00, 907.59it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:34 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0004, std=0.0988, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.004, v_loss
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 99/1024 [00:00<00:00, 982.61it/s, reward=0.00, eps=0, p_loss=0.0
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 99/1024 [00:00<00:00, 982.61it/s, reward=0.00, eps=0, p_loss=0.0
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 195/1024 [00:00<00:00, 965.93it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 195/1024 [00:00<00:00, 965.93it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 282/1024 [00:00<00:00, 920.87it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 282/1024 [00:00<00:00, 920.87it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  36%|3| 368/1024 [00:00<00:00, 896.62it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  36%|3| 368/1024 [00:00<00:00, 896.62it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  44%|4| 453/1024 [00:00<00:00, 877.19it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  44%|4| 453/1024 [00:00<00:00, 877.19it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  52%|5| 537/1024 [00:00<00:00, 863.85it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  52%|5| 537/1024 [00:00<00:00, 863.85it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  61%|6| 620/1024 [00:00<00:00, 851.48it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  61%|6| 620/1024 [00:00<00:00, 851.48it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  70%|6| 714/1024 [00:00<00:00, 877.75it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  70%|6| 714/1024 [00:00<00:00, 877.75it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 807/1024 [00:00<00:00, 892.38it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  88%|8| 900/1024 [00:01<00:00, 903.43it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  88%|8| 900/1024 [00:01<00:00, 903.43it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  97%|9| 992/1024 [00:01<00:00, 907.02it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  97%|9| 992/1024 [00:01<00:00, 907.02it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:35 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0027, std=0.0983, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.006, v_loss
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 99/1024 [00:00<00:00, 988.48it/s, reward=0.00, eps=0, p_loss=0.0
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 99/1024 [00:00<00:00, 988.48it/s, reward=-0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 195/1024 [00:00<00:00, 966.68it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  19%|1| 195/1024 [00:00<00:00, 966.68it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 282/1024 [00:00<00:00, 918.88it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  28%|2| 282/1024 [00:00<00:00, 918.88it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  35%|3| 360/1024 [00:00<00:00, 862.03it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  35%|3| 360/1024 [00:00<00:00, 862.03it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  44%|4| 450/1024 [00:00<00:00, 874.00it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  44%|4| 450/1024 [00:00<00:00, 874.00it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  52%|5| 537/1024 [00:00<00:00, 871.99it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  52%|5| 537/1024 [00:00<00:00, 871.99it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  61%|6| 627/1024 [00:00<00:00, 878.90it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  61%|6| 627/1024 [00:00<00:00, 878.90it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  70%|6| 716/1024 [00:00<00:00, 880.77it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  70%|6| 716/1024 [00:00<00:00, 880.77it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 814/1024 [00:00<00:00, 909.32it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 814/1024 [00:00<00:00, 909.32it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  89%|8| 912/1024 [00:01<00:00, 930.92it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  89%|8| 912/1024 [00:01<00:00, 930.92it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  98%|9| 1008/1024 [00:01<00:00, 938.20it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:37 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0066, std=0.0102, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.01, eps=0, p_loss=0.014, v_los
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=0.014, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1021.17it/s, reward=-0.00, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1021.17it/s, reward=0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 201/1024 [00:00<00:00, 996.65it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 299/1024 [00:00<00:00, 987.53it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 299/1024 [00:00<00:00, 987.53it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 399/1024 [00:00<00:00, 990.83it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 399/1024 [00:00<00:00, 990.83it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 985.88it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 985.88it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 595/1024 [00:00<00:00, 982.96it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 595/1024 [00:00<00:00, 982.96it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  68%|6| 693/1024 [00:00<00:00, 980.66it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  68%|6| 693/1024 [00:00<00:00, 980.66it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 791/1024 [00:00<00:00, 979.64it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 791/1024 [00:00<00:00, 979.64it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  87%|8| 887/1024 [00:00<00:00, 971.30it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  87%|8| 887/1024 [00:00<00:00, 971.30it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  96%|9| 986/1024 [00:01<00:00, 974.53it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  96%|9| 986/1024 [00:01<00:00, 974.53it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:38 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0013, std=0.0998, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.042, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.02, eps=0, p_loss=0.042, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1023.13it/s, reward=-0.02, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1023.13it/s, reward=-0.02, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 201/1024 [00:00<00:00, 993.79it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 201/1024 [00:00<00:00, 993.79it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 301/1024 [00:00<00:00, 993.68it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 399/1024 [00:00<00:00, 986.54it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 399/1024 [00:00<00:00, 986.54it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 984.08it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 984.08it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 595/1024 [00:00<00:00, 981.04it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 595/1024 [00:00<00:00, 981.04it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  68%|6| 692/1024 [00:00<00:00, 975.03it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  68%|6| 692/1024 [00:00<00:00, 975.03it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 791/1024 [00:00<00:00, 977.80it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 791/1024 [00:00<00:00, 977.80it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  87%|8| 888/1024 [00:00<00:00, 975.02it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  87%|8| 888/1024 [00:00<00:00, 975.02it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  95%|9| 977/1024 [00:01<00:00, 946.44it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  95%|9| 977/1024 [00:01<00:00, 946.44it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:39 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0156, std=0.0038, min=-0.1000, max=0.0000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=0.038, v_los
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=0.038, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 102/1024 [00:00<00:00, 1017.84it/s, reward=-0.00, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 102/1024 [00:00<00:00, 1017.84it/s, reward=0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 201/1024 [00:00<00:00, 996.28it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 300/1024 [00:00<00:00, 990.89it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 300/1024 [00:00<00:00, 990.89it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 399/1024 [00:00<00:00, 988.48it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 399/1024 [00:00<00:00, 988.48it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 983.38it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 983.38it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 595/1024 [00:00<00:00, 981.20it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 595/1024 [00:00<00:00, 981.20it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 691/1024 [00:00<00:00, 972.68it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 691/1024 [00:00<00:00, 972.68it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  76%|7| 781/1024 [00:00<00:00, 947.55it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  76%|7| 781/1024 [00:00<00:00, 947.55it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  85%|8| 869/1024 [00:00<00:00, 925.26it/s, reward=-0.02, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  85%|8| 869/1024 [00:00<00:00, 925.26it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  94%|9| 958/1024 [00:01<00:00, 912.80it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  94%|9| 958/1024 [00:01<00:00, 912.80it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:40 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0031, std=0.0995, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=-0.023, v_los
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=-0.023, v_lo
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1020.67it/s, reward=-0.00, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1020.67it/s, reward=0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 201/1024 [00:00<00:00, 995.37it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 300/1024 [00:00<00:00, 992.23it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 300/1024 [00:00<00:00, 992.23it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 398/1024 [00:00<00:00, 986.28it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 398/1024 [00:00<00:00, 986.28it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 487/1024 [00:00<00:00, 949.97it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 487/1024 [00:00<00:00, 949.97it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 576/1024 [00:00<00:00, 928.29it/s, reward=-0.01, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 576/1024 [00:00<00:00, 928.29it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  65%|6| 663/1024 [00:00<00:00, 908.38it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  65%|6| 663/1024 [00:00<00:00, 908.38it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 752/1024 [00:00<00:00, 900.84it/s, reward=-0.00, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 752/1024 [00:00<00:00, 900.84it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  82%|8| 841/1024 [00:00<00:00, 896.08it/s, reward=0.01, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  82%|8| 841/1024 [00:00<00:00, 896.08it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  91%|9| 929/1024 [00:01<00:00, 891.10it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  91%|9| 929/1024 [00:01<00:00, 891.10it/s, reward=0.00, eps=0, p_loss=-0
+[TRAINING] 🎯 Collecting Trajectories:  99%|9| 1018/1024 [00:01<00:00, 888.47it/s, reward=0.00, eps=0, p_loss=-
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:42 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0012, std=0.0996, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.012, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.01, eps=0, p_loss=0.012, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1025.95it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 103/1024 [00:00<00:00, 1025.95it/s, reward=-0.00, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 202/1024 [00:00<00:00, 999.75it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 202/1024 [00:00<00:00, 999.75it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 301/1024 [00:00<00:00, 993.46it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 398/1024 [00:00<00:00, 981.63it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 398/1024 [00:00<00:00, 981.63it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 982.36it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  49%|4| 497/1024 [00:00<00:00, 982.36it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 595/1024 [00:00<00:00, 980.48it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 595/1024 [00:00<00:00, 980.48it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 684/1024 [00:00<00:00, 949.99it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 684/1024 [00:00<00:00, 949.99it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  75%|7| 772/1024 [00:00<00:00, 926.83it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  75%|7| 772/1024 [00:00<00:00, 926.83it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  84%|8| 859/1024 [00:00<00:00, 908.39it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  84%|8| 859/1024 [00:00<00:00, 908.39it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  92%|9| 947/1024 [00:01<00:00, 897.52it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  92%|9| 947/1024 [00:01<00:00, 897.52it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:43 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0005, std=0.0994, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=-0.031, v_los
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.04, eps=0, p_loss=-0.031, v_lo
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 102/1024 [00:00<00:00, 1014.05it/s, reward=-0.04, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 200/1024 [00:00<00:00, 992.54it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 200/1024 [00:00<00:00, 992.54it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 299/1024 [00:00<00:00, 990.87it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 299/1024 [00:00<00:00, 990.87it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 396/1024 [00:00<00:00, 982.41it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 396/1024 [00:00<00:00, 982.41it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 494/1024 [00:00<00:00, 980.17it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 494/1024 [00:00<00:00, 980.17it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 591/1024 [00:00<00:00, 976.62it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 591/1024 [00:00<00:00, 976.62it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 688/1024 [00:00<00:00, 972.57it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 688/1024 [00:00<00:00, 972.57it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 785/1024 [00:00<00:00, 971.33it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  77%|7| 785/1024 [00:00<00:00, 971.33it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  86%|8| 883/1024 [00:00<00:00, 971.43it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  86%|8| 883/1024 [00:00<00:00, 971.43it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  95%|9| 972/1024 [00:01<00:00, 943.74it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 🎯 Collecting Trajectories:  95%|9| 972/1024 [00:01<00:00, 943.74it/s, reward=-0.04, eps=0, p_loss=-
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:44 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0353, std=0.0023, min=-0.1000, max=0.0000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.046, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.01, eps=0, p_loss=0.046, v_loss
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 104/1024 [00:00<00:00, 1031.53it/s, reward=0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  10%|1| 104/1024 [00:00<00:00, 1031.53it/s, reward=-0.00, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 202/1024 [00:00<00:00, 999.45it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 202/1024 [00:00<00:00, 999.45it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 301/1024 [00:00<00:00, 991.41it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 399/1024 [00:00<00:00, 983.53it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 399/1024 [00:00<00:00, 983.53it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 495/1024 [00:00<00:00, 973.18it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  48%|4| 495/1024 [00:00<00:00, 973.18it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 592/1024 [00:00<00:00, 971.17it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  58%|5| 592/1024 [00:00<00:00, 971.17it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 690/1024 [00:00<00:00, 972.16it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  67%|6| 690/1024 [00:00<00:00, 972.16it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  76%|7| 778/1024 [00:00<00:00, 942.49it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  76%|7| 778/1024 [00:00<00:00, 942.49it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  84%|8| 863/1024 [00:00<00:00, 913.54it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  84%|8| 863/1024 [00:00<00:00, 913.54it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  93%|9| 950/1024 [00:01<00:00, 899.01it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  93%|9| 950/1024 [00:01<00:00, 899.01it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:45 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0028, std=0.0990, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=0.023, v_los
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.01, eps=0, p_loss=0.023, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 102/1024 [00:00<00:00, 1016.06it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 102/1024 [00:00<00:00, 1016.06it/s, reward=0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 201/1024 [00:00<00:00, 996.88it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 299/1024 [00:00<00:00, 988.58it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 299/1024 [00:00<00:00, 988.58it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 396/1024 [00:00<00:00, 978.13it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 396/1024 [00:00<00:00, 978.13it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  47%|4| 484/1024 [00:00<00:00, 942.59it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  47%|4| 484/1024 [00:00<00:00, 942.59it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 573/1024 [00:00<00:00, 923.18it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 573/1024 [00:00<00:00, 923.18it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  64%|6| 660/1024 [00:00<00:00, 904.39it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  64%|6| 660/1024 [00:00<00:00, 904.39it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 748/1024 [00:00<00:00, 894.77it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 748/1024 [00:00<00:00, 894.77it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  82%|8| 835/1024 [00:00<00:00, 886.32it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  82%|8| 835/1024 [00:00<00:00, 886.32it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  90%|9| 923/1024 [00:01<00:00, 882.77it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  90%|9| 923/1024 [00:01<00:00, 882.77it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  99%|9| 1010/1024 [00:01<00:00, 878.86it/s, reward=0.00, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:47 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0003, std=0.0986, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.012, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.012, v_loss
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 101/1024 [00:00<00:00, 1009.12it/s, reward=0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 200/1024 [00:00<00:00, 997.15it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 200/1024 [00:00<00:00, 997.15it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 298/1024 [00:00<00:00, 987.03it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 298/1024 [00:00<00:00, 987.03it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 395/1024 [00:00<00:00, 979.34it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 395/1024 [00:00<00:00, 979.34it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  47%|4| 485/1024 [00:00<00:00, 947.86it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  47%|4| 485/1024 [00:00<00:00, 947.86it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 574/1024 [00:00<00:00, 925.65it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 574/1024 [00:00<00:00, 925.65it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  65%|6| 662/1024 [00:00<00:00, 909.70it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  65%|6| 662/1024 [00:00<00:00, 909.70it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 750/1024 [00:00<00:00, 898.58it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 750/1024 [00:00<00:00, 898.58it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  82%|8| 838/1024 [00:00<00:00, 891.83it/s, reward=0.02, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  82%|8| 838/1024 [00:00<00:00, 891.83it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  90%|9| 925/1024 [00:01<00:00, 885.00it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  90%|9| 925/1024 [00:01<00:00, 885.00it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  99%|9| 1012/1024 [00:01<00:00, 878.96it/s, reward=0.00, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:48 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0016, std=0.0997, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.013, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=-0.00, eps=0, p_loss=0.013, v_los
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 102/1024 [00:00<00:00, 1014.08it/s, reward=-0.00, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  10%| | 102/1024 [00:00<00:00, 1014.08it/s, reward=-0.01, eps=0, p_loss=
+[TRAINING] 🎯 Collecting Trajectories:  20%|1| 201/1024 [00:00<00:00, 994.83it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 299/1024 [00:00<00:00, 984.35it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  29%|2| 299/1024 [00:00<00:00, 984.35it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 395/1024 [00:00<00:00, 973.77it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  39%|3| 395/1024 [00:00<00:00, 973.77it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  47%|4| 484/1024 [00:00<00:00, 940.62it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  47%|4| 484/1024 [00:00<00:00, 940.62it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 572/1024 [00:00<00:00, 919.32it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  56%|5| 572/1024 [00:00<00:00, 919.32it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  64%|6| 660/1024 [00:00<00:00, 904.98it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  64%|6| 660/1024 [00:00<00:00, 904.98it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 747/1024 [00:00<00:00, 892.98it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  73%|7| 747/1024 [00:00<00:00, 892.98it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  81%|8| 833/1024 [00:00<00:00, 882.10it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  81%|8| 833/1024 [00:00<00:00, 882.10it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 921/1024 [00:01<00:00, 880.39it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  90%|8| 921/1024 [00:01<00:00, 880.39it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  99%|9| 1009/1024 [00:01<00:00, 879.25it/s, reward=0.01, eps=0, p_loss=0
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:49 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=0.0001, std=0.0985, min=-0.1000, max=0.1000
+[TRAINING] 
+[TRAINING] 🎯 Collecting Trajectories:   0%|                                          | 0/1024 [00:00<?, ?it/s]
+[TRAINING] 🎯 Collecting Trajectories:   0%| | 0/1024 [00:00<?, ?it/s, reward=0.00, eps=0, p_loss=0.037, v_loss
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 97/1024 [00:00<00:00, 965.27it/s, reward=0.00, eps=0, p_loss=0.0
+[TRAINING] 🎯 Collecting Trajectories:   9%| | 97/1024 [00:00<00:00, 965.27it/s, reward=-0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  18%|1| 187/1024 [00:00<00:00, 925.59it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  18%|1| 187/1024 [00:00<00:00, 925.59it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  27%|2| 276/1024 [00:00<00:00, 905.25it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  27%|2| 276/1024 [00:00<00:00, 905.25it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  35%|3| 363/1024 [00:00<00:00, 889.97it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  35%|3| 363/1024 [00:00<00:00, 889.97it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  44%|4| 451/1024 [00:00<00:00, 884.27it/s, reward=0.00, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  44%|4| 451/1024 [00:00<00:00, 884.27it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  53%|5| 539/1024 [00:00<00:00, 880.56it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  53%|5| 539/1024 [00:00<00:00, 880.56it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  61%|6| 627/1024 [00:00<00:00, 878.15it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  61%|6| 627/1024 [00:00<00:00, 878.15it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  70%|6| 714/1024 [00:00<00:00, 875.33it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  70%|6| 714/1024 [00:00<00:00, 875.33it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 810/1024 [00:00<00:00, 900.96it/s, reward=-0.01, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  79%|7| 810/1024 [00:01<00:00, 900.96it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  88%|8| 906/1024 [00:01<00:00, 917.77it/s, reward=0.01, eps=0, p_loss=0.
+[TRAINING] 🎯 Collecting Trajectories:  88%|8| 906/1024 [00:01<00:00, 917.77it/s, reward=-0.00, eps=0, p_loss=0
+[TRAINING] 🎯 Collecting Trajectories:  98%|9| 1002/1024 [00:01<00:00, 930.54it/s, reward=-0.00, eps=0, p_loss=
+[TRAINING] 
+[TRAINING] 2025-07-10 22:35:50 [INFO    ] 🔸 policy_gradient_methods: Reward stats: mean=-0.0009, std=0.0994, min=-0.1000, max=0.1000
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+[TRAINING] 2025-07-10 22:41:40 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 172549 profits, total=-174886025400.0000
+[TRAINING] 2025-07-10 22:41:40 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=-0.1012, Sharpe=-2.5484, MDD=50.0000
+[TRAINING] 2025-07-10 22:41:40 [INFO    ] 🔸 adaptive_trainer: PPO Update 50: Performance=-0.2277, Entropy=1.9459
+[TRAINING] 2025-07-10 22:41:40 [WARNING ] 🔸 adaptive_trainer: PPO early stopping due to lack of improvement (patience: 3)
+[TRAINING] 2025-07-10 22:41:40 [INFO    ] 🔸 policy_gradient_methods: Saved model to models/ppo_models/adaptive_ppo_model.pth at 2025-07-10 22:41:40.810381
+[TRAINING] 2025-07-10 22:41:59 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 26095 profits, total=0.0000
+[TRAINING] 2025-07-10 22:41:59 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=0.0000
+[TRAINING] 2025-07-10 22:41:59 [INFO    ] 🔸 adaptive_trainer: PPO phase completed with performance: -0.2500
+[TRAINING] 2025-07-10 22:41:59 [INFO    ] 🔸 adaptive_trainer:
+[TRAINING] === Adaptive Training Iteration 2/3 ===
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+[TRAINING] 2025-07-10 22:42:13 [INFO    ] 🔸 adaptive_trainer: Evaluation results: 20846 profits, total=0.0000
+[TRAINING] 2025-07-10 22:42:13 [INFO    ] 🔸 adaptive_trainer: Metrics: CAGR=0.0000, Sharpe=-5.0000, MDD=0.0000
+[TRAINING] 2025-07-10 22:42:13 [INFO    ] 🔸 adaptive_trainer: Current performance: -0.2500 (best: -0.2315)
+[TRAINING] 2025-07-10 22:42:13 [INFO    ] 🔸 adaptive_trainer: Stagnation: 1, Poor performance: 1
+[TRAINING] 2025-07-10 22:42:13 [INFO    ] 🔸 adaptive_trainer: Method: PPO, Entropy: 1.9458
+[TRAINING] 2025-07-10 22:42:13 [INFO    ] 🔸 adaptive_trainer: Switching to GA due to: exploration_phase
+[TRAINING] 2025-07-10 22:42:13 [INFO    ] 🔸 adaptive_trainer: Switching from PPO to GA
+[TRAINING] 2025-07-10 22:42:13 [INFO    ] 🔸 adaptive_trainer: Starting GA phase: 30 generations, population 30
+[TRAINING] [GA] Dimension mismatch: saved model expects 127, current model has 132
+[TRAINING] [GA] Starting from scratch due to incompatible checkpoint at models/ga_models/adaptive_ga_model.pth
+[TRAINING] 
+[TRAINING] [GA gens]:   0%|                                                                                 | 0/10 [00:00<?, ?it/s]
+[TRAINING] 
+[TRAINING] [GA] Dimension mismatch: saved model expects 127, current model has 132
+[TRAINING] 
+[TRAINING] [GA gens]:   0%|                                                                                 | 0/10 [00:00<?, ?it/s]
+[TRAINING] 
+[TRAINING] [GA] Starting from scratch due to incompatible checkpoint at models/ga_models/adaptive_ga_model.pth
+[TRAINING] 
+[TRAINING] [GA gens]:   0%|                                                                                 | 0/10 [00:00<?, ?it/s]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 5/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens]:   0%|                                                                                 | 0/10 [00:10<?, ?it/s]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 10/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens]:   0%|                                                                                 | 0/10 [00:12<?, ?it/s]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 15/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens]:   0%|                                                                                 | 0/10 [00:13<?, ?it/s]
+[TRAINING] [GA gens] avg=15.3, max=17.7, stg=0:   0%|                                                       | 0/10 [00:13<?, ?it/s]
+[TRAINING] 
+[TRAINING] [GA] Saved GA model to models/ga_models/adaptive_ga_model.pth
+[TRAINING] 
+[TRAINING] [GA gens] avg=15.3, max=17.7, stg=0:   0%|                                                       | 0/10 [00:13<?, ?it/s]
+[TRAINING] [GA gens] avg=15.3, max=17.7, stg=0:  10%|████▋                                          | 1/10 [00:13<02:04, 13.84s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 5/15 individuals
+[TRAINING] 
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+[TRAINING] [GA gens] avg=15.3, max=17.7, stg=0:  10%|████▋                                          | 1/10 [00:15<02:04, 13.84s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 10/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=15.3, max=17.7, stg=0:  10%|████▋                                          | 1/10 [00:16<02:04, 13.84s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 15/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=15.3, max=17.7, stg=0:  10%|████▋                                          | 1/10 [00:18<02:04, 13.84s/it]
+[TRAINING] [GA gens] avg=15.0, max=16.1, stg=0:  10%|████▋                                          | 1/10 [00:18<02:04, 13.84s/it]
+[TRAINING] [GA gens] avg=15.0, max=16.1, stg=0:  20%|█████████▍                                     | 2/10 [00:18<01:06,  8.35s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 5/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=15.0, max=16.1, stg=0:  20%|█████████▍                                     | 2/10 [00:19<01:06,  8.35s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 10/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=15.0, max=16.1, stg=0:  20%|█████████▍                                     | 2/10 [00:21<01:06,  8.35s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 15/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=15.0, max=16.1, stg=0:  20%|█████████▍                                     | 2/10 [00:22<01:06,  8.35s/it]
+[TRAINING] [GA gens] avg=14.9, max=16.2, stg=1:  20%|█████████▍                                     | 2/10 [00:22<01:06,  8.35s/it]
+[TRAINING] [GA gens] avg=14.9, max=16.2, stg=1:  30%|██████████████                                 | 3/10 [00:22<00:46,  6.60s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 5/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=14.9, max=16.2, stg=1:  30%|██████████████                                 | 3/10 [00:24<00:46,  6.60s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 10/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=14.9, max=16.2, stg=1:  30%|██████████████                                 | 3/10 [00:25<00:46,  6.60s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 15/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=14.9, max=16.2, stg=1:  30%|██████████████                                 | 3/10 [00:27<00:46,  6.60s/it]
+[TRAINING] [GA gens] avg=14.4, max=18.6, stg=2:  30%|██████████████                                 | 3/10 [00:27<00:46,  6.60s/it]
+[TRAINING] 
+[TRAINING] [GA] Saved GA model to models/ga_models/adaptive_ga_model.pth
+[TRAINING] 
+[TRAINING] [GA gens] avg=14.4, max=18.6, stg=2:  30%|██████████████                                 | 3/10 [00:27<00:46,  6.60s/it]
+[TRAINING] [GA gens] avg=14.4, max=18.6, stg=2:  40%|██████████████████▊                            | 4/10 [00:27<00:34,  5.79s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 5/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=14.4, max=18.6, stg=2:  40%|██████████████████▊                            | 4/10 [00:29<00:34,  5.79s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 10/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=14.4, max=18.6, stg=2:  40%|██████████████████▊                            | 4/10 [00:30<00:34,  5.79s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 15/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=14.4, max=18.6, stg=2:  40%|██████████████████▊                            | 4/10 [00:32<00:34,  5.79s/it]
+[TRAINING] [GA gens] avg=15.9, max=21.4, stg=0:  40%|██████████████████▊                            | 4/10 [00:32<00:34,  5.79s/it]
+[TRAINING] 
+[TRAINING] [GA] Saved GA model to models/ga_models/adaptive_ga_model.pth
+[TRAINING] 
+[TRAINING] [GA gens] avg=15.9, max=21.4, stg=0:  40%|██████████████████▊                            | 4/10 [00:32<00:34,  5.79s/it]
+[TRAINING] [GA gens] avg=15.9, max=21.4, stg=0:  50%|███████████████████████▌                       | 5/10 [00:32<00:26,  5.40s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 5/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=15.9, max=21.4, stg=0:  50%|███████████████████████▌                       | 5/10 [00:33<00:26,  5.40s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 10/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=15.9, max=21.4, stg=0:  50%|███████████████████████▌                       | 5/10 [00:35<00:26,  5.40s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 15/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=15.9, max=21.4, stg=0:  50%|███████████████████████▌                       | 5/10 [00:36<00:26,  5.40s/it]
+[TRAINING] [GA gens] avg=15.8, max=19.6, stg=0:  50%|███████████████████████▌                       | 5/10 [00:36<00:26,  5.40s/it]
+[TRAINING] [GA gens] avg=15.8, max=19.6, stg=0:  60%|████████████████████████████▏                  | 6/10 [00:36<00:20,  5.16s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 5/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=15.8, max=19.6, stg=0:  60%|████████████████████████████▏                  | 6/10 [00:38<00:20,  5.16s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 10/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=15.8, max=19.6, stg=0:  60%|████████████████████████████▏                  | 6/10 [00:40<00:20,  5.16s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 15/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=15.8, max=19.6, stg=0:  60%|████████████████████████████▏                  | 6/10 [00:41<00:20,  5.16s/it]
+[TRAINING] [GA gens] avg=16.1, max=20.3, stg=1:  60%|████████████████████████████▏                  | 6/10 [00:41<00:20,  5.16s/it]
+[TRAINING] [GA gens] avg=16.1, max=20.3, stg=1:  70%|████████████████████████████████▉              | 7/10 [00:41<00:15,  5.05s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 5/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=16.1, max=20.3, stg=1:  70%|████████████████████████████████▉              | 7/10 [00:43<00:15,  5.05s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 10/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=16.1, max=20.3, stg=1:  70%|████████████████████████████████▉              | 7/10 [00:44<00:15,  5.05s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 15/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=16.1, max=20.3, stg=1:  70%|████████████████████████████████▉              | 7/10 [00:46<00:15,  5.05s/it]
+[TRAINING] [GA gens] avg=16.9, max=21.2, stg=2:  70%|████████████████████████████████▉              | 7/10 [00:46<00:15,  5.05s/it]
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+[TRAINING] [GA gens] avg=16.9, max=21.2, stg=2:  80%|█████████████████████████████████████▌         | 8/10 [00:46<00:10,  5.01s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 5/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=16.9, max=21.2, stg=2:  80%|█████████████████████████████████████▌         | 8/10 [00:48<00:10,  5.01s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 10/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=16.9, max=21.2, stg=2:  80%|█████████████████████████████████████▌         | 8/10 [00:49<00:10,  5.01s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 15/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=16.9, max=21.2, stg=2:  80%|█████████████████████████████████████▌         | 8/10 [00:51<00:10,  5.01s/it]
+[TRAINING] [GA gens] avg=17.9, max=22.8, stg=3:  80%|█████████████████████████████████████▌         | 8/10 [00:51<00:10,  5.01s/it]
+[TRAINING] 
+[TRAINING] [GA] Saved GA model to models/ga_models/adaptive_ga_model.pth
+[TRAINING] 
+[TRAINING] [GA gens] avg=17.9, max=22.8, stg=3:  80%|█████████████████████████████████████▌         | 8/10 [00:51<00:10,  5.01s/it]
+[TRAINING] [GA gens] avg=17.9, max=22.8, stg=3:  90%|██████████████████████████████████████████▎    | 9/10 [00:51<00:04,  4.99s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 5/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=17.9, max=22.8, stg=3:  90%|██████████████████████████████████████████▎    | 9/10 [00:53<00:04,  4.99s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 10/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=17.9, max=22.8, stg=3:  90%|██████████████████████████████████████████▎    | 9/10 [00:54<00:04,  4.99s/it]
+[TRAINING] 
+[TRAINING] [GA] Evaluated 15/15 individuals
+[TRAINING] 
+[TRAINING] [GA gens] avg=17.9, max=22.8, stg=3:  90%|██████████████████████████████████████████▎    | 9/10 [00:56<00:04,  4.99s/it]
+[TRAINING] [GA gens] avg=20.3, max=22.3, stg=0:  90%|██████████████████████████████████████████▎    | 9/10 [00:56<00:04,  4.99s/it]
+[TRAINING] [GA gens] avg=20.3, max=22.3, stg=0: 100%|██████████████████████████████████████████████| 10/10 [00:56<00:00,  5.07s/it]
+[TRAINING] 
+[TRAINING] 2025-07-10 22:43:10 [INFO    ] 🔸 adaptive_trainer: GA phase completed with fitness: 22.7639
+[TRAINING] 2025-07-10 22:43:10 [INFO    ] 🔸 adaptive_trainer:
+[TRAINING] === Adaptive Training Iteration 3/3 ===
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+
+
