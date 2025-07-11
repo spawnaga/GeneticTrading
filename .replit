@@ -5,7 +5,7 @@ channel = "stable-24_05"
 packages = ["cairo", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "gobject-introspection", "gtk3", "libjpeg_turbo", "libpng", "pkg-config", "qhull", "tcl", "tk", "which"]
 
 [workflows]
-runButton = "Run 4GPU Distributed Training"
+runButton = "Run Single GPU NQ"
 
 [[workflows.workflow]]
 name = "Run Trading System"
@@ -42,6 +42,15 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python run_hybrid_system.py --max-iterations 20 --enable-visualization --max-rows 10000"
+
+[[workflows.workflow]]
+name = "Run Single GPU NQ"
+author = 33211024
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py --data-folder ./data_txt --max-rows 50000 --adaptive-iterations 3 --log-level INFO --training-mode adaptive"
 
 [[ports]]
 localPort = 12355

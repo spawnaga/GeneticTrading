@@ -458,15 +458,30 @@ def main():
         else:
             logging.info("Parquet cache found; skipping preprocessing.")
 
-    # robust barrier
+    # robust barrier with timeout handling
     if world_size > 1:
         try:
+            import signal
+            def timeout_handler(signum, frame):
+                raise TimeoutError("Barrier timeout")
+            
+            # Set 30 second timeout for barrier
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(30)
+            
             if torch.cuda.is_available():
                 dist.barrier(device_ids=[local_rank])
             else:
                 dist.barrier()
-        except Exception as e:
+                
+            signal.alarm(0)  # Disable alarm
+        except (TimeoutError, Exception) as e:
             logging.warning(f"Barrier failed ({e}); continuing without synchronization")
+            # Force single GPU mode if distributed fails
+            if local_rank != 0:
+                logging.info(f"Rank {local_rank} switching to single GPU mode due to sync failure")
+                world_size = 1
+                local_rank = 0
 
     # load cached data
     if has_cudf:
@@ -587,9 +602,9 @@ def main():
             use_distributed=(world_size > 1)
         )
         
-        # Run adaptive training with smaller iterations to avoid timeouts
+        # Run adaptive training with even smaller iterations for NQ data
         training_log = adaptive_trainer.adaptive_train(
-            max_iterations=10,  # Reduced to avoid timeouts
+            max_iterations=5,  # Further reduced for large NQ dataset
             evaluation_interval=1
         )
         

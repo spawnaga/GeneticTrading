@@ -127,91 +127,126 @@ def load_and_cache_data(
 
         # Read file (cuDF doesn't support chunksize, so read directly)
         try:
-            # Read the file and properly handle the comma-separated format with many columns
-            try:
-                # First, read a sample to detect the actual number of columns
-                sample_df = pd.read_csv(fp, nrows=5, header=None)
-                num_cols = len(sample_df.columns)
-                logger.info(f"Detected {num_cols} columns in {os.path.basename(fp)}")
+                # Detect if file has headers by checking first line
+                with open(fp, 'r') as f:
+                    first_line = f.readline().strip()
 
-                # Create column names - first 6 are OHLCV data, rest are features
-                column_names = ["date_time", "Open", "High", "Low", "Close", "Volume"]
-                if num_cols > 6:
-                    # Add feature column names for the additional columns
-                    feature_cols = [f"feature_{i}" for i in range(6, num_cols)]
-                    column_names.extend(feature_cols)
+                # Check if first line contains header-like content
+                has_header = any(keyword in first_line.lower() for keyword in ['date', 'time', 'open', 'high', 'low', 'close', 'volume'])
+                header_row = 0 if has_header else None
 
-                if HAS_CUDF:
-                    # cuDF reading with proper null handling
-                    file_df = cudf.read_csv(
-                        fp,
-                        names=column_names,
-                        header=None,
-                        na_values=['', ' ', 'null', 'NULL', 'nan', 'NaN'],
-                        keep_default_na=True
-                    )
-                    # Convert datetime column with cuDF-compatible method
-                    try:
-                        # First convert to pandas for datetime parsing, then back to cuDF
-                        if HAS_CUDF and hasattr(file_df, 'to_pandas'):
-                            temp_df = file_df.to_pandas()
-                            temp_df["date_time"] = pd.to_datetime(temp_df["date_time"], errors='coerce')
-                            file_df = cudf.DataFrame.from_pandas(temp_df)
-                        else:
-                            file_df["date_time"] = cudf.to_datetime(file_df["date_time"])
-                    except Exception as e:
-                        logger.warning(f"cuDF datetime conversion failed: {e}, using pandas fallback")
-                        # Complete fallback to pandas
-                        if hasattr(file_df, 'to_pandas'):
-                            file_df = file_df.to_pandas()
-                        file_df["date_time"] = pd.to_datetime(file_df["date_time"], errors='coerce')
-                else:
-                    # Use pandas with better null handling
-                    file_df = pd.read_csv(
-                        fp,
-                        names=column_names,
-                        header=None,
-                        na_values=['', ' ', 'null', 'NULL', 'nan', 'NaN'],
-                        keep_default_na=True,
-                        low_memory=False
-                    )
-                    # Convert datetime column
-                    file_df["date_time"] = pd.to_datetime(file_df["date_time"], errors='coerce')
+                logger.info(f"Processing {os.path.basename(fp)} - Header detected: {has_header}")
 
-                # Keep only the basic OHLCV columns for consistency
-                basic_cols = ["date_time", "Open", "High", "Low", "Close", "Volume"]
-                if all(col in file_df.columns for col in basic_cols):
-                    file_df = file_df[basic_cols].copy()
-                else:
-                    logger.warning(f"Missing required columns in {fp}, skipping file")
-                    continue
-
-            except Exception as e:
-                logger.warning(f"Error reading {fp} with auto-detection: {e}")
-                # Fallback to basic 6-column reading
                 try:
+                    # Read with proper header handling for NQ.txt format
                     if HAS_CUDF:
                         file_df = cudf.read_csv(
                             fp,
-                            names=["date_time", "Open", "High", "Low", "Close", "Volume"],
-                            header=None,
-                            usecols=[0,1,2,3,4,5],  # Use only first 6 columns
-                            na_values=['', ' ', 'null', 'NULL', 'nan', 'NaN']
+                            header=header_row,
+                            names=["date_time", "Open", "High", "Low", "Close", "Volume"] if not has_header else None,
+                            na_values=['', ' ', 'null', 'NULL', 'nan', 'NaN'],
+                            keep_default_na=True
                         )
-                        file_df["date_time"] = cudf.to_datetime(file_df["date_time"])
+
+                        # Ensure proper column names
+                        if has_header:
+                            # Rename columns to standard format
+                            col_mapping = {}
+                            for col in file_df.columns:
+                                col_lower = str(col).lower()
+                                if 'date' in col_lower or 'time' in col_lower:
+                                    col_mapping[col] = 'date_time'
+                                elif 'open' in col_lower:
+                                    col_mapping[col] = 'Open'
+                                elif 'high' in col_lower:
+                                    col_mapping[col] = 'High'
+                                elif 'low' in col_lower:
+                                    col_mapping[col] = 'Low'
+                                elif 'close' in col_lower:
+                                    col_mapping[col] = 'Close'
+                                elif 'volume' in col_lower or 'vol' in col_lower:
+                                    col_mapping[col] = 'Volume'
+
+                            file_df = file_df.rename(columns=col_mapping)
+
+                        # Convert datetime column with cuDF-compatible method
+                        try:
+                            if HAS_CUDF and hasattr(file_df, 'to_pandas'):
+                                temp_df = file_df.to_pandas()
+                                temp_df["date_time"] = pd.to_datetime(temp_df["date_time"], errors='coerce')
+                                file_df = cudf.DataFrame.from_pandas(temp_df)
+                            else:
+                                file_df["date_time"] = cudf.to_datetime(file_df["date_time"])
+                        except Exception as e:
+                            logger.warning(f"cuDF datetime conversion failed: {e}, using pandas fallback")
+                            if hasattr(file_df, 'to_pandas'):
+                                file_df = file_df.to_pandas()
+                            file_df["date_time"] = pd.to_datetime(file_df["date_time"], errors='coerce')
                     else:
+                        # Use pandas with proper header handling
                         file_df = pd.read_csv(
                             fp,
-                            names=["date_time", "Open", "High", "Low", "Close", "Volume"],
+                            header=header_row,
+                            names=["date_time", "Open", "High", "Low", "Close", "Volume"] if not has_header else None,
+                            na_values=['', ' ', 'null', 'NULL', 'nan', 'NaN'],
+                            keep_default_na=True,
+                            low_memory=False
+                        )
+
+                        # Ensure proper column names for pandas
+                        if has_header:
+                            col_mapping = {}
+                            for col in file_df.columns:
+                                col_lower = str(col).lower()
+                                if 'date' in col_lower or 'time' in col_lower:
+                                    col_mapping[col] = 'date_time'
+                                elif 'open' in col_lower:
+                                    col_mapping[col] = 'Open'
+                                elif 'high' in col_lower:
+                                    col_mapping[col] = 'High'
+                                elif 'low' in col_lower:
+                                    col_mapping[col] = 'Low'
+                                elif 'close' in col_lower:
+                                    col_mapping[col] = 'Close'
+                                elif 'volume' in col_lower or 'vol' in col_lower:
+                                    col_mapping[col] = 'Volume'
+
+                            file_df = file_df.rename(columns=col_mapping)
+
+                        # Convert datetime column
+                        file_df["date_time"] = pd.to_datetime(file_df["date_time"], errors='coerce')
+
+                    # Keep only the basic OHLCV columns for consistency
+                    basic_cols = ["date_time", "Open", "High", "Low", "Close", "Volume"]
+                    available_cols = [col for col in basic_cols if col in file_df.columns]
+
+                    if len(available_cols) >= 5:  # At least datetime + OHLC
+                        file_df = file_df[available_cols].copy()
+
+                        # Add Volume column if missing
+                        if "Volume" not in file_df.columns:
+                            file_df["Volume"] = 1000  # Default volume
+                    else:
+                        logger.warning(f"Insufficient columns in {fp}: {list(file_df.columns)}, skipping file")
+                        continue
+
+                except Exception as e:
+                    logger.warning(f"Error reading {fp} with header detection: {e}")
+                    # Fallback to manual parsing for comma-separated format
+                    try:
+                        logger.info(f"Trying manual CSV parsing for {os.path.basename(fp)}")
+                        file_df = pd.read_csv(
+                            fp,
                             header=None,
-                            usecols=[0,1,2,3,4,5],  # Use only first 6 columns
+                            names=["date_time", "Open", "High", "Low", "Close", "Volume"],
+                            skiprows=1 if has_header else 0,
                             na_values=['', ' ', 'null', 'NULL', 'nan', 'NaN'],
                             low_memory=False
                         )
                         file_df["date_time"] = pd.to_datetime(file_df["date_time"], errors='coerce')
-                except Exception as e2:
-                    logger.error(f"Fallback reading also failed for {fp}: {e2}")
-                    continue
+                    except Exception as e2:
+                        logger.error(f"Manual parsing also failed for {fp}: {e2}")
+                        continue
 
             # Drop rows with invalid dates
             file_df = file_df.dropna(subset=["date_time"])
@@ -605,7 +640,7 @@ def create_environment_data(
     # Process in chunks to avoid memory issues
     # Ensure chunk_size is at least 1 to prevent range() error
     effective_chunk_size = max(chunk_size, 1) if chunk_size > 0 else max(total_rows, 1)
-    
+
     if total_rows > effective_chunk_size:
         processed_chunks = []
         scaler = None
