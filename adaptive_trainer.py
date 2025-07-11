@@ -676,3 +676,45 @@ class AdaptiveTrainer:
         else:
             logger.info(f"Best agent: GA (performance: {ga_performance:.4f})")
             return self.ga_agent
+
+    def train_ga_phase(self, generations: int, population_size: int = 30) -> float:
+        """
+        Train using GA with timeout protection
+        """
+        logger.info(f"Starting GA phase: {generations} generations, population {population_size}")
+
+        import signal
+        import time
+
+        def timeout_handler(signum, frame):
+            raise TimeoutError("GA training timeout")
+
+        try:
+            # Set 10 minute timeout for GA training
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(600)  # 10 minutes
+
+            start_time = time.time()
+
+            # Start GA evolution with optimized parameters
+            ga_agent, ga_fitness, _, _ = run_ga_evolution(
+                self.train_env,
+                population_size=min(population_size, 12),  # Very small population
+                generations=min(generations, 8),           # Very few generations
+                device=self.device,
+                model_save_path=self.ga_model_path
+            )
+
+            signal.alarm(0)  # Disable alarm
+
+            elapsed = time.time() - start_time
+            logger.info(f"GA phase completed in {elapsed:.1f} seconds")
+
+        except TimeoutError:
+            logger.warning("GA training timed out, switching to PPO")
+            signal.alarm(0)
+            return -1000.0  # Force switch to PPO
+        except Exception as e:
+            logger.error(f"GA training failed: {e}")
+            signal.alarm(0)
+            return -1000.0

@@ -602,9 +602,9 @@ def main():
             use_distributed=(world_size > 1)
         )
         
-        # Run adaptive training with even smaller iterations for NQ data
+        # Run adaptive training with optimized parameters for large datasets
         training_log = adaptive_trainer.adaptive_train(
-            max_iterations=5,  # Further reduced for large NQ dataset
+            max_iterations=3,  # Minimal iterations for large dataset
             evaluation_interval=1
         )
         

@@ -120,9 +120,9 @@ class PolicyNetwork(ActorCriticNet):
             tqdm.write(f"[GA] No model file at {path}, starting from scratch")
 
 
-def evaluate_fitness(param_vector, env, device="cpu", metric="comprehensive"):
+def evaluate_fitness(param_vector, env, device="cpu", metric="comprehensive", max_steps=1000):
     """
-    Simplified fitness evaluation focused on stability and consistency.
+    Fast fitness evaluation optimized for large datasets.
     """
     import warnings
     warnings.filterwarnings("ignore", message="cudf import failed")
@@ -138,26 +138,23 @@ def evaluate_fitness(param_vector, env, device="cpu", metric="comprehensive"):
     )
     policy.set_params(param_vector)
 
-    # Run multiple episodes for stability
-    episode_returns = []
-    all_profits = []
+    # Single episode with step limit for speed
+    obs = _unpack_reset(env.reset())
+    done = False
+    episode_reward = 0.0
+    step_count = 0
 
-    for episode in range(3):  # Multiple episodes for more stable evaluation
-        obs = _unpack_reset(env.reset())
-        done = False
-        episode_reward = 0.0
-        episode_profits = []
-
-        while not done:
+    with torch.no_grad():  # Disable gradients for speed
+        while not done and step_count < max_steps:
             state_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(policy.device)
             action = policy.act(state_tensor)
             obs, reward, done, info = _unpack_step(env.step(action))
 
             episode_reward += float(reward)
-            episode_profits.append(float(reward))
+            step_count += 1
 
-        episode_returns.append(episode_reward)
-        all_profits.extend(episode_profits)
+    episode_returns = [episode_reward]
+    all_profits = [episode_reward]
 
     # Calculate stable metrics
     mean_return = np.mean(episode_returns)
@@ -308,16 +305,16 @@ def _log_ga_visualizations(writer, fits, population, generation, gen_max, gen_av
 
 def run_ga_evolution(
     env,
-    population_size=40,
-    generations=20,
-    tournament_size=7,
-    mutation_rate=0.8,
-    mutation_scale=1.0,
-    hall_of_fame_size=5,
-    inject_interval=10,
-    local_refinement_interval=10,
-    n_local_updates=5,
-    num_workers=None,
+    population_size=20,  # Reduced for speed
+    generations=15,      # Reduced for speed
+    tournament_size=5,   # Reduced for speed
+    mutation_rate=0.6,
+    mutation_scale=0.8,
+    hall_of_fame_size=3,
+    inject_interval=8,
+    local_refinement_interval=15,  # Less frequent refinement
+    n_local_updates=3,   # Fewer updates
+    num_workers=1,       # Force single-threaded to avoid conflicts
     device="cpu",
     model_save_path="ga_policy_model.pth",
     fitness_metric: str = "comprehensive"
@@ -413,27 +410,21 @@ def run_ga_evolution(
             mu_r = init_mut_rate * (1 - gen / max(1, generations - 1))
             mu_s = init_mut_scale * (1 - gen / max(1, generations - 1))
 
-            # evaluate population (prefer single-threaded for stability)
-            if gpu_count > 1 and num_workers > 4:  # Only use multiprocessing with sufficient resources
+            # Force single-threaded evaluation to prevent hanging
+            fits = []
+            for i, ind in enumerate(pop):
                 try:
-                    with Pool(min(4, gpu_count)) as p:  # Limit workers to prevent resource exhaustion
-                        args = [
-                            (ind, env, i % gpu_count, fitness_metric)
-                            for i, ind in enumerate(pop)
-                        ]
-                        fits = p.map(parallel_gpu_eval, args)
+                    # Use step limit for faster evaluation
+                    fitness = evaluate_fitness(ind, env, device, metric=fitness_metric, max_steps=500)
+                    fits.append(fitness)
+                    
+                    # Progress update every 5 individuals
+                    if (i + 1) % 5 == 0:
+                        tqdm.write(f"[GA] Evaluated {i+1}/{len(pop)} individuals")
+                        
                 except Exception as e:
-                    tqdm.write(f"[GA] Multiprocessing failed ({e}), falling back to single-thread")
-                    fits = [
-                        evaluate_fitness(ind, env, device, metric=fitness_metric)
-                        for ind in pop
-                    ]
-            else:
-                # Single-threaded evaluation (more stable in Replit)
-                fits = [
-                    evaluate_fitness(ind, env, device, metric=fitness_metric)
-                    for ind in pop
-                ]
+                    tqdm.write(f"[GA] Individual {i} evaluation failed: {e}")
+                    fits.append(-1000.0)  # Penalty for failed evaluation
 
             # compute stats
             gen_min = float(np.min(fits))
