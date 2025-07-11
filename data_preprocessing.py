@@ -734,7 +734,6 @@ def _create_streaming_environment_data(
     processed_chunks = []
     scaler = None
     segment_dict = None
-
     # Load data in smaller chunks to avoid memory explosion
     streaming_chunk_size = min(chunk_size, 100_000)  # Even smaller chunks for streaming
 
@@ -1104,3 +1103,24 @@ def load_and_preprocess_data(data_folder: str = "./data", max_rows: int = 0, dat
             logger.error(f"Error loading {file_path}: {e}")
             logger.warning("Generating sample data instead...")
             return generate_sample_data(max_rows if max_rows > 0 else 10000)
+
+try:
+        if not os.path.exists(data_folder):
+            print(f"⚠️ Data folder '{data_folder}' not found. Creating sample data...")
+            # Create sample data if folder doesn't exist
+            os.makedirs(data_folder, exist_ok=True)
+            from fix_nq_format import create_sample_nq_data
+            create_sample_nq_data(os.path.join(data_folder, "sample_nq.csv"))
+
+        files = [f for f in os.listdir(data_folder) 
+                if f.endswith(('.txt', '.csv')) and os.path.getsize(os.path.join(data_folder, f)) > 0]
+
+        if not files:
+            print(f"⚠️ No valid data files found in '{data_folder}'. Creating sample data...")
+            from fix_nq_format import create_sample_nq_data
+            create_sample_nq_data(os.path.join(data_folder, "sample_nq.csv"))
+            files = [f for f in os.listdir(data_folder) 
+                    if f.endswith(('.txt', '.csv')) and os.path.getsize(os.path.join(data_folder, f)) > 0]
+
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Data folder '{data_folder}' not found and could not be created.")
