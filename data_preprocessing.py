@@ -251,9 +251,9 @@ def load_and_cache_data(
                         continue
 
             # Drop rows with invalid dates
-            file_df = file_df.dropna(subset=["date_time"])
-            if len(file_df) > 0:
-                all_chunks.append(file_df)
+                file_df = file_df.dropna(subset=["date_time"])
+                if len(file_df) > 0:
+                    all_chunks.append(file_df)
 
         except Exception as e:
             logger.warning(f"Failed to read {fp}: {e}")
