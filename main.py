@@ -555,12 +555,13 @@ def main():
         "bid_ask_spread": 0.25,  # 1 tick spread
         "add_current_position_to_state": True
     }
+    # Use centralized logging instead of rank-specific directories
     train_env = FuturesEnv(states=train_states,
-                           log_dir=f"{args.log_dir}/train_rank{local_rank}",
+                           log_dir=None,  # Disable individual env logging
                            **base_kwargs)
     base_kwargs["execution_cost_per_order"] = args.commission * 0.1  # Lower test commission
     test_env  = FuturesEnv(states=test_states,
-                           log_dir=f"{args.log_dir}/test_rank{local_rank}",
+                           log_dir=None,  # Disable individual env logging
                            **base_kwargs)
 
     # ─── ADAPTIVE TRAINING (GA + PPO with intelligent switching) ──────────────
