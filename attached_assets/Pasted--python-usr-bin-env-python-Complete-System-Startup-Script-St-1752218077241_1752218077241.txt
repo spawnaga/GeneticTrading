@@ -1,0 +1,353 @@
+```python
+#!/usr/bin/env python
+"""
+Complete System Startup Script
+=============================
+
+Starts TensorBoard, training, and dashboard in the correct order
+with proper monitoring and real-time updates.
+"""
+
+import subprocess
+import threading
+import time
+import logging
+import sys
+import os
+from pathlib import Path
+import signal
+import requests
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class SystemManager:
+    """Manages the complete trading system startup and monitoring."""
+
+    def __init__(self, log_dir="./logs/futures_env"):
+        self.processes = {}
+        self.running = True
+        self.log_dir = Path(log_dir)
+        self.log_dir.mkdir(parents=True, exist_ok=True)
+
+    def start_tensorboard(self):
+        """Start TensorBoard first."""
+        logger.info("🚀 Starting TensorBoard...")
+
+        runs_dir = Path("./runs")
+        runs_dir.mkdir(exist_ok=True)
+
+        cmd = [
+            sys.executable, "-m", "tensorboard.main",
+            "--logdir", "./runs",
+            "--port", "6006",
+            "--host", "0.0.0.0",
+            "--reload_interval", "5"
+        ]
+
+        try:
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True
+            )
+            self.processes['tensorboard'] = process
+            logger.info("✅ TensorBoard started on http://0.0.0.0:6006")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Failed to start TensorBoard: {e}")
+            return False
+
+    def start_training(self):
+        """Start the training process."""
+        logger.info("🧠 Starting training process...")
+
+        cmd = [
+            "torchrun", "--nproc_per_node=4", "--nnodes=1",
+            "--node_rank=0", "--master_addr=127.0.0.1", "--master_port=12356",
+            "main.py",
+            "--data-folder", "./data_txt",
+            "--max-rows", "0",
+            "--data-percentage", "1.0",
+            "--adaptive-iterations", "20",
+            "--log-level", "INFO",
+            "--training-mode", "adaptive",
+            "--max-train-per-rank", "5000000",
+            "--max-test-per-rank", "1000000",
+            "--log-dir", str(self.log_dir)  # Pass log_dir to main.py
+        ]
+
+        try:
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True,
+                bufsize=1
+            )
+            self.processes['training'] = process
+            logger.info("✅ Training started")
+
+            def monitor_training():
+                while self.running and process.poll() is None:
+                    line = process.stdout.readline()
+                    if line:
+                        print(f"[TRAINING] {line.strip()}")
+                        if "Performance:" in line or "CAGR:" in line or "Sharpe:" in line:
+                            logger.info(f"📊 {line.strip()}")
+
+            threading.Thread(target=monitor_training, daemon=True).start()
+            return True
+
+        except Exception as e:
+            logger.error(f"❌ Failed to start training: {e}")
+            return False
+
+    def start_dashboard(self):
+        """Start the monitoring dashboard."""
+        logger.info("📊 Starting dashboard...")
+
+        cmd = [sys.executable, "standalone_dashboard.py", "--port", "8080"]
+
+        try:
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True,
+                bufsize=1
+            )
+            self.processes['dashboard'] = process
+            logger.info("✅ Dashboard started on http://0.0.0.0:8080")
+
+            def monitor_dashboard():
+                while self.running and process.poll() is None:
+                    line = process.stdout.readline()
+                    if line and "ERROR" in line:
+                        logger.warning(f"[DASHBOARD] {line.strip()}")
+
+            threading.Thread(target=monitor_dashboard, daemon=True).start()
+            return True
+
+        except Exception as e:
+            logger.error(f"❌ Failed to start dashboard: {e}")
+            return False
+
+    def wait_for_tensorboard(self, max_wait=60):
+        """Wait for TensorBoard to be ready."""
+        for i in range(max_wait):
+            try:
+                response = requests.get("http://localhost:6006", timeout=2)
+                if response.status_code == 200:
+                    logger.info("✅ TensorBoard is ready!")
+                    return True
+            except:
+                pass
+            logger.info(f"⏳ Waiting for TensorBoard... ({i+1}/{max_wait})")
+            time.sleep(1)
+        logger.warning("⚠️ TensorBoard may not be fully ready")
+        return False
+
+    def start_complete_system(self):
+        """Start the complete system in proper order."""
+        logger.info("🚀 Starting Complete NQ Trading System")
+        logger.info("=" * 60)
+
+        if not self.start_tensorboard():
+            return False
+
+        self.wait_for_tensorboard()
+
+        if not self.start_training():
+            return False
+
+        logger.info("⏳ Waiting for training to initialize...")
+        time.sleep(10)
+
+        if not self.start_dashboard():
+            return False
+
+        logger.info("🎉 System startup complete!")
+        logger.info("📊 Dashboard: http://0.0.0.0:8080")
+        logger.info("📈 TensorBoard: http://0.0.0.0:6006")
+        logger.info("🧠 Training: Active")
+        logger.info("=" * 60)
+        return True
+
+    def monitor_system(self):
+        """Monitor all processes and provide status updates."""
+        while self.running:
+            try:
+                status = {name: "🟢 Running" if process.poll() is None else "🔴 Stopped"
+                          for name, process in self.processes.items()}
+                logger.info("📊 System Status:")
+                for name, state in status.items():
+                    logger.info(f"   {name.capitalize()}: {state}")
+                time.sleep(30)
+            except KeyboardInterrupt:
+                logger.info("🛑 Shutting down system...")
+                self.shutdown()
+                break
+            except Exception as e:
+                logger.error(f"Monitor error: {e}")
+                time.sleep(5)
+
+    def shutdown(self):
+        """Gracefully shutdown all processes."""
+        self.running = False
+        logger.info("🛑 Shutting down all processes...")
+        for name, process in self.processes.items():
+            if process.poll() is None:
+                logger.info(f"Stopping {name}...")
+                process.terminate()
+                try:
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    logger.warning(f"Force killing {name}...")
+                    process.kill()
+        logger.info("✅ System shutdown complete")
+
+def main():
+    system = SystemManager()
+    signal.signal(signal.SIGINT, lambda sig, frame: (system.shutdown(), sys.exit(0)))
+    signal.signal(signal.SIGTERM, lambda sig, frame: (system.shutdown(), sys.exit(0)))
+    try:
+        if system.start_complete_system():
+            system.monitor_system()
+        else:
+            logger.error("❌ Failed to start system")
+            return 1
+    except Exception as e:
+        logger.error(f"❌ System error: {e}")
+        system.shutdown()
+        return 1
+    return 0
+
+if __name__ == "__main__":
+    main()
+```
+
+Update `futures_env.py` with P&L scaling (only showing relevant changes):
+
+<xaiArtifact artifact_id="34b30cba-51a4-467a-b401-328fb65b2823" artifact_version_id="a1a5ea5b-a490-4c48-aff4-be1c33c14b3e" title="futures_env.py" contentType="text/python">
+```python
+class FuturesEnv(gym.Env):
+    def __init__(self, states: List[TimeSeriesState], 
+                 value_per_tick: float = 12.5,
+                 tick_size: float = 0.25, 
+                 initial_capital: float = 100000,
+                 max_position_size: int = 5, 
+                 commission_per_contract: float = 2.50,
+                 margin_rate: float = 0.05,
+                 fill_probability: float = 1.0,
+                 execution_cost_per_order: float = 0.00005,
+                 contracts_per_trade: int = 1,
+                 bid_ask_spread: float = 0.25,
+                 add_current_position_to_state: bool = True,
+                 log_dir: str = None,
+                 price_scale: float = 0.01,  # Assume prices in cents
+                 **kwargs):
+        super().__init__()
+        self.price_scale = price_scale
+        # [Rest of __init__ unchanged]
+
+    def _execute_trade(self, action: int, state: TimeSeriesState) -> Tuple[float, Dict]:
+        # [Previous code]
+        execution_price = state.close_price * self.price_scale + (direction * self.tick_size * 0.5)
+        # [Rest unchanged]
+
+    def _close_position(self, exit_price: float, exit_time) -> float:
+        if self.current_position == 0 or self.position_entry_price == 0:
+            return 0.0
+        price_diff = (exit_price * self.price_scale) - (self.position_entry_price * self.price_scale)
+        ticks = price_diff / self.tick_size
+        pnl = self.current_position * ticks * self.value_per_tick
+        self.account_balance += pnl
+        # [Rest unchanged]
+        return pnl
+
+    def _check_margin_requirements(self, position_size: int, price: float) -> bool:
+        required_margin = abs(position_size) * (price * self.price_scale) * self.margin_rate
+        available_capital = self.account_balance + self.unrealized_pnl
+        return available_capital >= required_margin
+
+    def _update_position_value(self, current_price: float):
+        if self.current_position != 0 and self.position_entry_price != 0:
+            price_diff = (current_price * self.price_scale) - (self.position_entry_price * self.price_scale)
+            ticks = price_diff / self.tick_size
+            self.unrealized_pnl = self.current_position * ticks * self.value_per_tick
+            self.position_value = abs(self.current_position) * (current_price * self.price_scale)
+            self.margin_used = self.position_value * self.margin_rate
+        else:
+            self.unrealized_pnl = 0.0
+            self.position_value = 0.0
+            self.margin_used = 0.0
+```
+
+Update `simple_trading_monitor.py` for port argument:
+
+<xaiArtifact artifact_id="b0424f57-b485-4729-9126-dfd706098bba" artifact_version_id="be8ed712-51be-46ad-80c2-c89d7325e490" title="standalone_dashboard.py" contentType="text/python">
+```python
+# [Previous code unchanged until main block]
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int, default=8080)
+    args = parser.parse_args()
+    print("🚀 Starting Enhanced Trading Activity Monitor...")
+    print(f"📊 Dashboard: http://0.0.0.0:{args.port}")
+    print("🔄 Auto-refreshes every 3 seconds")
+    print("📋 Dual table view: Trading Activity + Trade Outcomes")
+    app.run(host='0.0.0.0', port=args.port, debug=False)
+```
+
+---
+
+### Running the System
+1. **Save Files**:
+   - Save `futures_env.py` with the P&L scaling fix.
+   - Save `simple_trading_monitor.py` as `standalone_dashboard.py` with the port argument.
+   - Save the `SystemManager` script as `start_system.py`.
+
+2. **Directory Structure**:
+   ```
+   .
+   ├── data_txt/
+   ├── logs/
+   │   └── futures_env/
+   ├── runs/
+   ├── futures_env.py
+   ├── standalone_dashboard.py
+   ├── main.py  # Training script (not provided)
+   └── start_system.py
+   ```
+
+3. **Run**:
+   ```bash
+   python start_system.py
+   ```
+   - TensorBoard: `http://0.0.0.0:6006`
+   - Dashboard: `http://0.0.0.0:8080`
+   - Training logs: Printed to console, with metrics logged to `./runs`.
+
+4. **Verify**:
+   - Check `logs/futures_env/trading_table.json` and `trades_table.json` for trade data.
+   - Ensure the dashboard displays both tables and charts without errors.
+   - Monitor P&L values; with `price_scale=0.01`, P&L should be realistic (e.g., $36,330.75 instead of $3,633,075.00).
+
+---
+
+### Conclusion
+Your integration is **mostly correct** but had a port mismatch and lacked P&L scaling. The updated code:
+- Aligns ports (8080 for dashboard).
+- Adds `price_scale` to fix unrealistic P&L.
+- Optimizes logging by keeping trades file-only and adding `trades_table.json`.
+- Ensures log directory consistency.
+
+**Next Steps**:
+- Share `main.py` to verify how `FuturesEnv` is initialized and if `states` prices are in cents.
+- Test the system with a small dataset to confirm realistic P&L and dashboard functionality.
+- If you want a balance curve plot from `trading_activity.log`, let me know, and I can generate it using the log data.
+
+Does this address your integration concerns? Any specific tests or outputs you’d like me to verify?
