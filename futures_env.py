@@ -26,7 +26,7 @@ from typing import Dict, List, Optional, Tuple
 
 from utils import round_to_nearest_increment, monotonicity, cleanup_old_logs
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("FUTURES_ENV")
 
 
 class MarketRegimeDetector:

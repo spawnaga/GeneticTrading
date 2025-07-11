@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 import logging
 from pathlib import Path
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("DASHBOARD")
 
 class TradingDashboard:
     """Enhanced trading dashboard with comprehensive metrics."""
@@ -40,9 +40,16 @@ class TradingDashboard:
         self.max_drawdown = 0.0
         
     def update_metrics(self, account_value, profit_loss, position=0, timestamp=None):
-        """Update all trading metrics."""
+        """Update all trading metrics with comprehensive logging."""
         if timestamp is None:
             timestamp = datetime.now()
+            
+        # Log significant changes
+        if len(self.metrics_history['account_values']) > 0:
+            prev_value = self.metrics_history['account_values'][-1]
+            change_pct = ((account_value - prev_value) / prev_value) * 100
+            if abs(change_pct) > 1.0:  # Log changes > 1%
+                logger.info(f"📈 Account value: ${account_value:,.2f} ({change_pct:+.2f}%)")
             
         self.metrics_history['timestamps'].append(timestamp)
         self.metrics_history['account_values'].append(account_value)
@@ -68,9 +75,11 @@ class TradingDashboard:
         self._calculate_rolling_metrics()
         
     def _calculate_rolling_metrics(self):
-        """Calculate rolling Sharpe ratio and CAGR."""
+        """Calculate rolling Sharpe ratio and CAGR with logging."""
         if len(self.metrics_history['account_values']) < 10:
             return
+            
+        logger.debug("🔄 Calculating rolling performance metrics...")
             
         # Calculate returns
         values = self.metrics_history['account_values']

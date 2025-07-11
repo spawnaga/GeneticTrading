@@ -1,5 +1,13 @@
 
 #!/usr/bin/env python
+"""
+Professional Trading System with GA and PPO
+==========================================
+
+Revolutionary trading system combining Genetic Algorithm and PPO 
+for NQ futures trading using historical data from 2008 onwards.
+"""
+
 import os
 import argparse
 import logging
@@ -16,8 +24,10 @@ import torch.distributed as dist
 import numpy as np
 from torch.nn.parallel import DistributedDataParallel as DDP
 
+# Configure logging early
 logging.getLogger("torch.distributed").setLevel(logging.WARNING)
-logging.getLogger("torch.distributed").setLevel(logging.INFO)
+logging.getLogger("matplotlib").setLevel(logging.WARNING)
+logging.getLogger("PIL").setLevel(logging.WARNING)
 
 # ─── TRY GPU DATAFRAME SUPPORT ─────────────────────────────────────────────────
 has_cudf = False
@@ -203,6 +213,52 @@ def setup_model_directories(args):
     }
 
 
+def setup_enhanced_logging(log_dir, local_rank, log_level="INFO"):
+    """Setup enhanced logging with proper formatting and rotation."""
+    log_dir = Path(log_dir)
+    log_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Clear existing handlers
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+    
+    # Set logging level
+    numeric_level = getattr(logging, log_level.upper(), logging.INFO)
+    logging.root.setLevel(numeric_level)
+    
+    # Enhanced formatter with emojis and better structure
+    formatter = logging.Formatter(
+        "%(asctime)s [%(levelname)-8s] 🔸 %(name)-15s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
+    
+    # Console handler with colors
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(formatter)
+    console_handler.setLevel(numeric_level)
+    
+    # File handler with rotation
+    log_file = log_dir / f"trading_system_rank_{local_rank}.log"
+    file_handler = RotatingFileHandler(
+        log_file, maxBytes=50*1024*1024, backupCount=10
+    )
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(logging.DEBUG)
+    
+    # Add handlers
+    logging.root.addHandler(console_handler)
+    logging.root.addHandler(file_handler)
+    
+    # Create session logger
+    session_logger = logging.getLogger("SESSION")
+    session_logger.info("="*80)
+    session_logger.info("🎯 Revolutionary NQ Futures Trading System")
+    session_logger.info(f"📊 Session started at {datetime.datetime.now()}")
+    session_logger.info(f"💻 Process rank: {local_rank}")
+    session_logger.info(f"📁 Log file: {log_file}")
+    session_logger.info("="*80)
+
+
 def save_model_with_backup(model, save_path, backup_dir, backup_count=5):
     """Save model with automatic backup rotation."""
     save_path = Path(save_path)
@@ -332,12 +388,18 @@ def main():
     Path(args.log_dir).mkdir(parents=True, exist_ok=True)
     Path(args.tensorboard_dir).mkdir(parents=True, exist_ok=True)
 
-    # setup logging & report NCCL only once
-    setup_logging(local_rank)
+    # Enhanced logging setup
+    setup_enhanced_logging(args.log_dir, local_rank, args.log_level)
+    
     if local_rank == 0:
-        logging.info(f"NCCL_TIMEOUT = {args.nccl_timeout} ms")
-        logging.info(f"Using {args.data_percentage*100:.1f}% of available data")
-        logging.info(f"Models will be saved to: {args.models_dir}")
+        logger = logging.getLogger("MAIN")
+        logger.info("🚀 Revolutionary Trading System Started")
+        logger.info(f"NCCL_TIMEOUT = {args.nccl_timeout} ms")
+        logger.info(f"Using {args.data_percentage*100:.1f}% of available data")
+        logger.info(f"Models directory: {args.models_dir}")
+        logger.info(f"Training mode: {args.training_mode}")
+        logger.info(f"Device configuration: {device}")
+        logger.info(f"World size: {world_size}, Local rank: {local_rank}")
     
     # Device already set above
     logging.info(f"Rank {local_rank}/{world_size} starting on {device} (has_cudf={has_cudf})")
@@ -487,16 +549,28 @@ def main():
     
     if local_rank == 0:
         from adaptive_trainer import AdaptiveTrainer
-        from email_notifications import TrainingNotificationSystem
+        from visualization_system import TradingVisualizationSystem
         
-        # Setup email notifications
-        email_manager = TrainingNotificationSystem()
+        # Setup visualization system
+        viz_system = TradingVisualizationSystem(
+            log_dir=args.log_dir,
+            web_port=5000
+        )
+        
+        # Start web dashboard
+        dashboard_server = viz_system.start_web_server()
+        if dashboard_server:
+            logging.info("🌐 Real-time dashboard available at http://0.0.0.0:5000/trading_dashboard.html")
+        
+        # Setup email notifications (optional)
+        email_manager = None
         try:
+            from email_notifications import TrainingNotificationSystem
+            email_manager = TrainingNotificationSystem()
             email_manager.start_monitoring()
-            logging.info("Email notifications enabled - reports every 6 hours")
+            logging.info("📧 Email notifications enabled")
         except Exception as e:
-            logging.warning(f"Failed to setup email notifications: {e}")
-            email_manager = None
+            logging.info("📧 Email notifications not available (optional)")
         
         # Initialize adaptive trainer with distributed settings
         adaptive_trainer = AdaptiveTrainer(
