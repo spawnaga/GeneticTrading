@@ -291,19 +291,30 @@ class FuturesEnv(gym.Env):
         if MONITOR_AVAILABLE:
             log_trading_action(self.current_index, action, current_price, self.current_position, self.account_balance)
 
-        # Log current state before action (DEBUG level to reduce console spam)
-        logger.debug(f"📊 Step {self.current_index} | Action: {current_action} | "
-                    f"Price: ${current_state.close_price:.2f} | "
-                    f"Position: {self.current_position} | "
-                    f"Account: ${self.account_balance:,.2f}")
+        # Create trading activity logger (file only, not console)
+        trading_logger = logging.getLogger("TRADING_ACTIVITY_FILE")
+        if not trading_logger.handlers:
+            trading_file_handler = logging.FileHandler(Path(self.log_dir) / "trading_activity.log")
+            trading_file_handler.setFormatter(logging.Formatter(
+                "%(asctime)s [%(levelname)-8s] %(message)s"
+            ))
+            trading_logger.addHandler(trading_file_handler)
+            trading_logger.setLevel(logging.INFO)
+            trading_logger.propagate = False  # Don't send to console
+
+        # Log current state to file only
+        trading_logger.info(f"📊 Step {self.current_index} | Action: {current_action} | "
+                           f"Price: ${current_state.close_price:.2f} | "
+                           f"Position: {self.current_position} | "
+                           f"Account: ${self.account_balance:,.2f}")
 
         if action != 0:  # Not hold
             reward, info = self._execute_trade(action, current_state)
 
-            # Log trade execution result (DEBUG level to reduce console spam)
-            logger.debug(f"🔄 Trade Result: {info.get('message', 'Unknown')} | "
-                        f"Reward: {reward:.4f} | "
-                        f"New Position: {self.current_position}")
+            # Log trade execution result to file only
+            trading_logger.info(f"🔄 Trade Result: {info.get('message', 'Unknown')} | "
+                               f"Reward: {reward:.4f} | "
+                               f"New Position: {self.current_position}")
 
             # Log to structured trading table with actual trade reward as P&L
             self._log_to_trading_table(action, current_price, self.current_position, self.account_balance, reward, reward)
@@ -723,17 +734,17 @@ class FuturesEnv(gym.Env):
             if not hasattr(self, '_last_position') or position != self._last_position:
                 self._last_position = position
 
-            # Create table entry
+            # Create table entry - convert all values to native Python types
             table_entry = {
                 "timestamp": timestamp,
-                "step": self.current_index,
+                "step": int(self.current_index),
                 "action": action_name,
-                "price": f"${price:.2f}",
-                "position": position,
+                "price": f"${float(price):.2f}",
+                "position": int(position),
                 "pos_change": position_change if position_change else "0",
-                "balance": f"${balance:,.2f}",
-                "pnl": f"${pnl:.2f}",
-                "reward": f"{reward:.4f}"
+                "balance": f"${float(balance):,.2f}",
+                "pnl": f"${float(pnl):.2f}",
+                "reward": f"{float(reward):.4f}"
             }
 
             # Load existing table or create new
