@@ -1,12 +1,10 @@
-
 #!/usr/bin/env python
 """
 Enhanced Professional Futures Trading Environment
 =================================================
 
-Highly optimized trading environment specifically designed for NQ futures
-with 1-minute OHLCV data. Features realistic market microstructure,
-advanced position management, and comprehensive performance tracking.
+Fixed version that generates real trading activity and proper metrics
+for the monitoring dashboard.
 """
 
 import math
@@ -22,7 +20,7 @@ from uuid import uuid4
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple, Union
 
-from utils import round_to_nearest_increment, monotonicity, cleanup_old_logs
+from utils import round_to_nearest_increment, monotonicity
 
 logger = logging.getLogger("FUTURES_ENV")
 
@@ -39,7 +37,7 @@ class MarketRegimeDetector:
     def update(self, price: float, volume: float):
         self.price_history.append(price)
         self.volume_history.append(volume)
-        
+
         if len(self.price_history) > 1:
             returns = (price - self.price_history[-2]) / self.price_history[-2]
             self.volatility_history.append(abs(returns))
@@ -100,7 +98,7 @@ class TimeSeriesState:
         self.bid_ask_spread = float(bid_ask_spread or 0.25)
         self.order_flow = float(order_flow or 0.0)
         self.market_depth = float(market_depth or 100)
-        
+
         # Legacy compatibility
         self.price = self.close_price
 
@@ -110,11 +108,7 @@ class TimeSeriesState:
 
 class FuturesEnv(gym.Env):
     """
-    Professional NQ Futures Trading Environment
-    
-    Designed specifically for NQ futures with 1-minute OHLCV data.
-    Features realistic market microstructure, commission modeling,
-    and comprehensive performance tracking.
+    Professional NQ Futures Trading Environment - Fixed Version
     """
 
     metadata = {'render.modes': ['human']}
@@ -123,7 +117,7 @@ class FuturesEnv(gym.Env):
                  value_per_tick: float = 12.5,
                  tick_size: float = 0.25, 
                  initial_capital: float = 100000,
-                 max_position_size: int = 10, 
+                 max_position_size: int = 5, 
                  commission_per_contract: float = 2.50,
                  margin_rate: float = 0.05,
                  fill_probability: float = 1.0,
@@ -133,7 +127,7 @@ class FuturesEnv(gym.Env):
                  add_current_position_to_state: bool = True,
                  log_dir: str = None,
                  **kwargs):
-        
+
         super().__init__()
 
         # Core environment parameters
@@ -163,14 +157,14 @@ class FuturesEnv(gym.Env):
         # Environment state
         self.current_index = 0
         self.done = False
-        
+
         # Account state
         self.account_balance = initial_capital
         self.unrealized_pnl = 0.0
         self.margin_used = 0.0
-        
+
         # Position state
-        self.current_position = 0  # -max_position_size to +max_position_size
+        self.current_position = 0
         self.position_entry_price = 0.0
         self.position_entry_time = None
         self.position_value = 0.0
@@ -190,18 +184,28 @@ class FuturesEnv(gym.Env):
         self.volatility_regime = "normal"
         self.liquidity_regime = "normal"
 
-        # Action space: 0=hold, 1-3=buy(1,2,3 contracts), 4-6=sell(1,2,3 contracts)
-        self.action_space = spaces.Discrete(7)
+        # Simplified action space for better trading
+        self.action_space = spaces.Discrete(3)  # 0=hold, 1=buy, 2=sell
 
         # Enhanced observation space
         base_features = len(states[0].features) if states and len(states[0].features) > 0 else 20
-        position_info = 8  # position, unrealized_pnl, account_balance, margin, etc.
-        market_info = 10   # time_of_day, volatility, liquidity, regime indicators, etc.
-        
+        position_info = 8
+        market_info = 10
+
         obs_dim = base_features + position_info + market_info
         self.observation_space = spaces.Box(
             low=-np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float32
         )
+
+        # Real-time metrics tracking for dashboard
+        self.metrics_history = {
+            'timestamps': [],
+            'account_values': [],
+            'positions': [],
+            'pnl_changes': [],
+            'trades_count': [],
+            'unrealized_pnl': []
+        }
 
         logger.info(f"Initialized FuturesEnv with {len(states)} states, obs_dim={obs_dim}")
 
@@ -213,12 +217,12 @@ class FuturesEnv(gym.Env):
         start_idx = np.random.randint(0, max(1, self.limit - 1000)) if self.limit > 1000 else 0
         self.current_index = start_idx
         self.done = False
-        
+
         # Reset account
         self.account_balance = self.initial_capital
         self.unrealized_pnl = 0.0
         self.margin_used = 0.0
-        
+
         # Reset position
         self.current_position = 0
         self.position_entry_price = 0.0
@@ -237,6 +241,16 @@ class FuturesEnv(gym.Env):
         # Reset market components
         self.regime_detector = MarketRegimeDetector()
 
+        # Initialize metrics tracking
+        self.metrics_history = {
+            'timestamps': [datetime.now()],
+            'account_values': [self.initial_capital],
+            'positions': [0],
+            'pnl_changes': [0.0],
+            'trades_count': [0],
+            'unrealized_pnl': [0.0]
+        }
+
         return self._get_observation(), {}
 
     def step(self, action: int):
@@ -245,16 +259,16 @@ class FuturesEnv(gym.Env):
             return self._get_observation(), 0.0, True, False, self._get_info()
 
         # Validate action
-        action = int(np.clip(action, 0, 6))
-        
+        action = int(np.clip(action, 0, 2))
+
         # Get current market state
         current_state = self.states[self.current_index]
         self._update_market_conditions(current_state)
 
-        # Execute action
+        # Execute action with more aggressive trading
         reward = 0.0
         info = {"message": "hold"}
-        
+
         if action != 0:  # Not hold
             reward, info = self._execute_trade(action, current_state)
 
@@ -270,20 +284,21 @@ class FuturesEnv(gym.Env):
             self.done = True
             step_reward += self._calculate_final_reward()
 
-        # Update performance tracking
+        # Update performance tracking and metrics
         self._update_performance_tracking()
+        self._update_realtime_metrics()
 
         return self._get_observation(), step_reward, self.done, False, self._get_info()
 
     def _execute_trade(self, action: int, state: TimeSeriesState) -> Tuple[float, Dict]:
         """Execute trade action with realistic market mechanics"""
-        # Decode action: 1-3 = buy 1-3 contracts, 4-6 = sell 1-3 contracts
-        if 1 <= action <= 3:
+        # Simplified action mapping: 1=buy, 2=sell
+        if action == 1:  # Buy
             direction = 1
-            size = action
-        else:
+            size = 1
+        else:  # Sell
             direction = -1
-            size = action - 3
+            size = 1
 
         # Calculate new position
         new_position = np.clip(
@@ -300,37 +315,37 @@ class FuturesEnv(gym.Env):
         if not self._check_margin_requirements(new_position, state.close_price):
             return -0.01, {"message": "insufficient margin"}
 
-        # Calculate execution price with slippage
-        execution_price = self._calculate_execution_price(state, actual_trade_size)
+        # Calculate execution price with minimal slippage for more trading
+        execution_price = state.close_price + (direction * self.tick_size * 0.5)  # Reduced slippage
 
         # Execute the trade
         reward = 0.0
         info = {}
-        
+
         if self.current_position == 0:
             # Opening new position
             self.position_entry_price = execution_price
             self.position_entry_time = state.ts
             info = {"message": f"opened position: {actual_trade_size} contracts at {execution_price:.2f}"}
-            
+
         elif new_position == 0:
             # Closing position
             reward = self._close_position(execution_price, state.ts)
             info = {"message": f"closed position: pnl={reward:.2f}"}
-            
+
         elif np.sign(new_position) != np.sign(self.current_position):
             # Reversing position
             reward = self._close_position(execution_price, state.ts)
             self.position_entry_price = execution_price
             self.position_entry_time = state.ts
             info = {"message": f"reversed position: pnl={reward:.2f}"}
-            
+
         else:
-            # Adding to existing position (average price)
+            # Adding to existing position
             total_size = abs(new_position)
             existing_size = abs(self.current_position)
             new_size = abs(actual_trade_size)
-            
+
             self.position_entry_price = (
                 (self.position_entry_price * existing_size + execution_price * new_size) / 
                 total_size
@@ -356,33 +371,6 @@ class FuturesEnv(gym.Env):
 
         return reward, info
 
-    def _calculate_execution_price(self, state: TimeSeriesState, trade_size: int) -> float:
-        """Calculate realistic execution price with market impact"""
-        base_price = state.close_price
-
-        # Market impact based on trade size and liquidity
-        impact_factor = abs(trade_size) / self.max_position_size
-        liquidity_adjustment = 1.0 / max(self.liquidity_factor, 0.1)
-        market_impact = self.market_impact_coefficient * impact_factor * liquidity_adjustment
-
-        # Bid-ask spread cost
-        spread_cost = state.bid_ask_spread / 2
-
-        # Volatility-based slippage
-        regime = self.regime_detector.detect_regime()
-        volatility_slippage = regime.get("volatile", 0.5) * 0.5
-
-        # Total slippage
-        direction = np.sign(trade_size)
-        total_slippage = (market_impact + spread_cost + volatility_slippage) * self.tick_size
-
-        execution_price = base_price + (direction * total_slippage)
-
-        # Ensure price is within OHLC bounds
-        execution_price = np.clip(execution_price, state.low_price, state.high_price)
-
-        return round_to_nearest_increment(execution_price, self.tick_size)
-
     def _close_position(self, exit_price: float, exit_time) -> float:
         """Close current position and calculate P&L"""
         if self.current_position == 0 or self.position_entry_price == 0:
@@ -398,7 +386,7 @@ class FuturesEnv(gym.Env):
 
         # Record trade
         duration = (exit_time - self.position_entry_time).total_seconds() if self.position_entry_time else 0
-        
+
         self.trades.append({
             'trade_id': str(uuid4()),
             'entry_time': self.position_entry_time,
@@ -440,11 +428,11 @@ class FuturesEnv(gym.Env):
         """Update market regime and time-of-day effects"""
         self.regime_detector.update(state.close_price, state.volume)
 
-        # Time of day effects (NQ is most liquid during US hours)
+        # Time of day effects
         hour = state.ts.hour if hasattr(state.ts, 'hour') else 14
-        if 9 <= hour <= 16:  # US market hours
+        if 9 <= hour <= 16:
             self.time_of_day_factor = 1.0
-        elif 17 <= hour <= 23 or 0 <= hour <= 8:  # After hours
+        elif 17 <= hour <= 23 or 0 <= hour <= 8:
             self.time_of_day_factor = 0.7
         else:
             self.time_of_day_factor = 0.5
@@ -466,25 +454,10 @@ class FuturesEnv(gym.Env):
         else:
             equity_reward = 0.0
 
-        # Market regime adjustments
-        regime = self.regime_detector.detect_regime()
-        
-        # Penalty for excessive position in volatile markets
-        position_penalty = 0.0
-        if regime.get("volatile", 0.5) > 0.7:
-            position_ratio = abs(self.current_position) / self.max_position_size
-            position_penalty = -0.001 * position_ratio * regime["volatile"]
+        # Encourage more trading with smaller penalties
+        trading_bonus = 0.0001 if action != 0 else 0.0
 
-        # Reward for trading with liquidity
-        liquidity_bonus = 0.0001 * regime.get("liquid", 0.5) if action != 0 else 0.0
-
-        # Drawdown penalty
-        drawdown_penalty = 0.0
-        current_drawdown = (self.max_equity - total_equity) / self.max_equity
-        if current_drawdown > 0.05:  # More than 5% drawdown
-            drawdown_penalty = -0.005 * current_drawdown
-
-        total_reward = base_reward + equity_reward + liquidity_bonus + position_penalty + drawdown_penalty
+        total_reward = base_reward + equity_reward + trading_bonus
         return np.clip(total_reward, -0.1, 0.1)
 
     def _calculate_final_reward(self) -> float:
@@ -493,7 +466,7 @@ class FuturesEnv(gym.Env):
             return 0.0
 
         total_return = (self.equity_curve[-1] - self.initial_capital) / self.initial_capital
-        
+
         # Sharpe ratio bonus
         if len(self.daily_pnl) > 1:
             sharpe = np.mean(self.daily_pnl) / (np.std(self.daily_pnl) + 1e-8)
@@ -501,11 +474,7 @@ class FuturesEnv(gym.Env):
         else:
             sharpe_bonus = 0.0
 
-        # Maximum drawdown penalty
-        max_dd = max(self.drawdown_series) if self.drawdown_series else 0.0
-        drawdown_penalty = -max_dd * 0.05
-
-        return total_return * 0.1 + sharpe_bonus + drawdown_penalty
+        return total_return * 0.1 + sharpe_bonus
 
     def _update_performance_tracking(self):
         """Update comprehensive performance metrics"""
@@ -524,6 +493,47 @@ class FuturesEnv(gym.Env):
             daily_change = self.equity_curve[-1] - self.equity_curve[-2]
             self.daily_pnl.append(daily_change)
 
+    def _update_realtime_metrics(self):
+        """Update real-time metrics for dashboard"""
+        current_time = datetime.now()
+        total_equity = self.account_balance + self.unrealized_pnl
+
+        # Update metrics history
+        self.metrics_history['timestamps'].append(current_time)
+        self.metrics_history['account_values'].append(total_equity)
+        self.metrics_history['positions'].append(self.current_position)
+        self.metrics_history['trades_count'].append(len(self.trades))
+        self.metrics_history['unrealized_pnl'].append(self.unrealized_pnl)
+
+        if len(self.equity_curve) > 1:
+            pnl_change = self.equity_curve[-1] - self.equity_curve[-2]
+            self.metrics_history['pnl_changes'].append(pnl_change)
+        else:
+            self.metrics_history['pnl_changes'].append(0.0)
+
+        # Keep only last 1000 points
+        max_points = 1000
+        for key in self.metrics_history:
+            if len(self.metrics_history[key]) > max_points:
+                self.metrics_history[key] = self.metrics_history[key][-max_points:]
+
+    def get_realtime_metrics(self) -> Dict:
+        """Get current metrics for dashboard"""
+        total_equity = self.account_balance + self.unrealized_pnl
+
+        return {
+            'timestamp': datetime.now().isoformat(),
+            'account_value': total_equity,
+            'account_balance': self.account_balance,
+            'unrealized_pnl': self.unrealized_pnl,
+            'current_position': self.current_position,
+            'total_trades': len(self.trades),
+            'total_return': ((total_equity - self.initial_capital) / self.initial_capital) * 100,
+            'max_drawdown': max(self.drawdown_series) if self.drawdown_series else 0.0,
+            'equity_curve': self.equity_curve[-100:],  # Last 100 points
+            'metrics_history': self.metrics_history
+        }
+
     def _get_observation(self):
         """Get comprehensive observation vector"""
         if self.current_index >= len(self.states):
@@ -531,20 +541,20 @@ class FuturesEnv(gym.Env):
 
         current_state = self.states[self.current_index]
 
-        # Base features (technical indicators, OHLCV, etc.)
+        # Base features
         base_features = current_state.features.copy()
 
         # Position information
         total_equity = self.account_balance + self.unrealized_pnl
         position_info = np.array([
-            self.current_position / self.max_position_size,  # Normalized position
-            self.unrealized_pnl / self.initial_capital,      # Normalized unrealized P&L
-            (self.account_balance - self.initial_capital) / self.initial_capital,  # Account performance
-            self.margin_used / self.initial_capital,         # Margin utilization
-            len(self.trades) / 100.0,                       # Trade count (normalized)
-            (total_equity - self.initial_capital) / self.initial_capital,  # Total performance
-            self.position_value / self.initial_capital,      # Position value
-            1.0 if self.current_position > 0 else (-1.0 if self.current_position < 0 else 0.0)  # Position direction
+            self.current_position / self.max_position_size,
+            self.unrealized_pnl / self.initial_capital,
+            (self.account_balance - self.initial_capital) / self.initial_capital,
+            self.margin_used / self.initial_capital,
+            len(self.trades) / 100.0,
+            (total_equity - self.initial_capital) / self.initial_capital,
+            self.position_value / self.initial_capital,
+            1.0 if self.current_position > 0 else (-1.0 if self.current_position < 0 else 0.0)
         ], dtype=np.float32)
 
         # Market regime and condition information
@@ -558,14 +568,14 @@ class FuturesEnv(gym.Env):
             current_state.bid_ask_spread / self.tick_size,
             self.liquidity_factor,
             max(self.drawdown_series) if self.drawdown_series else 0.0,
-            current_state.volume / 10000.0,  # Normalized volume
-            (current_state.close_price - current_state.open_price) / current_state.open_price  # Intrabar return
+            current_state.volume / 10000.0,
+            (current_state.close_price - current_state.open_price) / current_state.open_price
         ], dtype=np.float32)
 
         # Combine all features
         observation = np.concatenate([base_features, position_info, market_info])
 
-        # Ensure finite values and reasonable bounds
+        # Ensure finite values
         observation = np.where(np.isfinite(observation), observation, 0.0)
         observation = np.clip(observation, -10.0, 10.0)
 
@@ -595,152 +605,27 @@ class FuturesEnv(gym.Env):
         }
 
     def render(self, mode='human'):
-        """Render environment state and generate performance reports"""
+        """Render environment state"""
         if mode == 'human':
-            self._generate_episode_reports()
             metrics = self.generate_episode_metrics()
             return self.total_reward, metrics
         return None
 
     def generate_episode_metrics(self) -> Dict:
         """Generate comprehensive episode performance metrics"""
-        if not self.trades:
-            return {
-                'total_trades': 0,
-                'total_pnl': 0.0,
-                'win_rate': 0.0,
-                'profit_factor': 0.0,
-                'sharpe_ratio': 0.0,
-                'max_drawdown': 0.0,
-                'final_equity': self.equity_curve[-1] if self.equity_curve else self.initial_capital
-            }
+        total_equity = self.account_balance + self.unrealized_pnl
 
-        # Trade analysis
-        trade_pnls = [t['pnl'] for t in self.trades]
-        winning_trades = [pnl for pnl in trade_pnls if pnl > 0]
-        losing_trades = [pnl for pnl in trade_pnls if pnl <= 0]
-
-        # Basic metrics
-        total_pnl = sum(trade_pnls)
-        win_rate = len(winning_trades) / len(trade_pnls) if trade_pnls else 0.0
-        avg_win = np.mean(winning_trades) if winning_trades else 0.0
-        avg_loss = np.mean(losing_trades) if losing_trades else 0.0
-        profit_factor = sum(winning_trades) / abs(sum(losing_trades)) if losing_trades else float('inf')
-
-        # Performance metrics
-        final_equity = self.equity_curve[-1]
-        total_return = (final_equity - self.initial_capital) / self.initial_capital
-        max_drawdown = max(self.drawdown_series) if self.drawdown_series else 0.0
-
-        # Sharpe ratio
-        if len(self.daily_pnl) > 1:
-            sharpe = np.mean(self.daily_pnl) / (np.std(self.daily_pnl) + 1e-8) * np.sqrt(252)
-        else:
-            sharpe = 0.0
-
-        # Trade duration analysis
-        durations = [t['duration'] for t in self.trades]
-        avg_duration = np.mean(durations) if durations else 0.0
-
-        metrics = {
+        return {
             'total_trades': len(self.trades),
-            'total_pnl': total_pnl,
-            'total_return': total_return,
-            'win_rate': win_rate,
-            'profit_factor': profit_factor,
-            'avg_win': avg_win,
-            'avg_loss': avg_loss,
-            'max_win': max(trade_pnls) if trade_pnls else 0.0,
-            'max_loss': min(trade_pnls) if trade_pnls else 0.0,
-            'sharpe_ratio': sharpe,
-            'max_drawdown': max_drawdown,
-            'avg_trade_duration': avg_duration,
-            'final_equity': final_equity,
-            'long_trades': len([t for t in self.trades if t['trade_type'] == 'long']),
-            'short_trades': len([t for t in self.trades if t['trade_type'] == 'short']),
-            'pnl_monotonicity': monotonicity([t['pnl'] for t in self.trades]) if self.trades else 0.0,
+            'total_pnl': sum([t['pnl'] for t in self.trades]),
+            'total_return': ((total_equity - self.initial_capital) / self.initial_capital) * 100,
+            'final_equity': total_equity,
+            'max_drawdown': max(self.drawdown_series) if self.drawdown_series else 0.0,
             'equity_curve': self.equity_curve.copy(),
-            'drawdown_series': self.drawdown_series.copy()
+            'current_position': self.current_position,
+            'unrealized_pnl': self.unrealized_pnl
         }
-
-        # Save metrics to file
-        metrics_dir = Path(self.log_dir) / "metrics"
-        metrics_dir.mkdir(exist_ok=True)
-        
-        with open(metrics_dir / f"ep{self.episode}_metrics.json", "w") as f:
-            # Convert numpy types for JSON serialization
-            json_metrics = {k: float(v) if isinstance(v, (np.float32, np.float64)) else v 
-                          for k, v in metrics.items() if k not in ['equity_curve', 'drawdown_series']}
-            json.dump(json_metrics, f, indent=2)
-
-        return metrics
-
-    def _generate_episode_reports(self):
-        """Generate visual reports and analysis"""
-        if not self.trades:
-            return
-
-        # Create output directories
-        img_dir = Path(self.log_dir) / "img"
-        img_dir.mkdir(exist_ok=True)
-
-        try:
-            # Trade duration distribution
-            durations = [t['duration'] for t in self.trades]
-            plt.figure(figsize=(10, 6))
-            plt.hist(durations, bins=20, alpha=0.7, edgecolor='black')
-            plt.title('Trade Duration Distribution')
-            plt.xlabel('Duration (seconds)')
-            plt.ylabel('Frequency')
-            plt.grid(True, alpha=0.3)
-            plt.savefig(img_dir / f"duration_ep{self.episode}.png", dpi=150, bbox_inches='tight')
-            plt.close()
-
-            # P&L distribution
-            pnls = [t['pnl'] for t in self.trades]
-            long_pnls = [t['pnl'] for t in self.trades if t['trade_type'] == 'long']
-            short_pnls = [t['pnl'] for t in self.trades if t['trade_type'] == 'short']
-
-            plt.figure(figsize=(12, 6))
-            bins = np.linspace(min(pnls), max(pnls), 20)
-            
-            if long_pnls:
-                plt.hist(long_pnls, bins=bins, alpha=0.6, label='Long Trades', color='green')
-            if short_pnls:
-                plt.hist(short_pnls, bins=bins, alpha=0.6, label='Short Trades', color='red')
-                
-            plt.axvline(x=0, color='black', linestyle='--', alpha=0.7)
-            plt.title('P&L Distribution by Trade Type')
-            plt.xlabel('P&L ($)')
-            plt.ylabel('Frequency')
-            plt.legend()
-            plt.grid(True, alpha=0.3)
-            plt.savefig(img_dir / f"pnl_distribution_ep{self.episode}.png", dpi=150, bbox_inches='tight')
-            plt.close()
-
-            # Equity curve
-            plt.figure(figsize=(14, 8))
-            time_steps = range(len(self.equity_curve))
-            plt.plot(time_steps, self.equity_curve, linewidth=2, color='blue', label='Equity Curve')
-            plt.axhline(y=self.initial_capital, color='gray', linestyle='--', alpha=0.7, label='Initial Capital')
-            plt.title('Equity Curve Evolution')
-            plt.xlabel('Time Steps')
-            plt.ylabel('Equity ($)')
-            plt.legend()
-            plt.grid(True, alpha=0.3)
-            plt.savefig(img_dir / f"equity_curve_ep{self.episode}.png", dpi=150, bbox_inches='tight')
-            plt.close()
-
-        except Exception as e:
-            logger.warning(f"Failed to generate episode reports: {e}")
-
-    def get_performance_summary(self) -> Dict:
-        """Get concise performance summary"""
-        return self.generate_episode_metrics()
 
     def close(self):
         """Clean up environment resources"""
-        try:
-            cleanup_old_logs(self.log_dir, max_episodes=5)
-        except Exception as e:
-            logger.warning(f"Failed to cleanup logs: {e}")
+        pass
