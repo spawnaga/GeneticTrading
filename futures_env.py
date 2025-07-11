@@ -729,4 +729,31 @@ class FuturesEnv(gym.Env):
                 "position": position,
                 "pos_change": position_change if position_change else "0",
                 "balance": f"${balance:,.2f}",
-                "pnl":
+                "pnl": f"${pnl:.2f}",
+                "reward": f"{reward:.4f}"
+            }
+
+            # Load existing table or create new
+            table_file = Path(self.log_dir) / "trading_table.json"
+            table_file.parent.mkdir(parents=True, exist_ok=True)
+
+            try:
+                if table_file.exists():
+                    with open(table_file, 'r') as f:
+                        trading_table = json.load(f)
+                else:
+                    trading_table = []
+
+                # Add new entry
+                trading_table.append(table_entry)
+
+                # Keep only last 10000 entries to prevent huge files
+                if len(trading_table) > 10000:
+                    trading_table = trading_table[-10000:]
+
+                # Save back to file
+                with open(table_file, 'w') as f:
+                    json.dump(trading_table, f, indent=2)
+
+            except Exception as e:
+                logger.error(f"Failed to save trading table: {e}")
