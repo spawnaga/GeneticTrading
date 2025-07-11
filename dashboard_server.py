@@ -76,6 +76,31 @@ DASHBOARD_HTML = """
     <div class="chart-container">
         <div id="position-chart" style="height: 300px;"></div>
     </div>
+    
+    <div class="chart-container">
+        <h3>📈 Recent Trading Activity</h3>
+        <div id="trading-table" style="height: 400px; overflow-y: auto;">
+            <table id="trading-data-table" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <thead style="background: #30363d; position: sticky; top: 0;">
+                    <tr>
+                        <th style="padding: 8px; border: 1px solid #444;">Time</th>
+                        <th style="padding: 8px; border: 1px solid #444;">Step</th>
+                        <th style="padding: 8px; border: 1px solid #444;">Action</th>
+                        <th style="padding: 8px; border: 1px solid #444;">Price</th>
+                        <th style="padding: 8px; border: 1px solid #444;">Position</th>
+                        <th style="padding: 8px; border: 1px solid #444;">Change</th>
+                        <th style="padding: 8px; border: 1px solid #444;">Balance</th>
+                        <th style="padding: 8px; border: 1px solid #444;">P&L</th>
+                        <th style="padding: 8px; border: 1px solid #444;">Reward</th>
+                        <th style="padding: 8px; border: 1px solid #444;">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="trading-table-body">
+                    <tr><td colspan="10" style="text-align: center; padding: 20px;">Loading trading data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <script>
         let equityData = {
@@ -156,6 +181,52 @@ DASHBOARD_HTML = """
                     document.getElementById('last-update').innerHTML = 
                         `<span class="status-error">Connection Error</span>`;
                 });
+                
+            // Update trading table
+            fetch('/api/trading-table')
+                .then(response => response.json())
+                .then(data => {
+                    updateTradingTable(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching trading table:', error);
+                });
+        }
+        
+        function updateTradingTable(tradingData) {
+            const tableBody = document.getElementById('trading-table-body');
+            
+            if (!tradingData || tradingData.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px;">No trading activity yet</td></tr>';
+                return;
+            }
+            
+            // Show last 50 entries, most recent first
+            const recentData = tradingData.slice(-50).reverse();
+            
+            tableBody.innerHTML = recentData.map(row => {
+                const statusColor = row.status === 'PROFIT' ? '#28a745' : 
+                                  row.status === 'LOSS' ? '#dc3545' : '#6c757d';
+                const actionColor = row.action === 'BUY' ? '#28a745' :
+                                  row.action === 'SELL' ? '#dc3545' : '#ffc107';
+                                  
+                return `
+                    <tr style="border-bottom: 1px solid #444;">
+                        <td style="padding: 6px; border: 1px solid #444;">${row.timestamp.split(' ')[1]}</td>
+                        <td style="padding: 6px; border: 1px solid #444;">${row.step}</td>
+                        <td style="padding: 6px; border: 1px solid #444; color: ${actionColor}; font-weight: bold;">${row.action}</td>
+                        <td style="padding: 6px; border: 1px solid #444;">${row.price}</td>
+                        <td style="padding: 6px; border: 1px solid #444;">${row.position}</td>
+                        <td style="padding: 6px; border: 1px solid #444;">${row.pos_change || '-'}</td>
+                        <td style="padding: 6px; border: 1px solid #444;">${row.balance}</td>
+                        <td style="padding: 6px; border: 1px solid #444; color: ${statusColor};">${row.pnl}</td>
+                        <td style="padding: 6px; border: 1px solid #444;">${row.reward}</td>
+                        <td style="padding: 6px; border: 1px solid #444;">
+                            <span style="color: ${statusColor}; font-size: 10px;">●</span> ${row.status}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         // Update dashboard every 3 seconds
@@ -193,6 +264,10 @@ class DashboardServer:
         @app.route('/api/metrics')
         def get_metrics():
             return jsonify(self._get_current_metrics())
+            
+        @app.route('/api/trading-table')
+        def get_trading_table():
+            return jsonify(self._get_trading_table_data())
 
         # Start server in a separate thread
         def run_server():
@@ -279,6 +354,21 @@ class DashboardServer:
             # Keep only last 100 points for better visualization
             for key in ['equity_history', 'position_history', 'timestamps']:
                 self.current_metrics[key] = self.current_metrics[key][-100:]
+
+    def _get_trading_table_data(self):
+        """Get trading table data for display."""
+        table_file = Path("./logs/trading_table.json")
+        
+        if not table_file.exists():
+            return []
+            
+        try:
+            with open(table_file, 'r') as f:
+                trading_data = json.load(f)
+            return trading_data
+        except Exception as e:
+            logger.debug(f"Could not read trading table: {e}")
+            return []
 
 
 if __name__ == "__main__":

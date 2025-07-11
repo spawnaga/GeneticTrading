@@ -1,3 +1,4 @@
+"""This change introduces structured table logging for trading activities within the FuturesEnv class, enhancing monitoring and analysis capabilities."""
 #!/usr/bin/env python
 """
 Enhanced Professional Futures Trading Environment
@@ -279,14 +280,20 @@ class FuturesEnv(gym.Env):
         # Log the action being taken
         action_names = {0: "HOLD", 1: "BUY", 2: "SELL"}
         current_action = action_names.get(action, f"UNKNOWN({action})")
-        
-        # Log to trading monitor
+
+        # Log current price
+        current_price = current_state.close_price
+
+        # Calculate profit/loss (pnl)
+        profit_loss = 0.0  # Initialize pnl
+
+        # Track action for monitoring with structured logging
         if MONITOR_AVAILABLE:
-            log_trading_action(
-                self.current_index, action, current_state.close_price, 
-                self.current_position, self.account_balance
-            )
-        
+            log_trading_action(self.current_index, action, current_price, self.current_position, self.account_balance)
+
+        # Log to structured trading table
+            self._log_to_trading_table(action, current_price, self.current_position, self.account_balance, reward, profit_loss)
+
         # Log current state before action
         logger.info(f"📊 Step {self.current_index} | Action: {current_action} | "
                    f"Price: ${current_state.close_price:.2f} | "
@@ -295,7 +302,7 @@ class FuturesEnv(gym.Env):
 
         if action != 0:  # Not hold
             reward, info = self._execute_trade(action, current_state)
-            
+
             # Log trade execution result
             logger.info(f"🔄 Trade Result: {info.get('message', 'Unknown')} | "
                        f"Reward: {reward:.4f} | "
@@ -316,7 +323,7 @@ class FuturesEnv(gym.Env):
         # Update performance tracking and metrics
         self._update_performance_tracking()
         self._update_realtime_metrics()
-        
+
         # Log account status every 100 steps
         if self.current_index % 100 == 0:
             total_equity = self.account_balance + self.unrealized_pnl
@@ -359,7 +366,7 @@ class FuturesEnv(gym.Env):
         # Execute the trade
         reward = 0.0
         info = {}
-        
+
         # Determine position type for logging
         position_type = "LONG" if actual_trade_size > 0 else "SHORT"
 
@@ -407,7 +414,7 @@ class FuturesEnv(gym.Env):
         # Log position change
         if MONITOR_AVAILABLE:
             log_position_change(self.current_position, new_position, reward)
-            
+
         # Update position
         old_position = self.current_position
         self.current_position = new_position
@@ -686,3 +693,40 @@ class FuturesEnv(gym.Env):
     def close(self):
         """Clean up environment resources"""
         pass
+
+    def _log_to_trading_table(self, action, price, position, balance, reward, pnl):
+        """Log trading activity to structured table format."""
+        try:
+            # Create structured log entry
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            action_name = {0: "HOLD", 1: "BUY", 2: "SELL"}.get(action, "UNKNOWN")
+
+            # Determine position change
+            position_change = ""
+            if hasattr(self, '_last_position'):
+                if position != self._last_position:
+                    if position > self._last_position:
+                        position_change = f"+{position - self._last_position}"
+                    else:
+                        position_change = f"{position - self._last_position}"
+            self._last_position = position
+
+            # Create table entry
+            table_entry = {
+                "timestamp": timestamp,
+                "step": self.current_index,
+                "action": action_name,
+                "price": f"${price:.2f}",
+                "position": position,
+                "pos_change": position_change,
+                "balance": f"${balance:,.2f}",
+                "pnl": f"${pnl:+.2f}" if pnl != 0 else "-",
+                "reward": f"{reward:.4f}",
+                "status": "PROFIT" if pnl > 0 else "LOSS" if pnl < 0 else "NEUTRAL"
+            }
+
+            # Save to trading table file
+            table_file = Path("./logs/trading_table.json")
+            table_file.parent.mkdir(exist_ok=True)
+
+            # Load existing data
