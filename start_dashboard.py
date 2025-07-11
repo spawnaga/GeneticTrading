@@ -124,6 +124,7 @@ def start_dashboard(port=5000):
 def create_sample_tensorboard_data():
     """Create sample TensorBoard data for testing."""
     try:
+        import numpy as np
         import torch
         from torch.utils.tensorboard import SummaryWriter
         
@@ -166,7 +167,7 @@ def main():
         import numpy as np
         create_sample_tensorboard_data()
     except ImportError:
-        pass
+        logger.warning("NumPy not available, skipping sample data creation")
     
     # Start TensorBoard in background
     tb_process = start_tensorboard()

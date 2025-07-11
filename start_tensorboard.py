@@ -39,8 +39,7 @@ def start_tensorboard(log_dir="./runs", port=6006, host="0.0.0.0"):
         "--logdir", str(log_path),
         "--port", str(port),
         "--host", host,
-        "--reload_interval", "10",
-        "--bind_all"  # Important for Replit accessibility
+        "--reload_interval", "10"
     ]
     
     try:
