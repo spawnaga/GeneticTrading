@@ -135,6 +135,7 @@ class FuturesEnv(gym.Env):
                  bid_ask_spread: float = 0.25,
                  add_current_position_to_state: bool = True,
                  log_dir: str = None,
+                 price_scale: float = 0.01,  # Scale factor for price conversion (0.01 for cents to dollars)
                  **kwargs):
 
         super().__init__()
@@ -153,6 +154,7 @@ class FuturesEnv(gym.Env):
         self.contracts_per_trade = contracts_per_trade
         self.bid_ask_spread = bid_ask_spread
         self.add_current_position_to_state = add_current_position_to_state
+        self.price_scale = price_scale  # For converting prices (e.g., cents to dollars)
 
         # Logging setup
         self.log_dir = log_dir or f"./logs/futures_env/{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -373,7 +375,7 @@ class FuturesEnv(gym.Env):
             return -0.01, {"message": "insufficient margin"}
 
         # Calculate execution price with minimal slippage for more trading
-        execution_price = state.close_price + (direction * self.tick_size * 0.5)  # Reduced slippage
+        execution_price = (state.close_price * self.price_scale) + (direction * self.tick_size * 0.5)  # Apply price scaling
 
         # Execute the trade
         reward = 0.0
@@ -452,7 +454,7 @@ class FuturesEnv(gym.Env):
         if self.current_position == 0 or self.position_entry_price == 0:
             return 0.0
 
-        # Calculate P&L
+        # Calculate P&L (prices already scaled during execution)
         price_diff = exit_price - self.position_entry_price
         ticks = price_diff / self.tick_size
         pnl = self.current_position * ticks * self.value_per_tick
@@ -483,17 +485,18 @@ class FuturesEnv(gym.Env):
 
     def _check_margin_requirements(self, position_size: int, price: float) -> bool:
         """Check if sufficient margin is available"""
-        required_margin = abs(position_size) * price * self.margin_rate
+        required_margin = abs(position_size) * (price * self.price_scale) * self.margin_rate
         available_capital = self.account_balance + self.unrealized_pnl
         return available_capital >= required_margin
 
     def _update_position_value(self, current_price: float):
         """Update unrealized P&L and position value"""
         if self.current_position != 0 and self.position_entry_price != 0:
-            price_diff = current_price - self.position_entry_price
+            scaled_current_price = current_price * self.price_scale
+            price_diff = scaled_current_price - self.position_entry_price
             ticks = price_diff / self.tick_size
             self.unrealized_pnl = self.current_position * ticks * self.value_per_tick
-            self.position_value = abs(self.current_position) * current_price
+            self.position_value = abs(self.current_position) * scaled_current_price
             self.margin_used = self.position_value * self.margin_rate
         else:
             self.unrealized_pnl = 0.0

@@ -375,13 +375,19 @@ def get_trading_data():
             'error': str(e)
         })
 
-def run_monitor():
-    """Run the enhanced trading monitor on port 8080."""
-    app.run(host='0.0.0.0', port=8080, debug=False)
+def run_monitor(port=8080):
+    """Run the enhanced trading monitor."""
+    app.run(host='0.0.0.0', port=port, debug=False)
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description="Enhanced Trading Activity Monitor")
+    parser.add_argument('--port', type=int, default=8080, help='Port to run dashboard on (default: 8080)')
+    args = parser.parse_args()
+    
     print("🚀 Starting Enhanced Trading Activity Monitor...")
-    print("📊 Dashboard: http://0.0.0.0:8080")
+    print(f"📊 Dashboard: http://0.0.0.0:{args.port}")
     print("🔄 Auto-refreshes every 3 seconds")
     print("📋 Dual table view: Trading Activity + Trade Outcomes")
-    run_monitor()
+    
+    app.run(host='0.0.0.0', port=args.port, debug=False)

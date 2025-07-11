@@ -52,6 +52,15 @@ mode = "sequential"
 task = "shell.exec"
 args = "python main.py --data-folder ./data_txt --max-rows 50000 --adaptive-iterations 3 --log-level INFO --training-mode adaptive"
 
+[[workflows.workflow]]
+name = "Run Complete Trading System"
+author = 33211024
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python system_manager.py --dashboard-port 8080"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
