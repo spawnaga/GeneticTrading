@@ -164,9 +164,33 @@ def evaluate_fitness(param_vector, env, device="cpu", metric="comprehensive", ma
     total_trades = 0
     profitable_trades = 0
     if hasattr(env, 'trades') and len(env.trades) > 0:
-        trade_profits = [trade[4] for trade in env.trades]
-        total_trades = len(trade_profits)
-        profitable_trades = sum(1 for p in trade_profits if p > 0)
+        try:
+            trade_profits = []
+            for trade in env.trades:
+                if isinstance(trade, dict):
+                    # FuturesEnv stores trades as dictionaries with 'pnl' key
+                    trade_profits.append(trade.get('pnl', 0))
+                elif isinstance(trade, (list, tuple)):
+                    # Handle legacy tuple/list format
+                    if len(trade) > 4:
+                        trade_profits.append(trade[4])
+                    elif len(trade) > 0:
+                        trade_profits.append(trade[-1])
+                    else:
+                        trade_profits.append(0)
+                else:
+                    # Single value or unknown format
+                    try:
+                        trade_profits.append(float(trade))
+                    except (ValueError, TypeError):
+                        trade_profits.append(0)
+            
+            total_trades = len(trade_profits)
+            profitable_trades = sum(1 for p in trade_profits if p > 0)
+        except Exception as e:
+            ga_logger.warning(f"Error extracting trade profits: {e}")
+            total_trades = 0
+            profitable_trades = 0
 
     # Calculate profit metrics with robust trade structure handling
     win_rate = 0
@@ -178,19 +202,25 @@ def evaluate_fitness(param_vector, env, device="cpu", metric="comprehensive", ma
             for trade in env.trades:
                 # Handle different trade structure types
                 if isinstance(trade, (list, tuple)):
+                    # Check length first to avoid index errors
                     if len(trade) > 4:
                         trade_profits.append(trade[4])  # 5th element
                     elif len(trade) > 3:
                         trade_profits.append(trade[3])  # 4th element
                     elif len(trade) > 0:
                         trade_profits.append(trade[-1])  # Last element
+                    else:
+                        trade_profits.append(0)  # Empty trade
                 elif isinstance(trade, dict):
                     # Handle dictionary-based trade structure
                     profit = trade.get('profit', trade.get('pnl', trade.get('return', 0)))
                     trade_profits.append(profit)
                 else:
-                    # Single value trade
-                    trade_profits.append(float(trade) if trade is not None else 0)
+                    # Single value trade or other type
+                    try:
+                        trade_profits.append(float(trade) if trade is not None else 0)
+                    except (ValueError, TypeError):
+                        trade_profits.append(0)
 
             if trade_profits:
                 win_rate = sum(1 for p in trade_profits if p > 0) / len(trade_profits)
