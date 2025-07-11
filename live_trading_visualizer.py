@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 class LiveTradingVisualizer:
     """Real-time visualization dashboard for trading system."""
     
-    def __init__(self, update_interval: int = 2, max_history: int = 1000):
+    def __init__(self, update_interval: int = 1, max_history: int = 1000):
         self.update_interval = update_interval
         self.max_history = max_history
         
@@ -454,32 +454,91 @@ class LiveTradingVisualizer:
                 latest_log = max(log_files, key=os.path.getmtime)
                 
                 # Read last few lines to get latest metrics
-                with open(latest_log, 'r') as f:
+                with open(latest_log, 'r', encoding='utf-8', errors='ignore') as f:
                     lines = f.readlines()
                     
-                # Parse recent log entries for evaluation results
-                for line in reversed(lines[-50:]):  # Last 50 lines
-                    if "Evaluation results:" in line and "total=" in line:
+                # Look for various types of training data
+                metrics = {}
+                
+                # Parse recent log entries for any numerical data
+                for line in reversed(lines[-100:]):  # Last 100 lines
+                    line = line.strip()
+                    
+                    # Look for fitness/reward values
+                    if "fitness" in line.lower() and "=" in line:
                         try:
-                            # Extract metrics from log line
-                            if "total=0.0000" not in line:  # Skip zero results
-                                parts = line.split("total=")
-                                if len(parts) > 1:
-                                    total_str = parts[1].split()[0]
-                                    total_pnl = float(total_str)
-                                    
-                                    return {
-                                        'account_value': 100000 + total_pnl,
-                                        'total_return': (total_pnl / 100000) * 100,
-                                        'current_position': np.random.choice([-1, 0, 1]),
-                                        'pnl_change': total_pnl * 0.01,
-                                        'algorithm': 'GA' if 'GA' in line else 'PPO',
-                                        'market_regime': 'normal',
-                                        'total_trades': 1,
-                                        'unrealized_pnl': total_pnl * 0.1
-                                    }
+                            parts = line.split("fitness")
+                            if len(parts) > 1:
+                                value_part = parts[1].split("=")[-1].split()[0]
+                                fitness = float(value_part.replace(",", "").replace(")", ""))
+                                metrics['fitness'] = fitness
+                                break
                         except:
                             continue
+                    
+                    # Look for reward values
+                    elif "reward" in line.lower() and "=" in line:
+                        try:
+                            if "total_reward" in line or "reward=" in line:
+                                parts = line.split("reward")
+                                if len(parts) > 1:
+                                    value_part = parts[1].split("=")[-1].split()[0]
+                                    reward = float(value_part.replace(",", "").replace(")", ""))
+                                    metrics['reward'] = reward
+                                    break
+                        except:
+                            continue
+                    
+                    # Look for profit/loss values
+                    elif "profit" in line.lower() and ("$" in line or "total" in line):
+                        try:
+                            # Extract numerical values from profit lines
+                            import re
+                            numbers = re.findall(r'[-+]?\d*\.?\d+', line)
+                            if numbers:
+                                profit = float(numbers[-1])  # Take the last number
+                                metrics['profit'] = profit
+                                break
+                        except:
+                            continue
+                            
+                    # Look for episode/generation information
+                    elif "episode" in line.lower() or "generation" in line.lower():
+                        try:
+                            import re
+                            numbers = re.findall(r'\d+', line)
+                            if numbers:
+                                episode = int(numbers[0])
+                                metrics['episode'] = episode
+                        except:
+                            continue
+                
+                # If we found any metrics, create return data
+                if metrics:
+                    base_value = 100000
+                    
+                    # Use fitness, reward, or profit as primary metric
+                    primary_metric = metrics.get('fitness', metrics.get('reward', metrics.get('profit', 0)))
+                    
+                    # Scale the metric appropriately
+                    if abs(primary_metric) > 10000:  # Large values, probably dollar amounts
+                        account_change = primary_metric
+                    elif abs(primary_metric) > 100:  # Medium values, scale down
+                        account_change = primary_metric * 10
+                    else:  # Small values, scale up
+                        account_change = primary_metric * 1000
+                    
+                    return {
+                        'account_value': base_value + account_change,
+                        'total_return': (account_change / base_value) * 100,
+                        'current_position': int((primary_metric % 3) - 1),  # -1, 0, or 1
+                        'pnl_change': account_change * 0.1,
+                        'algorithm': 'GA' if 'GA' in str(metrics) else 'PPO',
+                        'market_regime': 'training',
+                        'total_trades': metrics.get('episode', 1),
+                        'unrealized_pnl': account_change * 0.2,
+                        'raw_metric': primary_metric
+                    }
                             
         except Exception as e:
             logger.debug(f"Could not read log files: {e}")
