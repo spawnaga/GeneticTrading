@@ -1,0 +1,979 @@
+(GeneticTrading) alex@alex-System-Product-Name:/mnt/windows/GeneticTrading$ python start_complete_system.py
+INFO:__main__:🚀 Starting Complete NQ Trading System
+INFO:__main__:============================================================
+INFO:__main__:🚀 Starting TensorBoard...
+INFO:__main__:✅ TensorBoard started on http://0.0.0.0:6006
+INFO:__main__:⏳ Waiting for TensorBoard... (1/30)
+INFO:__main__:✅ TensorBoard is ready!
+INFO:__main__:🧠 Starting training process...
+INFO:__main__:✅ Training started
+INFO:__main__:⏳ Waiting for training to initialize...
+[TRAINING] W0710 23:38:49.396000 43280 site-packages/torch/distributed/run.py:766]
+[TRAINING] W0710 23:38:49.396000 43280 site-packages/torch/distributed/run.py:766] *****************************************
+[TRAINING] W0710 23:38:49.396000 43280 site-packages/torch/distributed/run.py:766] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed.
+[TRAINING] W0710 23:38:49.396000 43280 site-packages/torch/distributed/run.py:766] *****************************************
+[TRAINING] INFO:TRADING_ACTIVITY:🚀 Trading Activity Monitor Started
+[TRAINING] INFO:TRADING_ACTIVITY:🚀 Trading Activity Monitor Started
+[TRAINING] INFO:TRADING_ACTIVITY:🚀 Trading Activity Monitor Started
+[TRAINING] INFO:TRADING_ACTIVITY:🚀 Trading Activity Monitor Started
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 23:38:51.632204
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 💻 Process rank: 0
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_0.log
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 MAIN           : 🚀 Revolutionary Trading System Started
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 MAIN           : NCCL_TIMEOUT = 1800000 ms
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 MAIN           : Using 100.0% of available data
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 MAIN           : Models directory: ./models
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 MAIN           : Training mode: adaptive
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 MAIN           : Device configuration: cuda:0
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 MAIN           : World size: 4, Local rank: 0
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 root           : Rank 0/4 starting on cuda:0 (has_cudf=True)
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 root           : Data loading parameters: max_rows=None, data_percentage=1.0
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 root           : No row limit specified, using 1M row chunks for memory efficiency
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 root           : Parquet cache found; skipping preprocessing.
+[TRAINING] alex-System-Product-Name:43314:43314 [0] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:43314:43314 [0] NCCL INFO cudaDriverVersion 12020
+[TRAINING] alex-System-Product-Name:43314:43314 [0] NCCL INFO NCCL version 2.26.2+cuda12.2
+[TRAINING] alex-System-Product-Name:43314:43314 [0] NCCL INFO Comm config Blocking set to 1
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO NET/IB : No device found.
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so.
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO Using network Socket
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 23:38:51.778516
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 💻 Process rank: 3
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_3.log
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 root           : Rank 3/4 starting on cuda:3 (has_cudf=True)
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO ncclCommInitRankConfig comm 0x5e6fea348ce0 rank 0 nranks 4 cudaDev 0 nvmlDev 0 busId 1000 commId 0x2d81bef7bd6262c5 - Init START
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 root           : Data loading parameters: max_rows=None, data_percentage=1.0
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 root           : No row limit specified, using 1M row chunks for memory efficiency
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 23:38:51.779190
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 💻 Process rank: 1
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_1.log
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 root           : Rank 1/4 starting on cuda:1 (has_cudf=True)
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 root           : Data loading parameters: max_rows=None, data_percentage=1.0
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 root           : No row limit specified, using 1M row chunks for memory efficiency
+[TRAINING] alex-System-Product-Name:43317:43317 [3] NCCL INFO cudaDriverVersion 12020
+[TRAINING] alex-System-Product-Name:43317:43317 [3] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:43317:43317 [3] NCCL INFO NCCL version 2.26.2+cuda12.2
+[TRAINING] alex-System-Product-Name:43315:43315 [1] NCCL INFO cudaDriverVersion 12020
+[TRAINING] alex-System-Product-Name:43315:43315 [1] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:43315:43315 [1] NCCL INFO NCCL version 2.26.2+cuda12.2
+[TRAINING] alex-System-Product-Name:43317:43317 [3] NCCL INFO Comm config Blocking set to 1
+[TRAINING] alex-System-Product-Name:43315:43315 [1] NCCL INFO Comm config Blocking set to 1
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 🎯 Revolutionary NQ Futures Trading System
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 📊 Session started at 2025-07-10 23:38:51.789767
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 💻 Process rank: 2
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : 📁 Log file: logs/trading_system_rank_2.log
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 SESSION        : ================================================================================
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 root           : Rank 2/4 starting on cuda:2 (has_cudf=True)
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 root           : Data loading parameters: max_rows=None, data_percentage=1.0
+[TRAINING] 2025-07-10 23:38:51 [INFO    ] 🔸 root           : No row limit specified, using 1M row chunks for memory efficiency
+[TRAINING] alex-System-Product-Name:43316:43316 [2] NCCL INFO cudaDriverVersion 12020
+[TRAINING] alex-System-Product-Name:43316:43316 [2] NCCL INFO Bootstrap: Using wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:43316:43316 [2] NCCL INFO NCCL version 2.26.2+cuda12.2
+[TRAINING] alex-System-Product-Name:43316:43316 [2] NCCL INFO Comm config Blocking set to 1
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO NET/IB : No device found.
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so.
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO Using network Socket
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO ncclCommInitRankConfig comm 0x5b6a75865db0 rank 3 nranks 4 cudaDev 3 nvmlDev 3 busId 9000 commId 0x2d81bef7bd6262c5 - Init START
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO NET/IB : No device found.
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so.
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO Using network Socket
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO ncclCommInitRankConfig comm 0x57b96b330370 rank 1 nranks 4 cudaDev 1 nvmlDev 1 busId 5000 commId 0x2d81bef7bd6262c5 - Init START
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. Using internal net plugin.
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO NET/IB : No device found.
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO NET/IB : Using [RO]; OOB wlp0s20f3:192.168.0.129<0>
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO NET/Socket : Using [0]wlp0s20f3:192.168.0.129<0> [1]br-447583e7b32a:172.18.0.1<0> [2]br-81374c9c6e9c:172.19.0.1<0> [3]br-aaa630fe606a:172.20.0.1<0> [4]br-bc0f5ef31d4f:192.168.128.1<0>
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so.
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO Using network Socket
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO ncclCommInitRankConfig comm 0x591d4a8bf320 rank 2 nranks 4 cudaDev 2 nvmlDev 2 busId 8000 commId 0x2d81bef7bd6262c5 - Init START
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO RAS client listening socket at 127.0.0.1<28028>
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO Bootstrap timings total 0.020731 (create 0.000009, send 0.000047, recv 0.020529, ring 0.000033, delay 0.000000)
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO Bootstrap timings total 0.000253 (create 0.000009, send 0.000053, recv 0.000063, ring 0.000031, delay 0.000000)
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO Bootstrap timings total 0.024160 (create 0.000015, send 0.000068, recv 0.000053, ring 0.000026, delay 0.000000)
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO Bootstrap timings total 0.099327 (create 0.000012, send 0.000043, recv 0.078625, ring 0.011141, delay 0.000000)
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO NVLS multicast support is not available on dev 3
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO NVLS multicast support is not available on dev 1
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO NVLS multicast support is not available on dev 0
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO NVLS multicast support is not available on dev 2
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO comm 0x591d4a8bf320 rank 2 nRanks 4 nNodes 1 localRanks 4 localRank 2 MNNVL 0
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO comm 0x5b6a75865db0 rank 3 nRanks 4 nNodes 1 localRanks 4 localRank 3 MNNVL 0
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO comm 0x5e6fea348ce0 rank 0 nRanks 4 nNodes 1 localRanks 4 localRank 0 MNNVL 0
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO comm 0x57b96b330370 rank 1 nRanks 4 nNodes 1 localRanks 4 localRank 1 MNNVL 0
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO Channel 00/04 : 0 2 3 1
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO Trees [0] 3/-1/-1->2->1 [1] -1/-1/-1->2->0 [2] 3/-1/-1->2->1 [3] -1/-1/-1->2->0
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO Trees [0] -1/-1/-1->3->2 [1] 0/-1/-1->3->1 [2] -1/-1/-1->3->2 [3] 0/-1/-1->3->1
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO Trees [0] 2/-1/-1->1->0 [1] 3/-1/-1->1->-1 [2] 2/-1/-1->1->0 [3] 3/-1/-1->1->-1
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO Channel 01/04 : 0 1 3 2
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO P2P Chunksize set to 131072
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO P2P Chunksize set to 131072
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO P2P Chunksize set to 131072
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO Channel 02/04 : 0 2 3 1
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO Channel 03/04 : 0 1 3 2
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO Trees [0] 1/-1/-1->0->-1 [1] 2/-1/-1->0->3 [2] 1/-1/-1->0->-1 [3] 2/-1/-1->0->3
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO P2P Chunksize set to 131072
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO Check P2P Type intraNodeP2pSupport 0 directMode 0
+[TRAINING] alex-System-Product-Name:43314:43386 [0] NCCL INFO [Proxy Service] Device 0 CPU core 22
+[TRAINING] alex-System-Product-Name:43314:43389 [0] NCCL INFO [Proxy Service UDS] Device 0 CPU core 9
+[TRAINING] alex-System-Product-Name:43316:43385 [2] NCCL INFO [Proxy Service] Device 2 CPU core 6
+[TRAINING] alex-System-Product-Name:43316:43388 [2] NCCL INFO [Proxy Service UDS] Device 2 CPU core 26
+[TRAINING] alex-System-Product-Name:43315:43390 [1] NCCL INFO [Proxy Service UDS] Device 1 CPU core 18
+[TRAINING] alex-System-Product-Name:43317:43384 [3] NCCL INFO [Proxy Service] Device 3 CPU core 17
+[TRAINING] alex-System-Product-Name:43315:43387 [1] NCCL INFO [Proxy Service] Device 1 CPU core 23
+[TRAINING] alex-System-Product-Name:43317:43391 [3] NCCL INFO [Proxy Service UDS] Device 3 CPU core 29
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO threadThresholds 8/8/64 | 32/8/64 | 512 | 512
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO 4 coll channels, 4 collnet channels, 0 nvls channels, 4 p2p channels, 2 p2p channels per peer
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO CC Off, workFifoBytes 1048576
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO ncclCommInitRankConfig comm 0x591d4a8bf320 rank 2 nranks 4 cudaDev 2 nvmlDev 2 busId 8000 commId 0x2d81bef7bd6262c5 - Init COMPLETE
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO ncclCommInitRankConfig comm 0x5b6a75865db0 rank 3 nranks 4 cudaDev 3 nvmlDev 3 busId 9000 commId 0x2d81bef7bd6262c5 - Init COMPLETE
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO ncclCommInitRankConfig comm 0x57b96b330370 rank 1 nranks 4 cudaDev 1 nvmlDev 1 busId 5000 commId 0x2d81bef7bd6262c5 - Init COMPLETE
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO ncclCommInitRankConfig comm 0x5e6fea348ce0 rank 0 nranks 4 cudaDev 0 nvmlDev 0 busId 1000 commId 0x2d81bef7bd6262c5 - Init COMPLETE
+[TRAINING] alex-System-Product-Name:43316:43379 [2] NCCL INFO Init timings - ncclCommInitRankConfig: rank 2 nranks 4 total 0.10 (kernels 0.08, alloc 0.00, bootstrap 0.00, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+[TRAINING] alex-System-Product-Name:43317:43375 [3] NCCL INFO Init timings - ncclCommInitRankConfig: rank 3 nranks 4 total 0.11 (kernels 0.07, alloc 0.00, bootstrap 0.02, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+[TRAINING] alex-System-Product-Name:43315:43376 [1] NCCL INFO Init timings - ncclCommInitRankConfig: rank 1 nranks 4 total 0.11 (kernels 0.07, alloc 0.00, bootstrap 0.02, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+[TRAINING] alex-System-Product-Name:43314:43367 [0] NCCL INFO Init timings - ncclCommInitRankConfig: rank 0 nranks 4 total 0.24 (kernels 0.11, alloc 0.00, bootstrap 0.10, allgathers 0.00, topo 0.02, graphs 0.00, connections 0.00, rest 0.00)
+[TRAINING] alex-System-Product-Name:43314:43392 [0] NCCL INFO Channel 01 : 0[0] -> 1[1] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:43314:43392 [0] NCCL INFO Channel 03 : 0[0] -> 1[1] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:43316:43395 [2] NCCL INFO Channel 00 : 2[2] -> 3[3] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:43316:43395 [2] NCCL INFO Channel 02 : 2[2] -> 3[3] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:43314:43392 [0] NCCL INFO Channel 00/0 : 0[0] -> 2[2] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:43316:43395 [2] NCCL INFO Channel 01/0 : 2[2] -> 0[0] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:43317:43393 [3] NCCL INFO Channel 00/0 : 3[3] -> 1[1] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:43315:43394 [1] NCCL INFO Channel 01/0 : 1[1] -> 3[3] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:43314:43392 [0] NCCL INFO Channel 02/0 : 0[0] -> 2[2] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:43316:43395 [2] NCCL INFO Channel 03/0 : 2[2] -> 0[0] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:43317:43393 [3] NCCL INFO Channel 02/0 : 3[3] -> 1[1] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:43315:43394 [1] NCCL INFO Channel 03/0 : 1[1] -> 3[3] via P2P/CUMEM
+[TRAINING] alex-System-Product-Name:43317:43393 [3] NCCL INFO Channel 01 : 3[3] -> 2[2] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:43315:43394 [1] NCCL INFO Channel 00 : 1[1] -> 0[0] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:43317:43393 [3] NCCL INFO Channel 03 : 3[3] -> 2[2] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:43315:43394 [1] NCCL INFO Channel 02 : 1[1] -> 0[0] via SHM/direct/direct
+[TRAINING] alex-System-Product-Name:43315:43394 [1] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+[TRAINING] alex-System-Product-Name:43316:43395 [2] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+[TRAINING] alex-System-Product-Name:43314:43392 [0] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+[TRAINING] alex-System-Product-Name:43317:43393 [3] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+[TRAINING] 2025-07-10 23:38:52 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+[TRAINING] 2025-07-10 23:38:52 [INFO    ] 🔸 root           : Using full dataset: 1077950 train rows, 269487 test rows per GPU
+[TRAINING] 2025-07-10 23:38:52 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+[TRAINING] 2025-07-10 23:38:52 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+[TRAINING] 2025-07-10 23:38:52 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+[TRAINING] 2025-07-10 23:38:52 [INFO    ] 🔸 root           : Using full dataset: 1077950 train rows, 269487 test rows per GPU
+[TRAINING] 2025-07-10 23:38:52 [INFO    ] 🔸 root           : Using full dataset: 1077950 train rows, 269487 test rows per GPU
+[TRAINING] 2025-07-10 23:38:52 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+[TRAINING] 2025-07-10 23:38:52 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+[TRAINING] 2025-07-10 23:38:52 [INFO    ] 🔸 root           : Total data: 4311800 train, 1077950 test rows
+[TRAINING] 2025-07-10 23:38:52 [INFO    ] 🔸 root           : Using full dataset: 1077950 train rows, 269487 test rows per GPU
+[TRAINING] 2025-07-10 23:38:52 [INFO    ] 🔸 numba.cuda.cudadrv.driver: init
+INFO:__main__:📊 Starting dashboard...
+INFO:__main__:✅ Dashboard started on http://0.0.0.0:5000
+INFO:__main__:🎉 System startup complete!
+INFO:__main__:📊 Dashboard: http://0.0.0.0:5000
+INFO:__main__:📈 TensorBoard: http://0.0.0.0:6006
+INFO:__main__:🧠 Training: Active
+INFO:__main__:============================================================
+INFO:__main__:📊 System Status:
+INFO:__main__:   Tensorboard: 🟢 Running
+INFO:__main__:   Training: 🟢 Running
+INFO:__main__:   Dashboard: 🟢 Running
+[TRAINING] 2025-07-10 23:39:12 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 1077950 states, obs_dim=132
+[TRAINING] 2025-07-10 23:39:12 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 269487 states, obs_dim=132
+[TRAINING] 2025-07-10 23:39:12 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 1077950 states, obs_dim=132
+[TRAINING] 2025-07-10 23:39:12 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 269489 states, obs_dim=132
+[TRAINING] 2025-07-10 23:39:12 [INFO    ] 🔸 root           : Rank 3 heartbeat - waiting for adaptive training
+[TRAINING] 2025-07-10 23:39:12 [INFO    ] 🔸 VISUALIZATION  : 🎨 Visualization system initialized on port 5000
+[TRAINING] 2025-07-10 23:39:12 [ERROR   ] 🔸 VISUALIZATION  : ❌ Failed to start web server: [Errno 98] Address already in use
+[TRAINING] 2025-07-10 23:39:12 [INFO    ] 🔸 email_notifications: Email notifications configured for ali.aloraibi@outlook.com
+[TRAINING] 2025-07-10 23:39:12 [INFO    ] 🔸 email_notifications: Notifications will be sent every 6 hours
+[TRAINING] 2025-07-10 23:39:12 [INFO    ] 🔸 email_notifications: No training metrics available for progress update
+[TRAINING] 2025-07-10 23:39:12 [INFO    ] 🔸 email_notifications: Training monitoring started
+[TRAINING] 2025-07-10 23:39:12 [INFO    ] 🔸 root           : 📧 Email notifications enabled
+[TRAINING] 2025-07-10 23:39:12 [INFO    ] 🔸 adaptive_trainer: Fixed AdaptiveTrainer initialized with dashboard integration
+[TRAINING] 2025-07-10 23:39:12 [INFO    ] 🔸 adaptive_trainer: Starting fixed adaptive training with dashboard integration
+[TRAINING] 2025-07-10 23:39:12 [INFO    ] 🔸 adaptive_trainer:
+[TRAINING] === Adaptive Training Iteration 1/3 ===
+[TRAINING] 2025-07-10 23:39:12 [INFO    ] 🔸 adaptive_trainer: Starting GA phase: 30 generations, population 30
+[TRAINING] 
+[TRAINING] [GA gens]:   0%|                                                                                 | 0/30 [00:00<?, ?it/s]
+[TRAINING] 
+[TRAINING] [GA] Loaded GA model from ga_policy_model.pth
+[TRAINING] 
+[TRAINING] [GA gens]:   0%|                                                                                 | 0/30 [00:00<?, ?it/s]2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614333 | SELL | Price: $ 4673.75 | Pos:   0 | Balance: $100,000.00
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614334 | SELL | Price: $ 4005.00 | Pos:  -1 | Balance: $ 99,997.50
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 1077950 states, obs_dim=132
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 269487 states, obs_dim=132
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 root           : Rank 1 heartbeat - waiting for adaptive training
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614335 | SELL | Price: $15888.50 | Pos:  -2 | Balance: $ 99,995.00
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 1077950 states, obs_dim=132
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 FUTURES_ENV    : Initialized FuturesEnv with 269487 states, obs_dim=132
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 root           : Rank 2 heartbeat - waiting for adaptive training
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614336 | SELL | Price: $ 5555.25 | Pos:  -3 | Balance: $ 99,992.50
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614337 | BUY  | Price: $10866.25 | Pos:  -3 | Balance: $ 99,992.50
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614338 | BUY  | Price: $ 5856.25 | Pos:  -2 | Balance: $ 99,990.00
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614339 | BUY  | Price: $ 3457.50 | Pos:  -1 | Balance: $ 99,987.50
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $1891600.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614340 | SELL | Price: $ 3522.50 | Pos:   0 | Balance: $1,991,585.00
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614341 | SELL | Price: $ 6156.75 | Pos:  -1 | Balance: $1,991,582.50
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614342 | SELL | Price: $ 3620.50 | Pos:  -2 | Balance: $1,991,580.00
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614343 | SELL | Price: $ 3462.50 | Pos:  -3 | Balance: $1,991,577.50
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614344 | SELL | Price: $ 8945.25 | Pos:  -4 | Balance: $1,991,575.00
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614345 | SELL | Price: $ 6715.00 | Pos:  -5 | Balance: $1,991,572.50
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614346 | SELL | Price: $ 8504.25 | Pos:  -5 | Balance: $1,991,572.50
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614347 | SELL | Price: $15266.50 | Pos:  -5 | Balance: $1,991,572.50
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614348 | SELL | Price: $15813.00 | Pos:  -5 | Balance: $1,991,572.50
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614349 | SELL | Price: $17696.50 | Pos:  -5 | Balance: $1,991,572.50
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614350 | SELL | Price: $ 4121.50 | Pos:  -5 | Balance: $1,991,572.50
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614351 | SELL | Price: $ 7002.00 | Pos:  -5 | Balance: $1,991,572.50
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614352 | SELL | Price: $ 5840.25 | Pos:  -5 | Balance: $1,991,572.50
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614353 | SELL | Price: $14769.50 | Pos:  -5 | Balance: $1,991,572.50
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614354 | SELL | Price: $ 5437.50 | Pos:  -5 | Balance: $1,991,572.50
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614355 | SELL | Price: $ 6507.50 | Pos:  -5 | Balance: $1,991,572.50
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614356 | SELL | Price: $ 5970.25 | Pos:  -5 | Balance: $1,991,572.50
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614357 | SELL | Price: $ 2922.00 | Pos:  -5 | Balance: $1,991,572.50
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614358 | BUY  | Price: $16306.50 | Pos:  -5 | Balance: $1,991,572.50
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614359 | SELL | Price: $ 4657.75 | Pos:  -4 | Balance: $1,991,570.00
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614360 | BUY  | Price: $ 8272.00 | Pos:  -5 | Balance: $1,991,567.50
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614361 | BUY  | Price: $15998.00 | Pos:  -4 | Balance: $1,991,565.00
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614362 | BUY  | Price: $17766.00 | Pos:  -3 | Balance: $1,991,562.50
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614363 | BUY  | Price: $ 5500.25 | Pos:  -2 | Balance: $1,991,560.00
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614364 | BUY  | Price: $ 7720.75 | Pos:  -1 | Balance: $1,991,557.50
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $4324350.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614365 | SELL | Price: $ 4520.75 | Pos:   0 | Balance: $6,315,905.00
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614366 | SELL | Price: $ 6148.75 | Pos:  -1 | Balance: $6,315,902.50
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614367 | SELL | Price: $ 4378.50 | Pos:  -2 | Balance: $6,315,900.00
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614368 | SELL | Price: $ 6954.00 | Pos:  -3 | Balance: $6,315,897.50
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614369 | SELL | Price: $ 3851.00 | Pos:  -4 | Balance: $6,315,895.00
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614370 | SELL | Price: $ 3527.00 | Pos:  -5 | Balance: $6,315,892.50
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614371 | BUY  | Price: $ 3946.00 | Pos:  -5 | Balance: $6,315,892.50
+[TRAINING] 2025-07-10 23:39:13 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:13 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614372 | BUY  | Price: $ 5872.75 | Pos:  -4 | Balance: $6,315,890.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614373 | BUY  | Price: $ 6132.75 | Pos:  -3 | Balance: $6,315,887.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614374 | BUY  | Price: $ 5420.25 | Pos:  -2 | Balance: $6,315,885.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614375 | BUY  | Price: $17564.75 | Pos:  -1 | Balance: $6,315,882.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $1482987.50
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614376 | SELL | Price: $ 6801.00 | Pos:   0 | Balance: $7,798,867.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614377 | SELL | Price: $10008.50 | Pos:  -1 | Balance: $7,798,865.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614378 | SELL | Price: $ 4044.50 | Pos:  -2 | Balance: $7,798,862.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614379 | SELL | Price: $ 8572.25 | Pos:  -3 | Balance: $7,798,860.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614380 | SELL | Price: $12994.00 | Pos:  -4 | Balance: $7,798,857.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614381 | SELL | Price: $13467.50 | Pos:  -5 | Balance: $7,798,855.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614382 | SELL | Price: $ 8370.00 | Pos:  -5 | Balance: $7,798,855.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614383 | SELL | Price: $ 6710.75 | Pos:  -5 | Balance: $7,798,855.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614384 | BUY  | Price: $ 5705.75 | Pos:  -5 | Balance: $7,798,855.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614385 | BUY  | Price: $16259.50 | Pos:  -4 | Balance: $7,798,852.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614386 | BUY  | Price: $ 5349.50 | Pos:  -3 | Balance: $7,798,850.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614387 | BUY  | Price: $15150.00 | Pos:  -2 | Balance: $7,798,847.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614388 | SELL | Price: $ 2531.00 | Pos:  -1 | Balance: $7,798,845.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614389 | BUY  | Price: $ 6216.00 | Pos:  -2 | Balance: $7,798,842.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614390 | BUY  | Price: $15147.25 | Pos:  -1 | Balance: $7,798,840.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $3924225.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614391 | SELL | Price: $ 5657.00 | Pos:   0 | Balance: $11,723,062.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614392 | SELL | Price: $ 5501.50 | Pos:  -1 | Balance: $11,723,060.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614393 | SELL | Price: $ 4056.75 | Pos:  -2 | Balance: $11,723,057.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614394 | SELL | Price: $ 9141.50 | Pos:  -3 | Balance: $11,723,055.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614395 | SELL | Price: $ 3538.25 | Pos:  -4 | Balance: $11,723,052.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614396 | BUY  | Price: $ 4020.75 | Pos:  -5 | Balance: $11,723,050.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614397 | BUY  | Price: $ 8165.50 | Pos:  -4 | Balance: $11,723,047.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614398 | BUY  | Price: $ 4358.00 | Pos:  -3 | Balance: $11,723,045.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614399 | BUY  | Price: $15939.25 | Pos:  -2 | Balance: $11,723,042.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614400 | BUY  | Price: $ 4485.50 | Pos:  -1 | Balance: $11,723,040.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $2794637.50
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614401 | SELL | Price: $ 3934.25 | Pos:   0 | Balance: $14,517,675.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614402 | SELL | Price: $12522.75 | Pos:  -1 | Balance: $14,517,672.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614403 | SELL | Price: $ 4052.00 | Pos:  -2 | Balance: $14,517,670.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614404 | BUY  | Price: $17219.25 | Pos:  -3 | Balance: $14,517,667.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614405 | SELL | Price: $13872.50 | Pos:  -2 | Balance: $14,517,665.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614406 | SELL | Price: $ 2430.50 | Pos:  -3 | Balance: $14,517,662.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614407 | SELL | Price: $ 3357.25 | Pos:  -4 | Balance: $14,517,660.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614408 | BUY  | Price: $ 4313.00 | Pos:  -5 | Balance: $14,517,657.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614409 | BUY  | Price: $ 8782.00 | Pos:  -4 | Balance: $14,517,655.00
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:14 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614410 | BUY  | Price: $14046.00 | Pos:  -3 | Balance: $14,517,652.50
+[TRAINING] 2025-07-10 23:39:14 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614411 | BUY  | Price: $ 6479.50 | Pos:  -2 | Balance: $14,517,650.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614412 | SELL | Price: $ 3524.50 | Pos:  -1 | Balance: $14,517,647.50
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614413 | BUY  | Price: $15781.75 | Pos:  -2 | Balance: $14,517,645.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614414 | BUY  | Price: $15885.25 | Pos:  -1 | Balance: $14,517,642.50
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $4721487.50
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614415 | SELL | Price: $15865.50 | Pos:   0 | Balance: $19,239,127.50
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614416 | SELL | Price: $17529.25 | Pos:  -1 | Balance: $19,239,125.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614417 | SELL | Price: $ 3572.75 | Pos:  -2 | Balance: $19,239,122.50
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614418 | BUY  | Price: $ 5276.75 | Pos:  -3 | Balance: $19,239,120.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614419 | BUY  | Price: $ 4049.50 | Pos:  -2 | Balance: $19,239,117.50
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614420 | BUY  | Price: $ 5907.00 | Pos:  -1 | Balance: $19,239,115.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $2019325.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614421 | SELL | Price: $ 4889.25 | Pos:   0 | Balance: $21,258,437.50
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614422 | SELL | Price: $ 5758.75 | Pos:  -1 | Balance: $21,258,435.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614423 | SELL | Price: $ 3081.50 | Pos:  -2 | Balance: $21,258,432.50
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614424 | SELL | Price: $ 2860.75 | Pos:  -3 | Balance: $21,258,430.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614425 | SELL | Price: $17894.50 | Pos:  -4 | Balance: $21,258,427.50
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614426 | SELL | Price: $15762.50 | Pos:  -5 | Balance: $21,258,425.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614427 | SELL | Price: $ 3830.00 | Pos:  -5 | Balance: $21,258,425.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614428 | SELL | Price: $ 5711.50 | Pos:  -5 | Balance: $21,258,425.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614429 | SELL | Price: $14335.00 | Pos:  -5 | Balance: $21,258,425.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614430 | SELL | Price: $14839.25 | Pos:  -5 | Balance: $21,258,425.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614431 | SELL | Price: $ 8131.75 | Pos:  -5 | Balance: $21,258,425.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614432 | SELL | Price: $ 2892.25 | Pos:  -5 | Balance: $21,258,425.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614433 | BUY  | Price: $ 5869.50 | Pos:  -5 | Balance: $21,258,425.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614434 | SELL | Price: $ 3038.25 | Pos:  -4 | Balance: $21,258,422.50
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614435 | BUY  | Price: $ 4030.50 | Pos:  -5 | Balance: $21,258,420.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614436 | HOLD | Price: $ 2888.75 | Pos:  -4 | Balance: $21,258,417.50
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614437 | BUY  | Price: $11842.25 | Pos:  -4 | Balance: $21,258,417.50
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614438 | BUY  | Price: $ 4806.50 | Pos:  -3 | Balance: $21,258,415.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614439 | BUY  | Price: $14490.25 | Pos:  -2 | Balance: $21,258,412.50
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614440 | SELL | Price: $ 3823.50 | Pos:  -1 | Balance: $21,258,410.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614441 | BUY  | Price: $16858.25 | Pos:  -2 | Balance: $21,258,407.50
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614442 | BUY  | Price: $ 4709.75 | Pos:  -1 | Balance: $21,258,405.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $4726687.50
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614443 | SELL | Price: $10305.00 | Pos:   0 | Balance: $25,985,090.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614444 | SELL | Price: $ 5105.00 | Pos:  -1 | Balance: $25,985,087.50
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614445 | SELL | Price: $ 7921.75 | Pos:  -2 | Balance: $25,985,085.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614446 | SELL | Price: $ 9113.50 | Pos:  -3 | Balance: $25,985,082.50
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614447 | SELL | Price: $ 3457.50 | Pos:  -4 | Balance: $25,985,080.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614448 | BUY  | Price: $ 8554.75 | Pos:  -5 | Balance: $25,985,077.50
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:15 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614449 | SELL | Price: $ 8194.75 | Pos:  -4 | Balance: $25,985,075.00
+[TRAINING] 2025-07-10 23:39:15 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614450 | BUY  | Price: $18411.00 | Pos:  -5 | Balance: $25,985,072.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614451 | SELL | Price: $ 7819.25 | Pos:  -4 | Balance: $25,985,070.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614452 | BUY  | Price: $ 9420.25 | Pos:  -5 | Balance: $25,985,067.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614453 | SELL | Price: $ 2893.25 | Pos:  -4 | Balance: $25,985,065.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614454 | BUY  | Price: $ 4413.50 | Pos:  -5 | Balance: $25,985,062.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614455 | BUY  | Price: $10067.00 | Pos:  -4 | Balance: $25,985,060.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614456 | BUY  | Price: $ 9171.25 | Pos:  -3 | Balance: $25,985,057.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614457 | BUY  | Price: $ 8076.75 | Pos:  -2 | Balance: $25,985,055.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614458 | SELL | Price: $ 2944.00 | Pos:  -1 | Balance: $25,985,052.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614459 | BUY  | Price: $ 8748.75 | Pos:  -2 | Balance: $25,985,050.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614460 | BUY  | Price: $ 4966.50 | Pos:  -1 | Balance: $25,985,047.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $6482525.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614461 | BUY  | Price: $ 7951.25 | Pos:   0 | Balance: $32,467,570.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → 1 (LONG) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614462 | SELL | Price: $ 5344.50 | Pos:   1 | Balance: $32,467,567.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 1 → 0 (FLAT) | P&L: $-130350.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614463 | SELL | Price: $ 3837.50 | Pos:   0 | Balance: $32,337,215.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614464 | SELL | Price: $17707.00 | Pos:  -1 | Balance: $32,337,212.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614465 | SELL | Price: $ 7647.25 | Pos:  -2 | Balance: $32,337,210.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614466 | SELL | Price: $ 3108.25 | Pos:  -3 | Balance: $32,337,207.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614467 | BUY  | Price: $ 8101.00 | Pos:  -4 | Balance: $32,337,205.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614468 | SELL | Price: $ 3454.75 | Pos:  -3 | Balance: $32,337,202.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614469 | BUY  | Price: $ 5951.25 | Pos:  -4 | Balance: $32,337,200.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614470 | SELL | Price: $ 2996.25 | Pos:  -3 | Balance: $32,337,197.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614471 | BUY  | Price: $13143.00 | Pos:  -4 | Balance: $32,337,195.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614472 | BUY  | Price: $ 7251.00 | Pos:  -3 | Balance: $32,337,192.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614473 | BUY  | Price: $ 8652.25 | Pos:  -2 | Balance: $32,337,190.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614474 | BUY  | Price: $ 8717.25 | Pos:  -1 | Balance: $32,337,187.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $3656600.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614475 | SELL | Price: $11759.00 | Pos:   0 | Balance: $35,993,785.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614476 | SELL | Price: $ 9580.50 | Pos:  -1 | Balance: $35,993,782.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614477 | SELL | Price: $ 2401.50 | Pos:  -2 | Balance: $35,993,780.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614478 | BUY  | Price: $ 9795.00 | Pos:  -3 | Balance: $35,993,777.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614479 | SELL | Price: $ 2974.25 | Pos:  -2 | Balance: $35,993,775.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614480 | BUY  | Price: $ 4359.50 | Pos:  -3 | Balance: $35,993,772.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614481 | SELL | Price: $ 2312.50 | Pos:  -2 | Balance: $35,993,770.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614482 | SELL | Price: $ 3020.75 | Pos:  -3 | Balance: $35,993,767.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614483 | BUY  | Price: $ 5865.00 | Pos:  -4 | Balance: $35,993,765.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614484 | BUY  | Price: $ 6721.00 | Pos:  -3 | Balance: $35,993,762.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614485 | BUY  | Price: $ 5918.00 | Pos:  -2 | Balance: $35,993,760.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614486 | BUY  | Price: $ 8035.75 | Pos:  -1 | Balance: $35,993,757.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $2833550.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614487 | SELL | Price: $ 8798.50 | Pos:   0 | Balance: $38,827,305.00
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:16 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614488 | SELL | Price: $ 4801.25 | Pos:  -1 | Balance: $38,827,302.50
+[TRAINING] 2025-07-10 23:39:16 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614489 | SELL | Price: $13082.75 | Pos:  -2 | Balance: $38,827,300.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614490 | SELL | Price: $ 7926.50 | Pos:  -3 | Balance: $38,827,297.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614491 | SELL | Price: $ 6716.00 | Pos:  -4 | Balance: $38,827,295.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614492 | BUY  | Price: $ 4881.75 | Pos:  -5 | Balance: $38,827,292.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614493 | BUY  | Price: $13678.75 | Pos:  -4 | Balance: $38,827,290.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614494 | BUY  | Price: $11124.00 | Pos:  -3 | Balance: $38,827,287.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614495 | BUY  | Price: $ 3874.50 | Pos:  -2 | Balance: $38,827,285.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614496 | BUY  | Price: $ 7177.50 | Pos:  -1 | Balance: $38,827,282.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $3385312.50
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614497 | SELL | Price: $ 6199.75 | Pos:   0 | Balance: $42,212,592.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614498 | SELL | Price: $ 6201.75 | Pos:  -1 | Balance: $42,212,590.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614499 | SELL | Price: $ 3022.50 | Pos:  -2 | Balance: $42,212,587.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614500 | SELL | Price: $ 4456.00 | Pos:  -3 | Balance: $42,212,585.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614501 | SELL | Price: $ 8134.50 | Pos:  -4 | Balance: $42,212,582.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614502 | SELL | Price: $ 8333.00 | Pos:  -5 | Balance: $42,212,580.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614503 | SELL | Price: $12665.25 | Pos:  -5 | Balance: $42,212,580.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614504 | SELL | Price: $ 8254.75 | Pos:  -5 | Balance: $42,212,580.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614505 | SELL | Price: $15958.00 | Pos:  -5 | Balance: $42,212,580.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614506 | SELL | Price: $ 5272.00 | Pos:  -5 | Balance: $42,212,580.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614507 | SELL | Price: $ 8564.75 | Pos:  -5 | Balance: $42,212,580.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614508 | SELL | Price: $ 3913.25 | Pos:  -5 | Balance: $42,212,580.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614509 | BUY  | Price: $ 8351.00 | Pos:  -5 | Balance: $42,212,580.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614510 | SELL | Price: $ 8674.00 | Pos:  -4 | Balance: $42,212,577.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614511 | SELL | Price: $ 3825.75 | Pos:  -5 | Balance: $42,212,575.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614512 | BUY  | Price: $ 4847.75 | Pos:  -5 | Balance: $42,212,575.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614513 | SELL | Price: $ 4021.00 | Pos:  -4 | Balance: $42,212,572.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614514 | BUY  | Price: $ 8815.00 | Pos:  -5 | Balance: $42,212,570.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614515 | SELL | Price: $ 3908.00 | Pos:  -4 | Balance: $42,212,567.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614516 | BUY  | Price: $ 5774.00 | Pos:  -5 | Balance: $42,212,565.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614517 | SELL | Price: $ 3194.00 | Pos:  -4 | Balance: $42,212,562.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614518 | BUY  | Price: $ 5031.50 | Pos:  -5 | Balance: $42,212,560.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614519 | BUY  | Price: $ 5539.75 | Pos:  -4 | Balance: $42,212,557.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614520 | SELL | Price: $ 2710.50 | Pos:  -3 | Balance: $42,212,555.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614521 | BUY  | Price: $ 5606.75 | Pos:  -4 | Balance: $42,212,552.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614522 | BUY  | Price: $12859.25 | Pos:  -3 | Balance: $42,212,550.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614523 | SELL | Price: $ 3698.25 | Pos:  -2 | Balance: $42,212,547.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614524 | SELL | Price: $ 3248.50 | Pos:  -3 | Balance: $42,212,545.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614525 | BUY  | Price: $ 7252.00 | Pos:  -4 | Balance: $42,212,542.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614526 | BUY  | Price: $17229.50 | Pos:  -3 | Balance: $42,212,540.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614527 | BUY  | Price: $ 6425.50 | Pos:  -2 | Balance: $42,212,537.50
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614528 | BUY  | Price: $ 8228.75 | Pos:  -1 | Balance: $42,212,535.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $6848587.50
+[TRAINING] 2025-07-10 23:39:17 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614529 | SELL | Price: $ 4011.75 | Pos:   0 | Balance: $49,061,120.00
+[TRAINING] 2025-07-10 23:39:17 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614530 | SELL | Price: $ 8735.25 | Pos:  -1 | Balance: $49,061,117.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614531 | SELL | Price: $ 3455.00 | Pos:  -2 | Balance: $49,061,115.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614532 | SELL | Price: $ 8280.25 | Pos:  -3 | Balance: $49,061,112.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614533 | SELL | Price: $ 7818.25 | Pos:  -4 | Balance: $49,061,110.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614534 | SELL | Price: $ 3020.50 | Pos:  -5 | Balance: $49,061,107.50
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614535 | SELL | Price: $ 3127.25 | Pos:  -5 | Balance: $49,061,107.50
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614536 | HOLD | Price: $ 2872.25 | Pos:  -5 | Balance: $49,061,107.50
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614537 | BUY  | Price: $12106.75 | Pos:  -5 | Balance: $49,061,107.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614538 | SELL | Price: $ 7182.00 | Pos:  -4 | Balance: $49,061,105.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614539 | SELL | Price: $ 3620.50 | Pos:  -5 | Balance: $49,061,102.50
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614540 | BUY  | Price: $ 4900.75 | Pos:  -5 | Balance: $49,061,102.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614541 | BUY  | Price: $ 5491.50 | Pos:  -4 | Balance: $49,061,100.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614542 | BUY  | Price: $ 4833.25 | Pos:  -3 | Balance: $49,061,097.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614543 | BUY  | Price: $ 8793.00 | Pos:  -2 | Balance: $49,061,095.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614544 | BUY  | Price: $ 5879.75 | Pos:  -1 | Balance: $49,061,092.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $3486387.50
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614545 | SELL | Price: $12258.75 | Pos:   0 | Balance: $52,547,477.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614546 | SELL | Price: $ 7971.00 | Pos:  -1 | Balance: $52,547,475.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614547 | SELL | Price: $ 3053.00 | Pos:  -2 | Balance: $52,547,472.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614548 | SELL | Price: $ 3830.75 | Pos:  -3 | Balance: $52,547,470.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614549 | BUY  | Price: $ 7190.75 | Pos:  -4 | Balance: $52,547,467.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614550 | BUY  | Price: $17849.75 | Pos:  -3 | Balance: $52,547,465.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614551 | SELL | Price: $ 2539.00 | Pos:  -2 | Balance: $52,547,462.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614552 | BUY  | Price: $ 5863.25 | Pos:  -3 | Balance: $52,547,460.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614553 | BUY  | Price: $ 4030.75 | Pos:  -2 | Balance: $52,547,457.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614554 | BUY  | Price: $ 8753.50 | Pos:  -1 | Balance: $52,547,455.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $2791662.50
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614555 | SELL | Price: $ 4252.75 | Pos:   0 | Balance: $55,339,115.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614556 | SELL | Price: $ 3968.00 | Pos:  -1 | Balance: $55,339,112.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614557 | SELL | Price: $ 3612.50 | Pos:  -2 | Balance: $55,339,110.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614558 | SELL | Price: $ 8396.75 | Pos:  -3 | Balance: $55,339,107.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614559 | SELL | Price: $ 5257.00 | Pos:  -4 | Balance: $55,339,105.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614560 | SELL | Price: $ 5764.25 | Pos:  -5 | Balance: $55,339,102.50
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614561 | SELL | Price: $13337.25 | Pos:  -5 | Balance: $55,339,102.50
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614562 | SELL | Price: $ 3589.00 | Pos:  -5 | Balance: $55,339,102.50
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614563 | SELL | Price: $ 3004.25 | Pos:  -5 | Balance: $55,339,102.50
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614564 | BUY  | Price: $12731.50 | Pos:  -5 | Balance: $55,339,102.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614565 | SELL | Price: $ 3809.25 | Pos:  -4 | Balance: $55,339,100.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614566 | BUY  | Price: $ 7349.50 | Pos:  -5 | Balance: $55,339,097.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614567 | BUY  | Price: $ 7458.00 | Pos:  -4 | Balance: $55,339,095.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614568 | BUY  | Price: $ 5552.00 | Pos:  -3 | Balance: $55,339,092.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614569 | BUY  | Price: $12654.00 | Pos:  -2 | Balance: $55,339,090.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614570 | BUY  | Price: $13718.00 | Pos:  -1 | Balance: $55,339,087.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → 0 (FLAT) | P&L: $3066150.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614571 | SELL | Price: $ 8099.75 | Pos:   0 | Balance: $58,405,235.00
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | 0 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:18 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614572 | SELL | Price: $ 8017.75 | Pos:  -1 | Balance: $58,405,232.50
+[TRAINING] 2025-07-10 23:39:18 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614573 | SELL | Price: $12284.50 | Pos:  -2 | Balance: $58,405,230.00
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614574 | SELL | Price: $ 3979.00 | Pos:  -3 | Balance: $58,405,227.50
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614575 | SELL | Price: $ 3914.00 | Pos:  -4 | Balance: $58,405,225.00
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614576 | BUY  | Price: $17728.00 | Pos:  -5 | Balance: $58,405,222.50
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614577 | SELL | Price: $14434.00 | Pos:  -4 | Balance: $58,405,220.00
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614578 | SELL | Price: $16234.00 | Pos:  -5 | Balance: $58,405,217.50
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614579 | SELL | Price: $16414.75 | Pos:  -5 | Balance: $58,405,217.50
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614580 | SELL | Price: $ 3284.00 | Pos:  -5 | Balance: $58,405,217.50
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614581 | BUY  | Price: $ 5396.75 | Pos:  -5 | Balance: $58,405,217.50
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614582 | HOLD | Price: $ 3074.00 | Pos:  -4 | Balance: $58,405,215.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614583 | BUY  | Price: $ 8284.75 | Pos:  -4 | Balance: $58,405,215.00
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614584 | SELL | Price: $ 2977.00 | Pos:  -3 | Balance: $58,405,212.50
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614585 | SELL | Price: $ 3863.50 | Pos:  -4 | Balance: $58,405,210.00
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614586 | SELL | Price: $ 2965.25 | Pos:  -5 | Balance: $58,405,207.50
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614587 | SELL | Price: $ 4049.25 | Pos:  -5 | Balance: $58,405,207.50
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614588 | BUY  | Price: $15722.25 | Pos:  -5 | Balance: $58,405,207.50
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614589 | SELL | Price: $ 3597.50 | Pos:  -4 | Balance: $58,405,205.00
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -5 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614590 | BUY  | Price: $ 6522.50 | Pos:  -5 | Balance: $58,405,202.50
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -5 → -4 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614591 | BUY  | Price: $18573.75 | Pos:  -4 | Balance: $58,405,200.00
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -4 → -3 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614592 | BUY  | Price: $ 8320.00 | Pos:  -3 | Balance: $58,405,197.50
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -3 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614593 | BUY  | Price: $ 7672.75 | Pos:  -2 | Balance: $58,405,195.00
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614594 | SELL | Price: $ 2466.50 | Pos:  -1 | Balance: $58,405,192.50
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -1 → -2 (SHORT) | P&L: $0.00
+[TRAINING] 2025-07-10 23:39:19 [ERROR   ] 🔸 FUTURES_ENV    : Failed to save trading table after 3 attempts: Object of type int64 is not JSON serializable
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: Step 614595 | BUY  | Price: $ 5595.00 | Pos:  -2 | Balance: $58,405,190.00
+[TRAINING] 2025-07-10 23:39:19 [INFO    ] 🔸 TRADING_ACTIVITY: 📍 POSITION CHANGE | -2 → -1 (SHORT) | P&L: $0.00
+^Z
+[1]+  Stopped                 python start_complete_system.py
+(GeneticTrading) alex@alex-System-Product-Name:/mnt/windows/GeneticTrading$ 
+
